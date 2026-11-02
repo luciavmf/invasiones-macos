@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-macOS port of a Windows C# RTS (real-time strategy) game, translated to Swift using SpriteKit for rendering. The original C# source lives at `../../Juego/Invasiones/fuente/` and is the authoritative reference for game logic and documentation.
+macOS port of a Windows C# RTS (real-time strategy) game, translated to Swift using SpriteKit for rendering. The original C# source lives in the separate repo https://github.com/luciavmf/invasiones under `Juego/Invasiones/fuente/` (clone it next to this repo, e.g. `../invasiones/Juego/Invasiones/fuente/`) and is the authoritative reference for game logic and documentation.
 
 ## Build & Run
 

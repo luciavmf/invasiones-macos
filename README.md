@@ -5,7 +5,7 @@
 [![Status](https://img.shields.io/badge/status-work%20in%20progress-yellow)]()
 [![macOS Build](https://github.com/luciavmf/invasiones/actions/workflows/macos-build.yml/badge.svg)](https://github.com/luciavmf/invasiones/actions/workflows/macos-build.yml)
 
-This is a port of the original Windows game (`Juego/`) to macOS, built with Swift and SpriteKit.
+This is a port of the original Windows game ([luciavmf/invasiones](https://github.com/luciavmf/invasiones), folder `Juego/`) to macOS, built with Swift and SpriteKit.
 
 ## ⬇️ Download
 
