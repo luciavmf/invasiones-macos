@@ -71,3 +71,7 @@ Game data lives in `Invasiones/data/`:
 ## Continuous integration
 
 GitHub Actions builds, signs, and notarizes the app on every push to `main`. See [docs/ci.md](docs/ci.md) for how it works and the secrets it needs.
+
+## License
+
+The source code is released under the [MIT license](LICENSE). Some fonts and sounds come from third parties and keep their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
