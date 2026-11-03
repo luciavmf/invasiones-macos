@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 env:
-  XCODE_VERSION: "27"
+  XCODE_VERSION: "26.6"  # newest Xcode on GitHub-hosted runners; move to 27 when available
 
 jobs:
   test:

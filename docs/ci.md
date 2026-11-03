@@ -1,6 +1,6 @@
 # Continuous integration
 
-`.github/workflows/macos-build.yml` runs on the `macos-26` image with Xcode 27 and has two jobs:
+`.github/workflows/macos-build.yml` runs on the `macos-26` image with Xcode 26.6 (the newest Xcode on GitHub-hosted runners; set `XCODE_VERSION` to 27 once it is available) and has two jobs:
 
 - **Build and test** runs on every pull request and push. It builds the app without signing and runs the `InvasionesTests` unit tests. It needs no secrets.
 - **Build, sign, notarize** runs on pushes to `main` (and manual runs) after the tests pass. It signs and notarizes the app, then publishes the DMG to the rolling [`latest-macos-build`](https://github.com/luciavmf/invasiones-macos/releases/tag/latest-macos-build) release. It uses `Invasiones.xcodeproj`'s shared `Invasiones` scheme (`xcshareddata/xcschemes/`) and `ci/exportOptions.plist` (Developer ID, manual signing, team `44DMMFA3SQ`).
