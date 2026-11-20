@@ -129,14 +129,24 @@ final class Unit: MapObject {
         set { desiredPosition = newValue }
     }
 
-    // MARK: - Initializeres
+    // MARK: - Dependencies
+    /// Used to compute movement paths. Injectable so tests can use a hand-made grid.
+    private let pathFinder: PathFinder
+    /// Used for shot and death sounds. Injectable so tests can record calls.
+    private let sound: any SoundPlayer
 
-    override init() {
+    // MARK: - Initializers
+
+    init(pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
+        self.pathFinder = pathFinder
+        self.sound = sound
         super.init()
     }
 
     /// Template copy initializer (id = index in unitTypes).
-    init(_ id: Int) {
+    init(_ id: Int, pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
+        self.pathFinder = pathFinder
+        self.sound = sound
         super.init()
         let types = ResourceManager.shared.unitTypes
         guard id >= 0, id < types.count, let copia = types[id] else {
@@ -235,7 +245,7 @@ final class Unit: MapObject {
         setState(.moving)
         nextStateValue = .idle
 
-        let path = PathFinder.shared.findShortestPath(
+        let path = pathFinder.findShortestPath(
             startI: physicalTilePos.x, startJ: physicalTilePos.y, targetI: x, targetJ: y)
 
         if let c = path, !c.isEmpty {
@@ -398,7 +408,7 @@ final class Unit: MapObject {
                     }
                     idx = nextValidIdx
 
-                    var newPath = PathFinder.shared.findShortestPath(
+                    var newPath = pathFinder.findShortestPath(
                         startI: pathCopy[prevIdx].i, startJ: pathCopy[prevIdx].j,
                         targetI: pathCopy[idx].i,    targetJ: pathCopy[idx].j)
 
@@ -409,7 +419,7 @@ final class Unit: MapObject {
                             return
                         }
                         idx = prevValidIdx
-                        newPath = PathFinder.shared.findShortestPath(
+                        newPath = pathFinder.findShortestPath(
                             startI: pathCopy[prevIdx].i, startJ: pathCopy[prevIdx].j,
                             targetI: pathCopy[idx].i,    targetJ: pathCopy[idx].j)
                     }
@@ -494,7 +504,7 @@ final class Unit: MapObject {
         setState(.moving)
         nextStateValue = .healing
 
-        let path = PathFinder.shared.findShortestPath(
+        let path = pathFinder.findShortestPath(
             startI: physicalTilePos.x, startJ: physicalTilePos.y, targetI: x, targetJ: y)
 
         if let c = path, !c.isEmpty {
@@ -670,7 +680,7 @@ final class Unit: MapObject {
         // Pop the tile we were heading to (now blocked) and find a detour.
         var nextTileIJ = pathToFollow!.removeLast()
 
-        var newPath = PathFinder.shared.findShortestPath(
+        var newPath = pathFinder.findShortestPath(
             startI: physicalTilePos.x, startJ: physicalTilePos.y,
             targetI: nextTileIJ.i, targetJ: nextTileIJ.j,
             blockedTiles: blocked)
@@ -683,7 +693,7 @@ final class Unit: MapObject {
                 return
             }
             nextTileIJ = pathToFollow!.removeLast()
-            newPath = PathFinder.shared.findShortestPath(
+            newPath = pathFinder.findShortestPath(
                 startI: physicalTilePos.x, startJ: physicalTilePos.y,
                 targetI: nextTileIJ.i, targetJ: nextTileIJ.j,
                 blockedTiles: blocked)
@@ -737,7 +747,7 @@ final class Unit: MapObject {
             let destI = patrolPosition.x + signI * offI
             let destJ = patrolPosition.y + signJ * offJ
             guard map.isWalkable(x: destI, y: destJ) else { continue }
-            path = PathFinder.shared.findShortestPath(startI: i, startJ: j, targetI: destI, targetJ: destJ)
+            path = pathFinder.findShortestPath(startI: i, startJ: j, targetI: destI, targetJ: destJ)
         }
         return path
     }
@@ -839,7 +849,7 @@ final class Unit: MapObject {
         setState(.dying)
         enemy = nil
         if type == Res.UNIDAD_PATRICIO {
-            Sound.shared.play(id: Res.SFX_MUERTE_PATRICIO, loop: 0)
+            sound.play(id: Res.SFX_MUERTE_PATRICIO, loop: 0)
         }
     }
 
@@ -864,7 +874,7 @@ final class Unit: MapObject {
 
     private func playShotSound() {
         let sfx = type == 0 ? Res.SFX_DISPARO_PATRICIO : Res.SFX_DISPARO_INGLES
-        Sound.shared.play(id: sfx, loop: 0)
+        sound.play(id: sfx, loop: 0)
     }
 
     // MARK: - Healing
