@@ -10,22 +10,22 @@
 import Foundation
 
 /// Generic game state machine. Multiple instances can be created as needed.
-class StateMachine {
+final class StateMachine {
 
     // MARK: - Declarations
     /// The current active state object.
-    private var currentStateObj: State?
+    private var currentStateObj: (any State)?
     /// The key of the current state.
     private(set) var currentState: GameFrame.State = .invalid
     /// The previous state.
-    private var prevState: State?
+    private var prevState: (any State)?
     /// The next state, queued for transition.
-    private var nextState: State?
+    private var nextState: (any State)?
     /// The key of the next state.
     private var nextStateKey: GameFrame.State = .invalid
 
     /// Dictionary of all registered states.
-    private var allStates: [GameFrame.State: State?] = [:]
+    private var allStates: [GameFrame.State: (any State)?] = [:]
 
     // MARK: - Initializer
     init() {}
@@ -36,7 +36,7 @@ class StateMachine {
 
     // MARK: - Methods
     /// Registers a state in the machine.
-    func addState(key: GameFrame.State, state: State?) {
+    func addState(key: GameFrame.State, state: (any State)?) {
         allStates[key] = state
     }
 

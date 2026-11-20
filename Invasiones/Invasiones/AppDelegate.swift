@@ -8,7 +8,7 @@
 import Cocoa
 
 @MainActor
-class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var window: NSWindow!
 

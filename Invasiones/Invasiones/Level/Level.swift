@@ -10,7 +10,7 @@
 import Foundation
 
 /// Manages the battles and objectives for a level, loaded from nivel_N.xml.
-class Level {
+final class Level {
 
     // MARK: - Constants
     /// The maximum number of battles a level can contain.
@@ -21,7 +21,7 @@ class Level {
 
     // MARK: - Private class
     /// Contains the ordered stack of objectives for a single battle phase.
-    private class Battle {
+    private final class Battle {
         var objectives: [Objective] = []  // LIFO: popLast
         /// The total number of objectives this battle originally had.
         var objectiveCount: Int = 0
@@ -116,7 +116,7 @@ class Level {
 
 // MARK: - XML parser
 
-private class LevelXMLDelegate: NSObject, XMLParserDelegate {
+private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
 
     struct BattleData { var objectives: [Objective] = [] }
     var batallas: [BattleData] = []

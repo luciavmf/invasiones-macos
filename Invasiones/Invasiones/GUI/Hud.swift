@@ -9,7 +9,7 @@
 
 import Foundation
 
-class Hud {
+final class Hud {
 
     // MARK: - Position constants
     private enum Constants {
@@ -72,13 +72,13 @@ class Hud {
         }
         tipsWindow.draw(video)
 
-        video.setFont(ResourceManager.shared.fonts[FontIndex.sans12.rawValue],
-                       GameColor.black)
+        video.font = ResourceManager.shared.fonts[FontIndex.sans12.rawValue]
+        video.fontColor = GameColor.black
         video.write("\(enemyCount)", Constants.attrsEnemyCountX, posY + Constants.attrsCountY, 0)
         video.write("\(argentineCount)", Constants.attrsArgentineCountX, posY + Constants.attrsCountY, 0)
 
-        video.setFont(ResourceManager.shared.fonts[FontIndex.sans12.rawValue],
-                       GameColor.white)
+        video.font = ResourceManager.shared.fonts[FontIndex.sans12.rawValue]
+        video.fontColor = GameColor.white
 
         guard let uni = unitToShow else { return }
 
@@ -87,7 +87,7 @@ class Hud {
         }
         video.write(uni.name, Constants.avatarNameX, posY + Constants.avatarNameY, 0)
 
-        video.setColor(GameColor.black)
+        video.color = GameColor.black
 
         let s = GameText.Strings
         video.write("\(s[safe: Res.STR_ALCANCE] ?? ""): \(uni.range)",

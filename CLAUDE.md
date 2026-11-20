@@ -119,6 +119,10 @@ The codebase has been progressively Swiftified from the C# port style. Completed
 8. `Int16` → `Int` throughout (`Tile`, `Tileset`, `Map`, `PathFinder`, `Obstacle`, `Player`, `ArgentineTeam`, `EnemyTeam`)
 9. `GUIBox` abstract class → `Frame` struct (composition; each GUI component embeds `var frame: Frame`)
 10. `Button` converted from class to struct
+11. Remaining Spanish identifiers renamed (`IA` → `AI`, `NivelXMLDelegate` → `LevelXMLDelegate`, `StateMachiche/` → `StateMachine/`)
+12. Simple setters → properties (`Sound.isMuted`, `Video.color`/`font`/`fontColor`, `Group.ai`, `Mouse.cursor`, `Unit.objectiveCommand`, `Surface.alpha`)
+13. `State` is a protocol (missing `start`/`update`/`draw`/`exit` fails at compile time); each state declares only the members it uses
+14. All classes are `final` except `MapObject` and `Player`, which have subclasses
 
 In progress / not yet done:
 - `throws` instead of `Bool` returns

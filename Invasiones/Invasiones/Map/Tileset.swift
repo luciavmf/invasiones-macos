@@ -10,7 +10,7 @@
 import Foundation
 import SpriteKit
 
-class Tileset {
+final class Tileset {
 
     // MARK: - Declarations
     var firstGid: Int = 0
@@ -102,7 +102,7 @@ class Tileset {
 
 // MARK: - Internal XML parser
 
-private class TilesetXMLDelegate: NSObject, XMLParserDelegate {
+private final class TilesetXMLDelegate: NSObject, XMLParserDelegate {
 
     private weak var tileset: Tileset?
     private let basePath: String

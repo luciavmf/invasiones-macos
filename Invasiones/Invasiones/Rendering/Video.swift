@@ -14,7 +14,7 @@ import SpriteKit
 /// The drawing surface that represents the screen.
 /// Wraps SpriteKit and exposes an SDL-compatible draw API to the rest of the game.
 /// All objects are added to a canvas node each frame and cleared at the start of the next.
-class Video {
+final class Video {
 
     // MARK: - Screen constants (equivalent to the static fields of Video in C#)
     static let width: Int = ScreenSize.width
@@ -24,9 +24,18 @@ class Video {
     private let canvasNode: SKNode
 
     // MARK: - Drawing state
+    /// Colour used for filled and outlined shapes, as 0xRRGGBB.
+    var color: Int = GameColor.black {
+        didSet { currentColor = skColor(color) }
+    }
+    /// Font used to draw text.
+    var font: GameFont?
+    /// Colour used to draw text, as 0xRRGGBB.
+    var fontColor: Int = GameColor.white {
+        didSet { currentFontColor = skColor(fontColor) }
+    }
     private var currentColor: SKColor = .black
-    private var currentFont: GameFont?
-    private var fontColor: SKColor = .white
+    private var currentFontColor: SKColor = .white
     private var zPos: CGFloat = 0
 
     // Clip rect in C# coordinates (top-left origin). Only the state is persisted;
@@ -85,7 +94,7 @@ class Video {
 
     /// Draws a surface (or its active clip) at C# coordinates (x, y) with an anchor.
     func draw(_ surface: Surface?, _ x: Int, _ y: Int, _ anchor: Int) {
-        let alpha = Int((surface?.currentAlpha ?? 1.0) * 255.0)
+        let alpha = Int((surface?.alpha ?? 1.0) * 255.0)
         draw(surface, x, y, alpha, anchor)
     }
 
@@ -142,7 +151,7 @@ class Video {
         node.texture   = subTex
         node.size      = subTex.size()
         node.position  = CGPoint(x: destX, y: Video.height - destY)
-        node.alpha     = sup.currentAlpha
+        node.alpha     = sup.alpha
         node.zPosition = zPos
         zPos += 1
     }
@@ -179,7 +188,7 @@ class Video {
 
         let label = SKLabelNode()
         let nsFont: NSFont
-        if let font = currentFont?.nsFont {
+        if let font = font?.nsFont {
             label.fontName = font.fontName
             label.fontSize = font.pointSize
             nsFont = font
@@ -191,7 +200,7 @@ class Video {
         paraStyle.alignment = .center
         let attrs: [NSAttributedString.Key: Any] = [
             .font: nsFont,
-            .foregroundColor: fontColor,
+            .foregroundColor: currentFontColor,
             .paragraphStyle: paraStyle
         ]
         label.attributedText = NSAttributedString(string: text, attributes: attrs)
@@ -244,19 +253,8 @@ class Video {
 
     /// Fills the entire screen with a solid colour (overload without coordinates).
     func fillRect(_ color: Int) {
-        setColor(color)
+        self.color = color
         fillRect(0, 0, Video.width, Video.height)
-    }
-
-    // MARK: - Drawing state
-
-    func setColor(_ color: Int) {
-        currentColor = skColor(color)
-    }
-
-    func setFont(_ font: GameFont?, _ color: Int) {
-        currentFont = font
-        fontColor = skColor(color)
     }
 
     /// Draws the outline of a rectangle (no fill) with the current colour.

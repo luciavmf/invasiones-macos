@@ -9,11 +9,11 @@
 
 import Foundation
 
-class PathFinder {
+final class PathFinder {
 
     // MARK: - Internal node
 
-    private class Node: Equatable {
+    private final class Node: Equatable {
         var parent: Node?
         var costG: Int = 0
         var costH: Int = 0

@@ -9,7 +9,7 @@
 
 import Foundation
 
-class Tips {
+final class Tips {
 
     // MARK: - Constants
     private enum Constants {
@@ -81,12 +81,10 @@ class Tips {
         guard shouldShowTip else { return }
 
         if tipButton.isUnderCursor {
-            video.setColor(Theme.menus)
+            video.color = Theme.menus
             video.fillRect(frame.posX, frame.posY, frame.width, frame.height, Constants.alpha)
-            video.setFont(
-                ResourceManager.shared.fonts[FontConstants.objectivesReminderFont],
-                Theme.text
-            )
+            video.font = ResourceManager.shared.fonts[FontConstants.objectivesReminderFont]
+            video.fontColor = Theme.text
             video.write(
                 tipText,
                 frame.posX - (Video.width >> 1) + (frame.width >> 1),

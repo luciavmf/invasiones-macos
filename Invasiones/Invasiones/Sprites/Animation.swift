@@ -10,7 +10,7 @@
 
 import Foundation
 
-class Animation {
+final class Animation {
 
     // MARK: - Declarations
     private(set) var currentAnimation: Int

@@ -57,7 +57,7 @@ class Player {
         self.hud = hudArg
     }
 
-    // MARK: - Abstract methods (deben ser sobreescritos)
+    // MARK: - Abstract methods (must be overridden)
     func update() { fatalError("update() must be overridden") }
 
     func loadUnits(_ levelIndex: Int) throws { fatalError("loadUnits must be overridden") }
@@ -81,7 +81,7 @@ class Player {
             ring?.setPosition(i: ord.point.x, j: ord.point.y)
         }
 
-        units.forEach { $0.setObjectiveCommand(ord: command) }
+        units.forEach { $0.objectiveCommand = command }
     }
 
     /// Advances to the next command within the current objective.
@@ -120,7 +120,7 @@ class Player {
             }
         }
 
-        units.forEach { $0.setObjectiveCommand(ord: command) }
+        units.forEach { $0.objectiveCommand = command }
     }
 
     // MARK: - Unit update (shared)

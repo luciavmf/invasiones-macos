@@ -12,7 +12,7 @@ import Foundation
 /// Represents a single unit (soldier) in the game.
 /// Manages its own state machine (idle, moving, patrolling, attacking, pursuing, healing, dying),
 /// pathfinding, formation offsets, collision evasion, and sprite animation.
-class Unit: MapObject {
+final class Unit: MapObject {
 
     // MARK: - Constants
     enum Constants {
@@ -91,7 +91,10 @@ class Unit: MapObject {
     private(set) var avatar: Surface?
     private var command: Command?
     /// The objective-level command used to determine whether the unit has fulfilled its mission.
-    private var objectiveCommand: Command?
+    /// Assigning a new one resets `completedOrder`.
+    var objectiveCommand: Command? {
+        didSet { completedOrder = false }
+    }
     /// Set to `true` when the unit has fulfilled its assigned order this frame.
     private(set) var completedOrder: Bool = false
     /// The base tile position used as the centre of the patrol area.
@@ -211,11 +214,11 @@ class Unit: MapObject {
             let barWidth = Int(Double(Constants.selectionBarWidth) * healthFraction)
             let spriteHeight = sprite?.frameHeight ?? 0
             let barY = y - spriteHeight + Constants.selectionBarY
-            video.setColor(GameColor.green)
+            video.color = GameColor.green
             video.fillRect(x - Constants.selectionBarWidth / 2,
                                barY,
                                barWidth, 3)
-            video.setColor(GameColor.red)
+            video.color = GameColor.red
             video.fillRect(x - Constants.selectionBarWidth / 2 + barWidth,
                                barY,
                                Constants.selectionBarWidth - barWidth, 3)
@@ -267,12 +270,6 @@ class Unit: MapObject {
     func stop() {
         setState(.idle)
         pathToFollow = nil
-    }
-
-    /// Sets the objective-level command used to determine whether the unit has fulfilled its mission.
-    func setObjectiveCommand(ord: Command?) {
-        completedOrder = false
-        objectiveCommand = ord
     }
 
     /// Puts the unit into the healing state so it regenerates health over time.

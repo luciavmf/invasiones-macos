@@ -13,7 +13,7 @@ internal import CoreGraphics
 
 /// The active battle session. Owns the map, both factions, the HUD, obstacles, and the current objective.
 /// Manages the full battle lifecycle: LOADING → SHOW_INTRO → PLAYING → WON / LOST.
-class Episode {
+final class Episode {
 
     // MARK: - Enums
     /// The factions a unit can belong to.
@@ -125,7 +125,7 @@ class Episode {
         case .lost: drawLostState(video)
         case .end: break
         }
-        video.setColor(GameColor.white)
+        video.color = GameColor.white
     }
 
     // MARK: - LOADING state
@@ -146,9 +146,9 @@ class Episode {
 
     private func drawLoadingState(_ video: Video) {
         video.fillRect(0)
-        video.setColor(Theme.title)
-        video.setFont(ResourceManager.shared.fonts[FontConstants.titleFont],
-                       Theme.title)
+        video.color = Theme.title
+        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.fontColor = Theme.title
         video.write(Res.STR_CARGANDO, 0, Constants.loadingY, Surface.centerHorizontal)
     }
 
@@ -279,7 +279,7 @@ class Episode {
     private func drawShowIntroState(_ video: Video) {
         drawPlayingState(video)
 
-        video.setColor(Theme.objectivesText)
+        video.color = Theme.objectivesText
         let hudHeight = hud?.height ?? 0
         video.fillRect(
             0, -(hudHeight >> 1),
@@ -290,11 +290,11 @@ class Episode {
         )
 
         if currentPage == 0 {
-            video.setFont(ResourceManager.shared.fonts[FontConstants.titleFont],
-                           Theme.text)
+            video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+            video.fontColor = Theme.text
         } else {
-            video.setFont(ResourceManager.shared.fonts[FontConstants.objectivesFont],
-                           Theme.text)
+            video.font = ResourceManager.shared.fonts[FontConstants.objectivesFont]
+            video.fontColor = Theme.text
         }
 
         let strIdx = Res.STR_PRIMER_BATALLA + currentPage +
@@ -325,7 +325,7 @@ class Episode {
         drawPlayingState(video)
 
         let hudHeight = hud?.height ?? 0
-        video.setColor(Theme.objectivesText)
+        video.color = Theme.objectivesText
         video.fillRect(
             0, -(hudHeight / 2),
             Constants.objectivesBoxWidth, Constants.objectivesBoxHeight,
@@ -333,14 +333,16 @@ class Episode {
             Surface.centerVertical | Surface.centerHorizontal
         )
 
-        video.setFont(ResourceManager.shared.fonts[FontConstants.titleFont], Theme.text)
+        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.fontColor = Theme.text
         video.write(
             Res.STR_OBJETIVOS, 0,
             -(hudHeight / 2) - Constants.objectivesBoxHeight / 2 + 50,
             Surface.centerVertical | Surface.centerHorizontal
         )
 
-        video.setFont(ResourceManager.shared.fonts[FontConstants.objectivesFont], Theme.text)
+        video.font = ResourceManager.shared.fonts[FontConstants.objectivesFont]
+        video.fontColor = Theme.text
         let strIdx = Res.STR_PRIMER_BATALLA + currentPage +
                      ((currentLevel?.currentBattleIndex ?? 0) * Constants.pagesPerIntro)
         video.write(strIdx, 0, -(hudHeight >> 1) + 30, Surface.centerVertical | Surface.centerHorizontal)
@@ -410,8 +412,8 @@ class Episode {
                   objectiveShowCount > Constants.objectiveShowStartCount {
             let hudHeight = hud?.height ?? 0
             let cameraHeight = camera?.height ?? Video.height
-            video.setFont(ResourceManager.shared.fonts[FontConstants.objectivesReminderFont],
-                      Theme.title)
+            video.font = ResourceManager.shared.fonts[FontConstants.objectivesReminderFont]
+            video.fontColor = Theme.title
             video.write(Res.STR_OBJETIVOS,
                        Layout.objectivesOffset << 1,
                        cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) - 10, 0)
@@ -423,7 +425,7 @@ class Episode {
         }
 
         if Mouse.shared.isDragging() {
-            video.setColor(GameColor.green)
+            video.color = GameColor.green
             let r = Mouse.shared.dragRect
             video.drawRect(Int(r.minX), Int(r.minY), Int(r.width), Int(r.height), 0)
         }
@@ -528,8 +530,8 @@ class Episode {
     private func drawWonState(_ video: Video) {
         drawPlayingState(video)
         button?.draw(video)
-        video.setFont(ResourceManager.shared.fonts[FontConstants.titleFont],
-                       Theme.title)
+        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.fontColor = Theme.title
         video.write(Res.STR_GANASTE, 0, 0, Surface.centerHorizontal | Surface.centerVertical)
     }
 
@@ -550,7 +552,8 @@ class Episode {
 
     private func drawLostState(_ video: Video) {
         drawPlayingState(video)
-        video.setFont(ResourceManager.shared.fonts[FontConstants.titleFont], Theme.title)
+        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.fontColor = Theme.title
         video.write(Res.STR_PERDISTE, 0, -100, Surface.centerHorizontal | Surface.centerVertical)
         if count > Constants.countdownToRestart {
             gameOverMenu.draw(video)

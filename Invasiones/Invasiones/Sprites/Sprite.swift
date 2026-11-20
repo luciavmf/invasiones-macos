@@ -10,7 +10,7 @@
 
 import Foundation
 
-class Sprite {
+final class Sprite {
 
     // MARK: - Declarations
     var animations: [Animation?] = []

@@ -9,7 +9,7 @@
 
 import Foundation
 
-class Ring: MapObject {
+final class Ring: MapObject {
 
     // MARK: - Declarations
     private let animation: Animation

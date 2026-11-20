@@ -12,7 +12,7 @@ import Foundation
 /// A collection of units grouped by the player for convenience.
 /// Each unit maintains its unique position relative to the group leader (formation offset).
 /// The group coordinates movement using a spiral formation algorithm and delegates attack/heal orders to individual units.
-class Group {
+final class Group {
 
     private static var s_random: Bool = true  // initialized once
 
@@ -26,7 +26,10 @@ class Group {
 
     // MARK: - Attributes
     /// The AI controller that provides scripted orders for enemy groups.
-    var ai: AI?
+    /// Assigning one puts the group into the waiting-for-command state.
+    var ai: AI? {
+        didSet { if ai != nil { setState(.waitingCommand) } }
+    }
     /// The next state the group will enter after the current movement completes.
     private var nextStateValue: State = .waitingCommand
     /// The command passed down to individual units as the group's objective.
@@ -145,12 +148,6 @@ class Group {
             return
         }
         setHealing(x: p.x, y: p.y)
-    }
-
-    /// Assigns an AI controller to this group and puts it into the waiting-for-order state.
-    func setAI(_ intel: AI) {
-        ai = intel
-        setState(.waitingCommand)
     }
 
     /// Dissolves the group, releasing all member units back to individual control.
@@ -315,7 +312,7 @@ class Group {
                 if map.isWalkable(x: x + i, y: y + j) {
                     units[index].formationOffset = (i, j)
                     units[index].move(x: x + i, y: y + j)
-                    units[index].setObjectiveCommand(ord: objectiveCommand)
+                    units[index].objectiveCommand = objectiveCommand
                     placed += 1
                     index += 1  // only advance when placed
                 }

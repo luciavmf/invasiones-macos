@@ -14,7 +14,7 @@ import SpriteKit
 /// Main game coordinator. Provides the game loop and hosts the state machine.
 /// The original C# version contained a blocking loop with SDL_Delay; here the loop
 /// is driven by SpriteKit via GameScene.update(), and GameFrame only handles state logic.
-class GameFrame {
+final class GameFrame {
 
     // MARK: - State enum (equivalent to GameFrame.STATE in C#)
     /// All top-level game screens.

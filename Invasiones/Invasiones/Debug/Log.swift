@@ -10,7 +10,7 @@
 
 import Foundation
 
-class Log {
+final class Log {
 
     // MARK: - Singleton
     static let shared = Log()

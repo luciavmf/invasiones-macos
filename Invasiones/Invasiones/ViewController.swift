@@ -8,7 +8,7 @@
 import Cocoa
 import SpriteKit
 
-class ViewController: NSViewController {
+final class ViewController: NSViewController {
 
     private var skView: SKView!
 

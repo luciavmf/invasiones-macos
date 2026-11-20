@@ -10,7 +10,7 @@
 
 import SpriteKit
 
-class GameScene: SKScene {
+final class GameScene: SKScene {
     private enum Constants {
         static let defaultFPS: Int = 30
     }

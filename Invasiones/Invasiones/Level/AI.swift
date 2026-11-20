@@ -11,11 +11,11 @@ import Foundation
 
 /// Artificial intelligence controller for enemy groups.
 /// Loads scripted movement orders from an XML file and feeds them to the group one at a time.
-class AI {
+final class AI {
 
     // MARK: - Private class
     /// Contains the ordered stack of commands for a single battle phase.
-    private class Battle {
+    private final class Battle {
         var commands: [Command] = []  // LIFO via popLast
     }
 
@@ -87,7 +87,7 @@ class AI {
 
 // MARK: - XML parser
 
-private class AIXMLDelegate: NSObject, XMLParserDelegate {
+private final class AIXMLDelegate: NSObject, XMLParserDelegate {
     var batallas: [[Command]] = []
     private var current: [Command] = []
     private var inBattle = false

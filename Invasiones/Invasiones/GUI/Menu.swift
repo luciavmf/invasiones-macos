@@ -9,7 +9,7 @@
 
 import Foundation
 
-class Menu {
+final class Menu {
 
     // MARK: - Constants
     enum Constants {
@@ -51,7 +51,7 @@ class Menu {
         } else {
             let padding = 6
             let totalHeight = (buttonHeight + lineSpacing) * itemCount - lineSpacing
-            video.setColor(Theme.menus)
+            video.color = Theme.menus
             video.fillRoundedRect(
                 frame.posX - padding, frame.posY - padding,
                 buttonWidth + padding * 2,
@@ -66,10 +66,11 @@ class Menu {
             let flags = (items[i] & 0xFF00) >> 8
             if flags != Constants.itemHidden {
                 if (flags & Constants.itemHover) != 0 {
-                    video.setColor(GameColor.black)
+                    video.color = GameColor.black
                     video.fillRect(frame.posX, y, buttonWidth, buttonHeight)
                 }
-                video.setFont(font, Theme.text)
+                video.font = font
+                video.fontColor = Theme.text
                 video.write(
                     items[i] & 0xFF,
                     frame.posX - (Video.width >> 1) + (buttonWidth >> 1),

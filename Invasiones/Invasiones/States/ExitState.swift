@@ -9,17 +9,24 @@
 
 import Foundation
 
-class ExitState: State {
+final class ExitState: State {
+
+    let stateMachine: StateMachine
+    private var background: Surface?
+
+    init(_ sm: StateMachine) {
+        stateMachine = sm
+    }
 
     private var confirmMenu: ConfirmationMenu?
 
-    override func start() {
+    func start() {
         background = ResourceManager.shared.getImage(Res.IMG_SPLASH)
         confirmMenu = ConfirmationMenu(Res.STR_CONFIRMACION_SALIR, Res.STR_NO, Res.STR_SI)
         confirmMenu?.setPosition(x: 0, y: 0, anchor: Surface.centerVertical | Surface.centerHorizontal)
     }
 
-    override func update() {
+    func update() {
         guard let result = confirmMenu?.update() else { return }
         if result == ConfirmationMenu.Selection.right.rawValue {
             stateMachine.setState(.end)
@@ -29,12 +36,12 @@ class ExitState: State {
         }
     }
 
-    override func draw(_ video: Video) {
+    func draw(_ video: Video) {
         video.draw(background, 0, 0, 0)
         confirmMenu?.draw(video)
     }
 
-    override func exit() {
+    func exit() {
         confirmMenu = nil
     }
 }

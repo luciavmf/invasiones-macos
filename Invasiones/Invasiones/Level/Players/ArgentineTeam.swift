@@ -13,7 +13,7 @@ internal import CoreGraphics
 /// The player-controlled Argentine faction.
 /// Handles mouse-driven unit selection, movement orders, attack orders, group creation,
 /// the orientation arrow, and objective progress.
-class ArgentineTeam: Player {
+final class ArgentineTeam: Player {
 
     // MARK: - Attributes
     private var unitUnderMouse: Unit?
@@ -420,14 +420,12 @@ class ArgentineTeam: Player {
     // MARK: - Cursor
 
     private func updateCursor() {
-        Mouse.shared.setCursor(
-            ResourceManager.shared.getImage(Res.IMG_CURSOR))
+        Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR)
 
         guard selectedUnit != nil || selectedGroup != nil else { return }
 
         if let unitUnderMouse = unitUnderMouse, unitUnderMouse.faction == .enemy {
-            Mouse.shared.setCursor(
-                ResourceManager.shared.getImage(Res.IMG_CURSOR_ESPADA))
+            Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR_ESPADA)
         }
 
         if let u = selectedUnit, u.isDead() {
@@ -450,8 +448,7 @@ class ArgentineTeam: Player {
         let needsHeal = (selectedUnit.map { $0.health < $0.resistancePoints } ?? false)
                      || (selectedGroup.map  { $0.health < $0.resistancePoints } ?? false)
         if needsHeal {
-            Mouse.shared.setCursor(
-                ResourceManager.shared.getImage(Res.IMG_CURSOR_ENFERMERIA))
+            Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR_ENFERMERIA)
         }
     }
 

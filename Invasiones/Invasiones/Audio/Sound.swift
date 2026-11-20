@@ -11,7 +11,7 @@
 import AVFoundation
 import Foundation
 
-class Sound {
+final class Sound {
 
     // MARK: - Singleton
     static let shared = Sound()
@@ -21,16 +21,16 @@ class Sound {
     private var musicPlayer: AVAudioPlayer?
     private var currentMusic: Int = -1
 #if DEBUG
-    private(set) var isMuted = true
+    var isMuted = true { didSet { applyVolume() } }
 #else
-    private(set) var isMuted = false
+    var isMuted = false { didSet { applyVolume() } }
 #endif
 
     private init() { }
 
-    func setMuted(_ muted: Bool) {
-        isMuted = muted
-        let volume: Float = muted ? 0 : 1
+    /// Applies the current mute state to every loaded player.
+    private func applyVolume() {
+        let volume: Float = isMuted ? 0 : 1
         sfxPlayers.compactMap { $0 }.forEach { $0.volume = volume }
         musicPlayer?.volume = volume
     }

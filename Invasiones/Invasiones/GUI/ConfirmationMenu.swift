@@ -9,7 +9,7 @@
 
 import Foundation
 
-class ConfirmationMenu {
+final class ConfirmationMenu {
 
     // MARK: - Enum
     enum Selection: Int {
@@ -68,13 +68,11 @@ class ConfirmationMenu {
     }
 
     func draw(_ video: Video) {
-        video.setColor(Theme.menus)
+        video.color = Theme.menus
         video.fillRect(frame.posX, frame.posY, frame.width, frame.height, Constants.alpha)
 
-        video.setFont(
-            ResourceManager.shared.fonts[FontConstants.menuFont],
-            Theme.text
-        )
+        video.font = ResourceManager.shared.fonts[FontConstants.menuFont]
+        video.fontColor = Theme.text
         video.write(
             label,
             frame.posX - (Video.width >> 1) + (frame.width >> 1),

@@ -9,7 +9,7 @@
 
 import Foundation
 
-class Camera {
+final class Camera {
 
     // MARK: - Declarations
     var x: Int

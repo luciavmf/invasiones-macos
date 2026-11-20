@@ -11,7 +11,11 @@ import Foundation
 
 /// Displays the studio logo with a fade-in effect and then transitions to the main menu.
 /// Resources are loaded on the first update tick while the black screen is shown.
-class LogoState: State {
+final class LogoState: State {
+
+    let stateMachine: StateMachine
+    /// Used for countdowns.
+    private var count = 0
 
     // MARK: - Constants
     /// Number of ticks before the logo starts fading in.
@@ -25,16 +29,16 @@ class LogoState: State {
     private var alpha: Int = 10
 
     // MARK: - Initializer
-    override init(_ sm: StateMachine) {
-        super.init(sm)
+    init(_ sm: StateMachine) {
+        stateMachine = sm
         count = 0
     }
 
     // MARK: - Methods
 
-    override func start() {}
+    func start() {}
 
-    override func update() {
+    func update() {
         if count == 0 {
             logo = ResourceManager.shared.getAlphaImage(Res.IMG_LOGO)
             alpha = 10
@@ -44,7 +48,7 @@ class LogoState: State {
         count += 1
     }
 
-    override func draw(_ video: Video) {
+    func draw(_ video: Video) {
         video.fillRect(GameColor.black)
 
         if count > logoStartTick && count < logoEndTick {
@@ -55,7 +59,7 @@ class LogoState: State {
         }
     }
 
-    override func exit() {
+    func exit() {
         logo = nil
     }
 }

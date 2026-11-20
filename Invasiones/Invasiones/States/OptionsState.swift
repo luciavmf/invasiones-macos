@@ -9,7 +9,15 @@
 
 import Foundation
 
-class OptionsState: State {
+final class OptionsState: State {
+
+    let stateMachine: StateMachine
+    private var background: Surface?
+    private var button: Button?
+
+    init(_ sm: StateMachine) {
+        stateMachine = sm
+    }
 
     // MARK: - Layout
     private enum SoundLayout {
@@ -39,7 +47,7 @@ class OptionsState: State {
 
     // MARK: - Lifecycle
 
-    override func start() {
+    func start() {
         background = ResourceManager.shared.getImage(Res.IMG_FONDO)
         button = Button(label: Res.STR_BOTON_MENU, font: nil)
         let bw = button?.frame.width  ?? 0
@@ -50,7 +58,7 @@ class OptionsState: State {
             anchor: 0)
     }
 
-    override func update() {
+    func update() {
         if button?.update() != 0 {
             stateMachine.setNextState(.mainMenu)
         }
@@ -65,7 +73,7 @@ class OptionsState: State {
                        && my <  SoundLayout.startY + SoundLayout.rowHeight
         if soundRowHovered && Mouse.shared.pressedButtons.contains(Mouse.Constants.leftButton) {
             Mouse.shared.releaseButton(Mouse.Constants.leftButton)
-            Sound.shared.setMuted(!Sound.shared.isMuted)
+            Sound.shared.isMuted.toggle()
         }
 
         // Language selection
@@ -89,25 +97,27 @@ class OptionsState: State {
         }
     }
 
-    override func draw(_ video: Video) {
+    func draw(_ video: Video) {
         video.draw(background, 0, 0, 0)
 
         // Title
-        video.setFont(ResourceManager.shared.fonts[FontConstants.titleFont], Theme.text)
+        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.fontColor = Theme.text
         video.write(Res.STR_MENU_OPCIONES, 0, Layout.titleYPosition, Surface.centerHorizontal)
 
         // Sound section
-        video.setFont(ResourceManager.shared.fonts[FontConstants.buttonFont], Theme.text)
+        video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
+        video.fontColor = Theme.text
         video.write(Res.STR_SOUND_LABEL, 0, SoundLayout.labelY, Surface.centerHorizontal)
 
         let indSoundY = SoundLayout.startY + (SoundLayout.rowHeight - SoundLayout.indSize) / 2
         if soundRowHovered {
-            video.setColor(Theme.menus)
+            video.color = Theme.menus
             video.fillRoundedRect(SoundLayout.hoverX, SoundLayout.startY,
                                   SoundLayout.hoverW, SoundLayout.rowHeight - 2,
                                   4, Theme.alpha)
         }
-        video.setColor(Theme.text)
+        video.color = Theme.text
         video.drawRect(SoundLayout.indX, indSoundY, SoundLayout.indSize, SoundLayout.indSize, 0)
         if !Sound.shared.isMuted {
             let inset = 3
@@ -119,7 +129,8 @@ class OptionsState: State {
         video.write(soundLabel, SoundLayout.textX, soundTextY, Surface.centerVertical)
 
         // Language section
-        video.setFont(ResourceManager.shared.fonts[FontConstants.buttonFont], Theme.text)
+        video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
+        video.fontColor = Theme.text
         video.write(Res.STR_LANGUAGE_LABEL, 0, RadioLayout.startY - 28, Surface.centerHorizontal)
 
         for (i, lang) in Language.allCases.enumerated() {
@@ -127,13 +138,13 @@ class OptionsState: State {
             let indY = rowY + (RadioLayout.rowHeight - RadioLayout.indSize) / 2
 
             if lang == hoveredLanguage {
-                video.setColor(Theme.menus)
+                video.color = Theme.menus
                 video.fillRoundedRect(RadioLayout.hoverX, rowY,
                                       RadioLayout.hoverW, RadioLayout.rowHeight - 2,
                                       4, Theme.alpha)
             }
 
-            video.setColor(Theme.text)
+            video.color = Theme.text
             video.drawRect(RadioLayout.indX, indY, RadioLayout.indSize, RadioLayout.indSize, 0)
 
             if lang == Language.current {
@@ -149,5 +160,5 @@ class OptionsState: State {
         button?.draw(video)
     }
 
-    override func exit() {}
+    func exit() {}
 }
