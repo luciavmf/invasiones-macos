@@ -14,12 +14,12 @@ permissions:
   contents: read
 
 env:
-  XCODE_VERSION: "26.6"  # newest Xcode on GitHub-hosted runners; move to 27 when available
+  XCODE_VERSION: "27.2"
 
 jobs:
   test:
     name: Build and test
-    runs-on: macos-26
+    runs-on: xcode-27
 
     steps:
       - name: Checkout
@@ -47,7 +47,7 @@ jobs:
     name: Build, sign, notarize
     needs: test
     if: github.event_name != 'pull_request'
-    runs-on: macos-26
+    runs-on: xcode-27
     permissions:
       contents: write
 
