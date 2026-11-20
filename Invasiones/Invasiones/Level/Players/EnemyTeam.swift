@@ -52,9 +52,9 @@ class EnemyTeam: Player {
                 if list.count > 1 {
                     if groups == nil { groups = [] }
                     let newGroup = Group(list)
-                    let ia = IA()
-                    ia.load(x: i, y: j, levelIndex: levelIndex)
-                    newGroup.setAI(ia)
+                    let ai = AI()
+                    ai.load(x: i, y: j, levelIndex: levelIndex)
+                    newGroup.setAI(ai)
                     groups!.append(newGroup)
                 } else {
                     list.forEach { $0.patrol() }
