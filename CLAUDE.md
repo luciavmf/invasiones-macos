@@ -83,7 +83,18 @@ Input from `NSEvent` flows through `GameScene` into `Mouse` and `Keyboard` singl
 
 ### Pathfinding
 
-`PathFinder` (singleton) runs A* on the physical tile grid (2× map resolution). 4.5-second timeout for long calculations. Costs: 10 orthogonal, 14 diagonal.
+`PathFinder` runs A* on the physical tile grid (2× map resolution). 4.5-second timeout for long calculations. Costs: 10 orthogonal, 14 diagonal. Diagonal steps are only allowed when both adjacent straight tiles are walkable.
+
+- The game uses `PathFinder.shared`; `Map.load` registers itself via `loadMap(_:)`.
+- Walkability comes from the `WalkableGrid` protocol (`Map` conforms). It is queried live, because `Map.invalidateTile` blocks tiles during a level — do not copy the grid.
+- The grid is held weakly, and the timeout clock is injectable (`PathFinder(now:)`).
+
+### Testing
+
+Unit tests (`InvasionesTests`, Swift Testing) run inside the app (`TEST_HOST`). Test suites touching game types need `@MainActor` (the app target defaults to MainActor isolation).
+
+- `TestSupport.swift` has `TestGrid` (walkability from strings, `.` = walkable), `FakeSound`, `FakeClock`, and `GameUnit` (Foundation also declares `Unit`, so use `GameUnit` in tests).
+- `Unit` takes its `PathFinder` and `SoundPlayer` as init parameters defaulting to `.shared`; pass fakes in tests. Follow the same pattern when making other classes testable.
 
 ### Resources
 

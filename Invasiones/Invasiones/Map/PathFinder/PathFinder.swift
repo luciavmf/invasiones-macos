@@ -9,6 +9,16 @@
 
 import Foundation
 
+/// The walkability information the pathfinder needs. `Map` provides it in the game;
+/// tests use small hand-made grids.
+protocol WalkableGrid: AnyObject {
+    /// Returns `true` if the physical tile (x, y) can be walked on. Out-of-bounds tiles are not walkable.
+    func isWalkable(x: Int, y: Int) -> Bool
+}
+
+extension Map: WalkableGrid {}
+
+/// A* pathfinder over the physical tile grid (2× map resolution).
 final class PathFinder {
 
     // MARK: - Internal node
@@ -40,19 +50,28 @@ final class PathFinder {
     static let shared: PathFinder = PathFinder()
 
     // MARK: - Declarations
-    private var physicalTiles: [[Int]] = []
-    private weak var map: Map?
+    /// Weak, so the shared pathfinder does not keep a finished level's map alive.
+    private weak var grid: (any WalkableGrid)?
+    /// Clock used for the timeout. Injectable so tests don't depend on real time.
+    private let now: () -> Date
 
-    private init() { }
+    /// - Parameter now: Returns the current time; used to enforce the search timeout.
+    init(now: @escaping () -> Date = Date.init) {
+        self.now = now
+    }
 
     // MARK: - Methods
 
     func loadMap(_ map: Map) throws {
         guard !map.physicalTilesLayer.isEmpty else {
-            throw GameError.invalidResource("PathFinder: el mapa no tiene capa física.")
+            throw GameError.invalidResource("PathFinder: the map has no physical layer.")
         }
-        physicalTiles = map.physicalTilesLayer
-        self.map = map
+        load(grid: map)
+    }
+
+    /// Uses `grid` for walkability. The grid is not retained.
+    func load(grid: any WalkableGrid) {
+        self.grid = grid
     }
 
     /// Returns the shortest path (stack of (i,j) points) or nil if none exists.
@@ -61,7 +80,7 @@ final class PathFinder {
     func findShortestPath(startI: Int, startJ: Int,
                          targetI: Int, targetJ: Int,
                          blockedTiles: [(i: Int, j: Int)] = []) -> [(i: Int, j: Int)]? {
-        guard let map = self.map, !physicalTiles.isEmpty else {
+        guard let map = grid else {
             Log.shared.warn("PathFinder: map not loaded.")
             return nil
         }
@@ -76,10 +95,10 @@ final class PathFinder {
 
         var open: [Node] = [start]
         var closed: [Node] = []
-        let startTime = Date()
+        let startTime = now()
 
         while !open.isEmpty {
-            if Date().timeIntervalSince(startTime) > timeoutSecs {
+            if now().timeIntervalSince(startTime) > timeoutSecs {
                 Log.shared.debug("PathFinder: timeout.")
                 return nil
             }
@@ -103,7 +122,7 @@ final class PathFinder {
     // MARK: - Private helpers
 
     private func addChildren(parent: Node, open: inout [Node],
-                             closed: [Node], target: Node, map: Map,
+                             closed: [Node], target: Node, map: any WalkableGrid,
                              blocked: [(i: Int, j: Int)]) {
         let up = openNode(parent: parent, i: parent.i - 1, j: parent.j, cost: costStraight, open: &open, closed: closed, target: target, map: map, blocked: blocked)
         let right = openNode(parent: parent, i: parent.i, j: parent.j + 1, cost: costStraight, open: &open, closed: closed, target: target, map: map, blocked: blocked)
@@ -118,7 +137,7 @@ final class PathFinder {
     @discardableResult
     private func openNode(parent: Node, i: Int, j: Int, cost: Int,
                           open: inout [Node], closed: [Node],
-                          target: Node, map: Map,
+                          target: Node, map: any WalkableGrid,
                           blocked: [(i: Int, j: Int)]) -> Bool {
         guard map.isWalkable(x: i, y: j) else { return false }
         if blocked.contains(where: { $0.i == i && $0.j == j }) { return false }

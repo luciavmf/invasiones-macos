@@ -11,7 +11,14 @@
 import AVFoundation
 import Foundation
 
-final class Sound {
+/// Plays and stops sound effects. `Sound` provides it in the game; tests use a fake that records calls.
+protocol SoundPlayer: AnyObject {
+    @discardableResult
+    func play(id: Int, loop: Int) -> Bool
+    func stop(_ id: Int)
+}
+
+final class Sound: SoundPlayer {
 
     // MARK: - Singleton
     static let shared = Sound()
