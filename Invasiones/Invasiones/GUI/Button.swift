@@ -52,10 +52,11 @@ struct Button {
 
     func draw(_ video: Video) {
         let alpha = isUnderCursor ? 250 : Theme.alpha
-        video.setColor(isUnderCursor ? Theme.buttonHover : Theme.menus)
+        video.color = isUnderCursor ? Theme.buttonHover : Theme.menus
         video.fillRoundedRect(frame.posX, frame.posY, frame.width, frame.height, 6, alpha)
 
-        video.setFont(font, Theme.text)
+        video.font = font
+        video.fontColor = Theme.text
         video.write(
             label,
             frame.posX - Video.width  / 2 + frame.width  / 2,

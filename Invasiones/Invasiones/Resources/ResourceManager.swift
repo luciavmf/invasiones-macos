@@ -10,7 +10,7 @@
 
 import SpriteKit
 
-class ResourceManager {
+final class ResourceManager {
 
     // MARK: - Singleton
     static let shared = ResourceManager()

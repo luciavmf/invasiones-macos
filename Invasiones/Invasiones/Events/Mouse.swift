@@ -10,7 +10,7 @@
 
 import AppKit
 
-class Mouse {
+final class Mouse {
 
     // MARK: - Button constants (equivalent to SDL_BUTTON_*)
     enum Constants {
@@ -31,8 +31,8 @@ class Mouse {
     private var dragStartPos: CGPoint = .zero
     private(set) var dragRectStore: CGRect = .zero
 
-    /// Custom cursor surface (assigned from the state/level).
-    private var cursorSurface: Surface?
+    /// Custom cursor image (assigned from the state/level), drawn by drawCursor(_:).
+    var cursor: Surface?
 
     /// List of currently pressed buttons (indices BUTTON_LEFT/DER/CNT).
     private(set) var pressedButtons: [Int] = []
@@ -102,10 +102,6 @@ class Mouse {
         NSCursor.unhide()
     }
 
-    func setCursor(_ sup: Surface?) {
-        cursorSurface = sup
-    }
-
     func positionCursor(x: CGFloat, y: CGFloat) {
         _x = max(0, min(x, CGFloat(ScreenSize.width)))
         _y = max(0, min(y, CGFloat(ScreenSize.height)))
@@ -113,7 +109,7 @@ class Mouse {
 
     /// Draws the custom cursor at the current position using the Video context.
     func drawCursor(_ video: Video) {
-        guard !cursorHidden, let sup = cursorSurface else { return }
+        guard !cursorHidden, let sup = cursor else { return }
         video.draw(sup, Int(_x), Int(_y), 255, 0)
     }
 }

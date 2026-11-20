@@ -11,7 +11,14 @@ import Foundation
 
 /// The game state where the battle takes place.
 /// Contains and drives an Episode, handles the pause menu and the exit-confirmation dialog.
-class GameState: State {
+final class GameState: State {
+
+    let stateMachine: StateMachine
+    private var button: Button?
+
+    init(_ sm: StateMachine) {
+        stateMachine = sm
+    }
 
     // MARK: - Enums
     private enum State { case start, won, lost, menu, playing, confirmation }
@@ -25,9 +32,9 @@ class GameState: State {
     private var confirmMenu: ConfirmationMenu?
     private var stateValue: State = .start
 
-    // MARK: - State overrides
+    // MARK: - State
 
-    override func start() {
+    func start() {
         stateValue = .start
 
         gameMenu = Menu(image: nil, itemCount: 2, x: 0, y: 0,
@@ -39,7 +46,7 @@ class GameState: State {
                           stringId: Res.STR_MENU_SALIR, flag: Menu.Constants.itemVisible)
     }
 
-    override func update() {
+    func update() {
         switch stateValue {
 
         case .start:
@@ -90,7 +97,7 @@ class GameState: State {
         }
     }
 
-    override func draw(_ video: Video) {
+    func draw(_ video: Video) {
         switch stateValue {
 
         case .playing:
@@ -102,8 +109,8 @@ class GameState: State {
         case .menu:
             episode?.draw(video)
             gameMenu?.draw(video)
-            video.setFont(ResourceManager.shared.fonts[FontConstants.titleFont],
-                           GameColor.white)
+            video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+            video.fontColor = GameColor.white
             video.write(Res.STR_JUEGO_PAUSADO, 0, gamePausedY,
                        Surface.centerVertical | Surface.centerHorizontal)
 
@@ -116,7 +123,7 @@ class GameState: State {
         }
     }
 
-    override func exit() {}
+    func exit() {}
 
     // MARK: - Private
 

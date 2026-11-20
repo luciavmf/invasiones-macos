@@ -10,7 +10,7 @@
 
 import Foundation
 
-class Map {
+final class Map {
 
     // MARK: - Constants
     enum Constants {
@@ -512,7 +512,7 @@ class Map {
 
 // MARK: - Private XML delegates
 
-private class MapInfoDelegate: NSObject, XMLParserDelegate {
+private final class MapInfoDelegate: NSObject, XMLParserDelegate {
     var orientation = ""
     var width = 0
     var height = 0
@@ -551,7 +551,7 @@ private class MapInfoDelegate: NSObject, XMLParserDelegate {
     }
 }
 
-private class TilesetRefDelegate: NSObject, XMLParserDelegate {
+private final class TilesetRefDelegate: NSObject, XMLParserDelegate {
     private let base: String
     /// Collected during parsing; tilesets are loaded after parse() returns to avoid reentrance.
     var collected: [(gid: Int, path: String)] = []
@@ -577,7 +577,7 @@ private class TilesetRefDelegate: NSObject, XMLParserDelegate {
     }
 }
 
-private class LayerDelegate: NSObject, XMLParserDelegate {
+private final class LayerDelegate: NSObject, XMLParserDelegate {
     private weak var map: Map?
     private var layerName = ""
     private var layerIndex = 0

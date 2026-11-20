@@ -11,7 +11,7 @@ import Foundation
 
 /// The AI-controlled enemy faction.
 /// Loads enemy units from the map, assigns scripted AI orders to groups, and sends ungrouped units to patrol.
-class EnemyTeam: Player {
+final class EnemyTeam: Player {
 
     // MARK: - Initializer
     override init(map: Map, camera: Camera, objectsToDraw: ObjectTable, hud: Hud) {
@@ -54,7 +54,7 @@ class EnemyTeam: Player {
                     let newGroup = Group(list)
                     let ai = AI()
                     ai.load(x: i, y: j, levelIndex: levelIndex)
-                    newGroup.setAI(ai)
+                    newGroup.ai = ai
                     groups!.append(newGroup)
                 } else {
                     list.forEach { $0.patrol() }

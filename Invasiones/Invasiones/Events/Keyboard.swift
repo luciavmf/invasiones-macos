@@ -10,7 +10,7 @@
 
 import AppKit
 
-class Keyboard {
+final class Keyboard {
 
     // MARK: - Key codes (Carbon virtual key codes on macOS)
     enum Key: Int {

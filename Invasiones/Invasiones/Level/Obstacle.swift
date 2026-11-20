@@ -10,7 +10,7 @@
 import Foundation
 
 /// A static obstacle on the map (tree, building, rock, etc.) drawn from a tileset sprite sheet.
-class Obstacle: MapObject {
+final class Obstacle: MapObject {
 
     // MARK: - Declarations
     /// The frame index within the tileset image.

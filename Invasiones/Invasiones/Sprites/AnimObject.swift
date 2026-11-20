@@ -9,7 +9,7 @@
 
 import Foundation
 
-class AnimObject: MapObject {
+final class AnimObject: MapObject {
 
     // MARK: - Declarations
     private(set) var animation: Animation

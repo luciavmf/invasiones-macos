@@ -9,7 +9,15 @@
 
 import Foundation
 
-class HelpState: State {
+final class HelpState: State {
+
+    let stateMachine: StateMachine
+    private var background: Surface?
+    private var button: Button?
+
+    init(_ sm: StateMachine) {
+        stateMachine = sm
+    }
 
     // MARK: - Sub-states
     private enum Substate: Int {
@@ -30,7 +38,7 @@ class HelpState: State {
 
     // MARK: - Methods
 
-    override func start() {
+    func start() {
         background = ResourceManager.shared.getImage(Res.IMG_FONDO)
 
         let fnt = ResourceManager.shared.fonts[FontIndex.sans18.rawValue]
@@ -64,7 +72,7 @@ class HelpState: State {
         loadScreenshot(substate)
     }
 
-    override func update() {
+    func update() {
         if button?.update() != 0 {
             let next = substate.rawValue + 1
             if next > Substate.win.rawValue {
@@ -86,21 +94,21 @@ class HelpState: State {
         currentScreenshot?.update()
     }
 
-    override func draw(_ video: Video) {
+    func draw(_ video: Video) {
         video.draw(background, 0, 0, 0)
 
-        video.setFont(ResourceManager.shared.fonts[FontConstants.titleFont],
-                       Theme.title)
+        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.fontColor = Theme.title
         video.write(Res.STR_MENU_AYUDA, 0, Layout.titleYPosition, Surface.centerHorizontal)
 
         if substate.rawValue < Substate.total {
-            video.setFont(ResourceManager.shared.fonts[FontConstants.helpTitleFont],
-                           Theme.text)
+            video.font = ResourceManager.shared.fonts[FontConstants.helpTitleFont]
+            video.fontColor = Theme.text
             video.write(Res.STR_MENU_AYUDA_TEXTO_SELECCIONAR_01 + substate.rawValue * 2,
                        0, Constants.helpItemY, Surface.centerHorizontal)
 
-            video.setFont(ResourceManager.shared.fonts[FontConstants.helpFont],
-                           Theme.text)
+            video.font = ResourceManager.shared.fonts[FontConstants.helpFont]
+            video.fontColor = Theme.text
             video.write(Res.STR_MENU_AYUDA_TEXTO_SELECCIONAR_02 + substate.rawValue * 2,
                        0, Constants.helpTextY, Surface.centerHorizontal)
         }
@@ -115,7 +123,7 @@ class HelpState: State {
         }
     }
 
-    override func exit() {}
+    func exit() {}
 
     // MARK: - Private
 

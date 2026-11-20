@@ -9,9 +9,17 @@
 
 import Foundation
 
-class CreditsState: State {
+final class CreditsState: State {
 
-    override func start() {
+    let stateMachine: StateMachine
+    private var background: Surface?
+    private var button: Button?
+
+    init(_ sm: StateMachine) {
+        stateMachine = sm
+    }
+
+    func start() {
         background = ResourceManager.shared.getImage(Res.IMG_FONDO)
         button = Button(label: Res.STR_BOTON_MENU, font: nil)
         let bw = button?.frame.width  ?? 0
@@ -22,35 +30,40 @@ class CreditsState: State {
             anchor: 0)
     }
 
-    override func update() {
+    func update() {
         if button?.update() != 0 {
             stateMachine.setNextState(.mainMenu)
         }
     }
 
-    override func draw(_ video: Video) {
+    func draw(_ video: Video) {
         video.draw(background, 0, 0, 0)
 
         // Title
-        video.setFont(ResourceManager.shared.fonts[FontConstants.titleFont], Theme.text)
+        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.fontColor = Theme.text
         video.write(Res.STR_MENU_CREDITOS, 0, Layout.titleYPosition, Surface.centerHorizontal)
 
         // Programming
-        video.setFont(ResourceManager.shared.fonts[FontConstants.titleFont], Theme.text)
+        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.fontColor = Theme.text
         video.write(Res.STR_CREDITOS_PROGRAMACION, 0, 260, Surface.centerHorizontal)
 
-        video.setFont(ResourceManager.shared.fonts[FontConstants.buttonFont], Theme.text)
+        video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
+        video.fontColor = Theme.text
         video.write(Res.STR_CREDITOS_PROGRAMADOR_1, 0, 310, Surface.centerHorizontal)
 
         // Level design
-        video.setFont(ResourceManager.shared.fonts[FontConstants.titleFont], Theme.text)
+        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.fontColor = Theme.text
         video.write(Res.STR_CREDITOS_DISENO_DE_NIVEL, 0, 400, Surface.centerHorizontal)
 
-        video.setFont(ResourceManager.shared.fonts[FontConstants.buttonFont], Theme.text)
+        video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
+        video.fontColor = Theme.text
         video.write(Res.STR_CREDITOS_DISENADOR_DE_NIVEL_1, 0, 450, Surface.centerHorizontal)
 
         button?.draw(video)
     }
 
-    override func exit() {}
+    func exit() {}
 }

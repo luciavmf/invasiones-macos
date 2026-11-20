@@ -11,7 +11,12 @@ import Foundation
 
 /// Displays the main menu and directs the player to the option they select.
 /// The menu slides up from the bottom of the screen on first entry.
-class MainMenuState: State {
+final class MainMenuState: State {
+
+    let stateMachine: StateMachine
+    private var background: Surface?
+    /// Used for countdowns.
+    private var count = 0
 
     // MARK: - Constants
     /// Number of ticks to wait before the menu starts sliding into view.
@@ -43,17 +48,17 @@ class MainMenuState: State {
     private var firstBuild: Bool = true
 
     // MARK: - Initializer
-    override init(_ sm: StateMachine) {
-        super.init(sm)
+    init(_ sm: StateMachine) {
+        stateMachine = sm
         firstBuild = true
     }
 
     // MARK: - Methods
 
-    override func start() {
+    func start() {
         background = ResourceManager.shared.getImage(Res.IMG_SPLASH)
 
-        Mouse.shared.setCursor(ResourceManager.shared.getImage(Res.IMG_CURSOR))
+        Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR)
         Mouse.shared.showCursor()
 
         let newMenu = Menu(
@@ -84,7 +89,7 @@ class MainMenuState: State {
         Sound.shared.play(id: Res.SFX_SPLASH, loop: -1)
     }
 
-    override func update() {
+    func update() {
         guard let menu = menu else { return }
 
         count += 1
@@ -113,12 +118,12 @@ class MainMenuState: State {
         }
     }
 
-    override func draw(_ video: Video) {
+    func draw(_ video: Video) {
         video.draw(background, 0, 0, 0)
         menu?.draw(video)
     }
 
-    override func exit() {
+    func exit() {
         menu = nil
     }
 }

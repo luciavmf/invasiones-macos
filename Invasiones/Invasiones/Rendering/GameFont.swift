@@ -11,7 +11,7 @@
 import AppKit
 import CoreText
 
-class GameFont {
+final class GameFont {
 
     // MARK: - Declarations
     private(set) var nsFont: NSFont?
