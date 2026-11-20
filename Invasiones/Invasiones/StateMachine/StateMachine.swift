@@ -50,7 +50,7 @@ class StateMachine {
         nextStateKey = key
     }
 
-    /// Immediately switches to the given state (without calling salir/start).
+    /// Immediately switches to the given state (without calling exit/start).
     func setState(_ key: GameFrame.State) {
         prevState = currentStateObj
         currentStateObj = allStates[key] ?? nil

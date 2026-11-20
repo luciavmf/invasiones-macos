@@ -1,5 +1,5 @@
 //
-//  IA.swift
+//  AI.swift
 //  Invasiones
 //
 //  Created by Lucia Medina Fretes on 06.04.26.
@@ -11,7 +11,7 @@ import Foundation
 
 /// Artificial intelligence controller for enemy groups.
 /// Loads scripted movement orders from an XML file and feeds them to the group one at a time.
-class IA {
+class AI {
 
     // MARK: - Private class
     /// Contains the ordered stack of commands for a single battle phase.
@@ -42,13 +42,13 @@ class IA {
     func load(x: Int, y: Int, levelIndex: Int) {
         let pathStr = ResourcePath.levelPath + "/orden_nv\(levelIndex)_\(x)_\(y).xml"
         guard let path = Utils.getPath(pathStr) else {
-            Log.shared.debug("IA: file not found: \(pathStr)")
+            Log.shared.debug("AI: file not found: \(pathStr)")
             return
         }
         battleCount = 0
 
         guard let parser = XMLParser(contentsOf: URL(fileURLWithPath: path)) else { return }
-        let d = IAXMLDelegate()
+        let d = AIXMLDelegate()
         parser.delegate = d
         parser.parse()
         withExtendedLifetime(d) {}
@@ -68,15 +68,15 @@ class IA {
     /// - Returns: The next command, or `nil` if all battles are complete.
     func nextCommand() -> Command? {
         guard currentBattle < battleCount else {
-            Log.shared.debug("IA: no more battles.")
+            Log.shared.debug("AI: no more battles.")
             return nil
         }
 
         if battles[currentBattle].commands.isEmpty {
-            Log.shared.debug("IA: advancing to next battle.")
+            Log.shared.debug("AI: advancing to next battle.")
             currentBattle += 1
             if currentBattle >= battleCount {
-                Log.shared.debug("IA: no more battles.")
+                Log.shared.debug("AI: no more battles.")
                 return nil
             }
         }
@@ -87,7 +87,7 @@ class IA {
 
 // MARK: - XML parser
 
-private class IAXMLDelegate: NSObject, XMLParserDelegate {
+private class AIXMLDelegate: NSObject, XMLParserDelegate {
     var batallas: [[Command]] = []
     private var current: [Command] = []
     private var inBattle = false

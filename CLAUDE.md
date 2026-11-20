@@ -30,7 +30,7 @@ GameScene.update(_:)       [SpriteKit callback, 20 FPS]
 
 ### State Machine
 
-`StateMachine` (`StateMachiche/`) manages top-level game states:
+`StateMachine` (`StateMachine/`) manages top-level game states:
 - `LogoState` → `MainMenuState` → `GameState` → `ExitState`
 - States implement `start()`, `update()`, `draw()`, `exit()`
 - `setNextState()` queues a transition; it executes at the start of the next `update()` call
@@ -62,7 +62,7 @@ Battle lifecycle: `LOADING → SHOW_INTRO → PLAYING → WON/LOST`
 
 **Combat notes:**
 - Damage is always `attackPoints` — no accuracy roll. `aim` is loaded from CSV but was never used in the original C# attack logic.
-- Enemy units without a group (`IA`) are set to `PATROLLING` on load and wander randomly between `RANDOM_PATRULLA_MIN=8` and `RANDOM_PATRULLA_MAX=16` tiles from their spawn position.
+- Enemy units without a group (`AI`) are set to `PATROLLING` on load and wander randomly between `RANDOM_PATRULLA_MIN=8` and `RANDOM_PATRULLA_MAX=16` tiles from their spawn position.
 - Counter-attack (`contraAtacar`): when a unit enters `ATTACKING`, it notifies the target to counter-attack if idle. **Not yet ported to Swift.**
 
 ### Rendering (`Video`)

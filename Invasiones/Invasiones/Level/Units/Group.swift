@@ -26,7 +26,7 @@ class Group {
 
     // MARK: - Attributes
     /// The AI controller that provides scripted orders for enemy groups.
-    var ai: IA?
+    var ai: AI?
     /// The next state the group will enter after the current movement completes.
     private var nextStateValue: State = .waitingCommand
     /// The command passed down to individual units as the group's objective.
@@ -148,7 +148,7 @@ class Group {
     }
 
     /// Assigns an AI controller to this group and puts it into the waiting-for-order state.
-    func setAI(_ intel: IA) {
+    func setAI(_ intel: AI) {
         ai = intel
         setState(.waitingCommand)
     }
@@ -203,9 +203,9 @@ class Group {
     }
 
     private func updateWaitingState() {
-        guard let ia = ai else { return }
+        guard let ai else { return }
         if receivedCommand == nil {
-            receivedCommand = ia.nextCommand()
+            receivedCommand = ai.nextCommand()
         }
         if let ord = receivedCommand, ord.id == .move {
             setObjectiveCommand(type: .move, x: ord.point.x, y: ord.point.y)

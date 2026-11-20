@@ -51,6 +51,6 @@ class State {
 
     /// Called each time this state is exited.
     func exit() {
-        fatalError("\(type(of: self)).salir() must be overridden")
+        fatalError("\(type(of: self)).exit() must be overridden")
     }
 }

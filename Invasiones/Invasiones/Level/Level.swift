@@ -70,7 +70,7 @@ class Level {
         battleCount = 0
 
         guard let parser = XMLParser(contentsOf: URL(fileURLWithPath: path)) else { return }
-        let d = NivelXMLDelegate()
+        let d = LevelXMLDelegate()
         parser.delegate = d
         parser.parse()
         withExtendedLifetime(d) {}
@@ -116,7 +116,7 @@ class Level {
 
 // MARK: - XML parser
 
-private class NivelXMLDelegate: NSObject, XMLParserDelegate {
+private class LevelXMLDelegate: NSObject, XMLParserDelegate {
 
     struct BattleData { var objectives: [Objective] = [] }
     var batallas: [BattleData] = []
