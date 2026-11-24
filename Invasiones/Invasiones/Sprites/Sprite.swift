@@ -15,7 +15,7 @@ final class Sprite {
     // MARK: - Declarations
     var animations: [Animation?] = []
     private var currentAnim: Animation?
-    private var currentAnimId: Int = -1
+    private var currentAnimId: Int?
 
     // MARK: - Initializeres
     init() {}

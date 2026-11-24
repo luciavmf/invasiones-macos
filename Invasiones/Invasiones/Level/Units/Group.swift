@@ -140,10 +140,9 @@ final class Group {
         if commander == nil { setAuxCommander() }
 
         guard let map = Group.map, let cmd = commander else { return }
-        let p = map.getLineOfSightPosition(
+        guard let p = map.getLineOfSightPosition(
             x1: x, x2: cmd.physicalTilePos.x,
-            y1: y, y2: cmd.physicalTilePos.y)
-        if p.x == -1 {
+            y1: y, y2: cmd.physicalTilePos.y) else {
             Log.shared.debug("Group: no heal location found.")
             return
         }

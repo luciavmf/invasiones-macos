@@ -106,7 +106,7 @@ private final class TilesetXMLDelegate: NSObject, XMLParserDelegate {
 
     private weak var tileset: Tileset?
     private let basePath: String
-    private var currentTileId: Int = -1
+    private var currentTileId: Int?
 
     init(tileset: Tileset, basePath: String) {
         self.tileset = tileset
@@ -146,21 +146,21 @@ private final class TilesetXMLDelegate: NSObject, XMLParserDelegate {
             }
 
         case "property":
-            guard currentTileId >= 0, currentTileId < ts.tiles.count else { break }
+            guard let tileId = currentTileId, tileId >= 0, tileId < ts.tiles.count else { break }
             let propName = (attributes["name"] ?? "").lowercased()
             let propValue = attributes["value"] ?? ""
             if propName == "id" || propName == "unidad" {
                 switch propValue {
-                case "TILES_VECINOS": ts.tiles[currentTileId]?.id = Res.TILE_DEBUG_ID_TILES_VECINOS
-                case "CAMINO_A_SEGUIR": ts.tiles[currentTileId]?.id = Res.TILE_DEBUG_ID_CAMINO_A_SEGUIR
-                case "PATRICIO": ts.tiles[currentTileId]?.id = Res.TILE_UNIDADES_ID_PATRICIO
-                case "ENFERMERIA": ts.tiles[currentTileId]?.id = Res.TILE_INVALIDADOS_ID_ENFERMERIA
-                case "CASA": ts.tiles[currentTileId]?.id = Res.TILE_INVALIDADOS_ID_CASA
-                case "INGLES": ts.tiles[currentTileId]?.id = Res.TILE_UNIDADES_ID_INGLES
+                case "TILES_VECINOS": ts.tiles[tileId]?.id = Res.TILE_DEBUG_ID_TILES_VECINOS
+                case "CAMINO_A_SEGUIR": ts.tiles[tileId]?.id = Res.TILE_DEBUG_ID_CAMINO_A_SEGUIR
+                case "PATRICIO": ts.tiles[tileId]?.id = Res.TILE_UNIDADES_ID_PATRICIO
+                case "ENFERMERIA": ts.tiles[tileId]?.id = Res.TILE_INVALIDADOS_ID_ENFERMERIA
+                case "CASA": ts.tiles[tileId]?.id = Res.TILE_INVALIDADOS_ID_CASA
+                case "INGLES": ts.tiles[tileId]?.id = Res.TILE_UNIDADES_ID_INGLES
                 default: break
                 }
             } else if propName == "cantidad" {
-                ts.tiles[currentTileId]?.count = Int(propValue) ?? 0
+                ts.tiles[tileId]?.count = Int(propValue) ?? 0
             }
 
         default: break
@@ -169,6 +169,6 @@ private final class TilesetXMLDelegate: NSObject, XMLParserDelegate {
 
     func parser(_ parser: XMLParser, didEndElement name: String,
                 namespaceURI: String?, qualifiedName: String?) {
-        if name == "tile" { currentTileId = -1 }
+        if name == "tile" { currentTileId = nil }
     }
 }

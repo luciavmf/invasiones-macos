@@ -153,13 +153,13 @@ private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
             if type == .takeObject, let img = a["imagen"] {
                 ord = Command(type, iVal, jVal, img)
             } else if type == .trigger, let t = a["tipo"] {
-                let animIdx: Int
+                let animIdx: Int?
                 switch t {
                 case "fuego1": animIdx = Res.ANIM_FUEGO_1
                 case "fuego2": animIdx = Res.ANIM_FUEGO_2
-                default: animIdx = -1
+                default: animIdx = nil
                 }
-                if animIdx >= 0,
+                if let animIdx,
                    let anim = ResourceManager.shared.animations[animIdx] {
                     let animObj = AnimObject(Animation(copia: anim), iVal, jVal)
                     ord = Command(type, iVal, jVal, animObj)

@@ -26,7 +26,7 @@ final class Sound: SoundPlayer {
     // MARK: - Declarations
     private var sfxPlayers: [AVAudioPlayer?] = Array(repeating: nil, count: Res.SFX_COUNT)
     private var musicPlayer: AVAudioPlayer?
-    private var currentMusic: Int = -1
+    private var currentMusic: Int?
 #if DEBUG
     var isMuted = true { didSet { applyVolume() } }
 #else
@@ -82,18 +82,19 @@ final class Sound: SoundPlayer {
         return true
     }
 
-    func stop(_ id: Int) {
-        guard id >= -1, id < Res.SND_COUNT + Res.SFX_COUNT else { return }
-        if id == -1 {
-            sfxPlayers.compactMap { $0 }.forEach {
-                $0.stop()
-                $0.currentTime = 0
-            }
-            musicPlayer?.stop()
-            musicPlayer?.currentTime = 0
-            currentMusic = -1
-            return
+    /// Stops every sound effect and the music.
+    func stopAll() {
+        sfxPlayers.compactMap { $0 }.forEach {
+            $0.stop()
+            $0.currentTime = 0
         }
+        musicPlayer?.stop()
+        musicPlayer?.currentTime = 0
+        currentMusic = nil
+    }
+
+    func stop(_ id: Int) {
+        guard id >= 0, id < Res.SND_COUNT + Res.SFX_COUNT else { return }
 
         if id >= Res.SND_COUNT {
             let p = sfxPlayers[id - Res.SND_COUNT]
@@ -102,7 +103,7 @@ final class Sound: SoundPlayer {
         } else {
             musicPlayer?.stop()
             musicPlayer?.currentTime = 0
-            currentMusic = -1
+            currentMusic = nil
         }
     }
 

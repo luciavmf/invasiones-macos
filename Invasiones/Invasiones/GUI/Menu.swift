@@ -83,8 +83,8 @@ final class Menu {
     }
 
     @discardableResult
-    func update() -> Int {
-        var selectedItem = -1
+    func update() -> Int? {
+        var selectedItem: Int?
         var y = frame.posY
 
         for i in 0..<itemCount {

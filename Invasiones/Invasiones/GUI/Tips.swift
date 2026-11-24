@@ -53,8 +53,7 @@ final class Tips {
         if anchor.contains(.centerVertical) { frame.posY += (Video.height >> 1) - (frame.height >> 1) }
     }
 
-    @discardableResult
-    func update() -> Int {
+    func update() {
         blinkCount += 1
 
         if shouldShowTip {
@@ -72,9 +71,7 @@ final class Tips {
                 generateRandomTip()
             }
         }
-
         tipButton.update()
-        return -1
     }
 
     func draw(_ video: Video) {

@@ -84,7 +84,7 @@ final class Unit: MapObject {
     private var mode: Int = 0
     private var sprite: Sprite?
     private var count: Int = 0
-    private var targetPos: (x: Int, y: Int) = (-1, -1)
+    private var targetPos: (x: Int, y: Int)?
     /// The unit's display name (loaded from the CSV file).
     private(set) var name: String = ""
     /// The avatar image shown in the HUD when this unit is selected.
@@ -272,7 +272,7 @@ final class Unit: MapObject {
     /// Orders the unit to pursue and attack the given enemy unit.
     func attack(enemy: Unit) {
         self.enemy = enemy
-        targetPos = (-1, -1)
+        targetPos = nil
         setState(.pursuingUnit)
     }
 
@@ -492,8 +492,7 @@ final class Unit: MapObject {
         command = Command(.heal, x, y)
 
         guard let map = MapObject.map else { return }
-        let p = map.getLineOfSightPosition(x1: x, x2: physicalTilePos.x, y1: y, y2: physicalTilePos.y)
-        if p.x == -1 {
+        guard let p = map.getLineOfSightPosition(x1: x, x2: physicalTilePos.x, y1: y, y2: physicalTilePos.y) else {
             Log.shared.debug("Unit: cannot send to heal.")
             return
         }
@@ -621,8 +620,7 @@ final class Unit: MapObject {
         default: break
         }
 
-        let dir = getDirection(targetX: nextStep.x, targetY: nextStep.y)
-        if dir != -1 { direction = dir }
+        if let dir = getDirection(targetX: nextStep.x, targetY: nextStep.y) { direction = dir }
 
         // Update walking animation
         let anim = firstAnimation() + direction
@@ -719,10 +717,10 @@ final class Unit: MapObject {
         nextStep = tileToWorld(i: nextTile.x, j: nextTile.y)
     }
 
-    private func getDirection(targetX: Int, targetY: Int) -> Int {
+    private func getDirection(targetX: Int, targetY: Int) -> Int? {
         let dx = targetX - worldPos.x
         let dy = targetY - worldPos.y
-        if dx == 0 && dy == 0 { return -1 }
+        if dx == 0 && dy == 0 { return nil }
 
         let angle = atan2(Double(dy), Double(dx)) * 180.0 / Double.pi
         // SpriteKit Y is flipped vs game-world Y; map to 8 compass dirs
@@ -777,7 +775,8 @@ final class Unit: MapObject {
             setState(.attacking)
         } else {
             // Move closer
-            if pathToFollow == nil || targetPos != enemy.physicalTilePos {
+            let targetMoved = targetPos.map { $0 != enemy.physicalTilePos } ?? true
+            if pathToFollow == nil || targetMoved {
                 targetPos = enemy.physicalTilePos
                 move(x: enemy.physicalTilePos.x, y: enemy.physicalTilePos.y)
             } else {

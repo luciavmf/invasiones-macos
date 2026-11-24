@@ -38,7 +38,7 @@ final class MainMenuState: State {
     }
 
     // MARK: - Declarations
-    private var selectedItem: Int = -1
+    private var selectedItem: Int?
     private var menu: Menu?
     /// The final Y position the menu should reach after animating in.
     private var menuTargetY: Int = 0
