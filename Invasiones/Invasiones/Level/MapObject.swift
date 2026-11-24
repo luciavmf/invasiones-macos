@@ -82,7 +82,7 @@ class MapObject {
             img,
             x - frameWidth / 2 + map.tileWidth / 2,
             y - frameHeight  + map.tileHeight  / 4,
-            0)
+            [])
     }
 
     /// Transforms tile (i, j) into (x, y) position in the flat world.

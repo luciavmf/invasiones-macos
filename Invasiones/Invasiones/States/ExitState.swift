@@ -23,7 +23,7 @@ final class ExitState: State {
     func start() {
         background = ResourceManager.shared.getImage(Res.IMG_SPLASH)
         confirmMenu = ConfirmationMenu(Res.STR_CONFIRMACION_SALIR, Res.STR_NO, Res.STR_SI)
-        confirmMenu?.setPosition(x: 0, y: 0, anchor: Surface.centerVertical | Surface.centerHorizontal)
+        confirmMenu?.setPosition(x: 0, y: 0, anchor: .center)
     }
 
     func update() {
@@ -37,7 +37,7 @@ final class ExitState: State {
     }
 
     func draw(_ video: Video) {
-        video.draw(background, 0, 0, 0)
+        video.draw(background, 0, 0, [])
         confirmMenu?.draw(video)
     }
 

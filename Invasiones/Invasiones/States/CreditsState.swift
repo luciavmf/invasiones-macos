@@ -27,7 +27,7 @@ final class CreditsState: State {
         button?.setPosition(
             x: Video.width  - bw - Button.Constants.screenEdgeOffset,
             y: Video.height - bh - Button.Constants.screenEdgeOffset,
-            anchor: 0)
+            anchor: [])
     }
 
     func update() {
@@ -37,30 +37,30 @@ final class CreditsState: State {
     }
 
     func draw(_ video: Video) {
-        video.draw(background, 0, 0, 0)
+        video.draw(background, 0, 0, [])
 
         // Title
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_MENU_CREDITOS, 0, Layout.titleYPosition, Surface.centerHorizontal)
+        video.write(Res.STR_MENU_CREDITOS, 0, Layout.titleYPosition, .centerHorizontal)
 
         // Programming
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_CREDITOS_PROGRAMACION, 0, 260, Surface.centerHorizontal)
+        video.write(Res.STR_CREDITOS_PROGRAMACION, 0, 260, .centerHorizontal)
 
         video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_CREDITOS_PROGRAMADOR_1, 0, 310, Surface.centerHorizontal)
+        video.write(Res.STR_CREDITOS_PROGRAMADOR_1, 0, 310, .centerHorizontal)
 
         // Level design
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_CREDITOS_DISENO_DE_NIVEL, 0, 400, Surface.centerHorizontal)
+        video.write(Res.STR_CREDITOS_DISENO_DE_NIVEL, 0, 400, .centerHorizontal)
 
         video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_CREDITOS_DISENADOR_DE_NIVEL_1, 0, 450, Surface.centerHorizontal)
+        video.write(Res.STR_CREDITOS_DISENADOR_DE_NIVEL_1, 0, 450, .centerHorizontal)
 
         button?.draw(video)
     }

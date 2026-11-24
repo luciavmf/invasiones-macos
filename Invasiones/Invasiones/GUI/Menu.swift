@@ -32,10 +32,10 @@ final class Menu {
     private var lineSpacing: Int = 1
     private var originalY: Int
     private var originalX: Int
-    private var anchor: Int
+    private var anchor: Anchor
 
     // MARK: - Initializer
-    init(image img: Surface?, itemCount: Int, x: Int, y: Int, anchor anch: Int) {
+    init(image img: Surface?, itemCount: Int, x: Int, y: Int, anchor anch: Anchor) {
         items = Array(repeating: 0, count: Constants.maxItemCount)
         originalX = x
         originalY = y
@@ -47,7 +47,7 @@ final class Menu {
 
     func draw(_ video: Video) {
         if let img = image {
-            video.draw(img, frame.posX, frame.posY - 6, 0)
+            video.draw(img, frame.posX, frame.posY - 6, [])
         } else {
             let padding = 6
             let totalHeight = (buttonHeight + lineSpacing) * itemCount - lineSpacing
@@ -75,7 +75,7 @@ final class Menu {
                     items[i] & 0xFF,
                     frame.posX - (Video.width >> 1) + (buttonWidth >> 1),
                     y          - (Video.height >> 1) + (buttonHeight >> 1),
-                    Surface.centerHorizontal | Surface.centerVertical
+                    .center
                 )
                 y += lineSpacing + buttonHeight
             }
@@ -108,17 +108,17 @@ final class Menu {
         return selectedItem
     }
 
-    func setPosition(x: Int, y: Int, anchor anch: Int) {
+    func setPosition(x: Int, y: Int, anchor anch: Anchor) {
         originalX = x
         frame.posX = x
         originalY = y
         frame.posY = y
         anchor = anch
 
-        if (anchor & Surface.centerHorizontal) != 0 {
+        if anchor.contains(.centerHorizontal) {
             frame.posX = (Video.width >> 1) - (buttonWidth >> 1) + originalX
         }
-        if (anchor & Surface.centerVertical) != 0 {
+        if anchor.contains(.centerVertical) {
             frame.posY = (Video.height >> 1) + originalY
                 - (((buttonHeight + lineSpacing) * itemCount
                     - lineSpacing) >> 1)
@@ -134,10 +134,10 @@ final class Menu {
         }
         items[index] = (flag << 8) | (stringId & 0xFF)
 
-        if (anchor & Surface.centerHorizontal) != 0 {
+        if anchor.contains(.centerHorizontal) {
             frame.posX = (Video.width >> 1) - (buttonWidth >> 1) + originalX
         }
-        if (anchor & Surface.centerVertical) != 0 {
+        if anchor.contains(.centerVertical) {
             frame.posY = (Video.height >> 1) + originalY
                 - (((buttonHeight + lineSpacing) * itemCount
                     - lineSpacing) >> 1)

@@ -38,7 +38,7 @@ final class GameState: State {
         stateValue = .start
 
         gameMenu = Menu(image: nil, itemCount: 2, x: 0, y: 0,
-                              anchor: Surface.centerHorizontal | Surface.centerVertical)
+                              anchor: .center)
         gameMenu?.font = ResourceManager.shared.fonts[FontConstants.menuFont]
         gameMenu?.addItem(index: MenuItem.continuar.rawValue,
                           stringId: Res.STR_MENU_CONTINUAR, flag: Menu.Constants.itemVisible)
@@ -56,11 +56,11 @@ final class GameState: State {
 
             button = Button(label: Res.STR_BOTON_MENU_DEL_JUEGO, font: nil)
             button?.setPosition(x: Video.width - Button.Constants.defaultWidth - Button.Constants.screenEdgeOffset,
-                                y: Button.Constants.screenEdgeOffset, anchor: 0)
+                                y: Button.Constants.screenEdgeOffset, anchor: [])
 
             confirmMenu = ConfirmationMenu(Res.STR_CONFIRMACION_SALIR,
                                                       Res.STR_NO, Res.STR_SI)
-            confirmMenu?.setPosition(x: 0, y: 0, anchor: Surface.centerVertical | Surface.centerHorizontal)
+            confirmMenu?.setPosition(x: 0, y: 0, anchor: .center)
 
         case .playing:
             episode?.update()
@@ -112,7 +112,7 @@ final class GameState: State {
             video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
             video.fontColor = GameColor.white
             video.write(Res.STR_JUEGO_PAUSADO, 0, gamePausedY,
-                       Surface.centerVertical | Surface.centerHorizontal)
+                       .center)
 
         case .confirmation:
             episode?.draw(video)

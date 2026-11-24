@@ -36,7 +36,7 @@ final class Tips {
         tipButton.setPosition(
             x: Video.width  - tipButton.frame.width  - 20,
             y: Video.height - 90 - tipButton.frame.height,
-            anchor: 0
+            anchor: []
         )
 
         generateRandomTip()
@@ -46,11 +46,11 @@ final class Tips {
 
     // MARK: - Methods
 
-    func setPosition(x: Int, y: Int, anchor: Int) {
+    func setPosition(x: Int, y: Int, anchor: Anchor) {
         frame.posX = x
         frame.posY = y
-        if (anchor & Surface.centerHorizontal) != 0 { frame.posX += (Video.width  >> 1) - (frame.width  >> 1) }
-        if (anchor & Surface.centerVertical)   != 0 { frame.posY += (Video.height >> 1) - (frame.height >> 1) }
+        if anchor.contains(.centerHorizontal) { frame.posX += (Video.width  >> 1) - (frame.width  >> 1) }
+        if anchor.contains(.centerVertical) { frame.posY += (Video.height >> 1) - (frame.height >> 1) }
     }
 
     @discardableResult
@@ -89,7 +89,7 @@ final class Tips {
                 tipText,
                 frame.posX - (Video.width >> 1) + (frame.width >> 1),
                 frame.posY + frame.height / 5,
-                Surface.centerHorizontal
+                .centerHorizontal
             )
             tipButton.draw(video)
         } else {

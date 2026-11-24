@@ -156,10 +156,10 @@ final class Animation {
         }
     }
 
-    func draw(video: Video, x: Int, y: Int, anchor: Int) {
+    func draw(video: Video, x: Int, y: Int, anchor: Anchor) {
         var px = x, py = y
-        if (anchor & Surface.centerVertical) != 0 { py += Video.height  / 2 - frameHeight  / 2 }
-        if (anchor & Surface.centerHorizontal) != 0 { px += Video.width / 2 - frameWidth / 2 }
-        video.draw(image, px, py, 0)
+        if anchor.contains(.centerVertical) { py += Video.height  / 2 - frameHeight  / 2 }
+        if anchor.contains(.centerHorizontal) { px += Video.width / 2 - frameWidth / 2 }
+        video.draw(image, px, py, [])
     }
 }

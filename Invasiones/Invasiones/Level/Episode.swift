@@ -83,7 +83,7 @@ final class Episode {
     // MARK: - Initializer
     init() {
         gameOverMenu = ConfirmationMenu(Res.STR_CONTINUARJUEGO, Res.STR_NO, Res.STR_SI)
-        gameOverMenu.setPosition(x: 0, y: 0, anchor: Surface.centerVertical | Surface.centerHorizontal)
+        gameOverMenu.setPosition(x: 0, y: 0, anchor: .center)
     }
 
     // MARK: - Public control
@@ -149,7 +149,7 @@ final class Episode {
         video.color = Theme.title
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
-        video.write(Res.STR_CARGANDO, 0, Constants.loadingY, Surface.centerHorizontal)
+        video.write(Res.STR_CARGANDO, 0, Constants.loadingY, .centerHorizontal)
     }
 
     private func loadSprites() {
@@ -245,7 +245,7 @@ final class Episode {
 
     private func updateShowIntroState() {
         if count == 0 {
-            button?.setPosition(x: 0, y: Constants.objectivesButtonY, anchor: Surface.centerHorizontal)
+            button?.setPosition(x: 0, y: Constants.objectivesButtonY, anchor: .centerHorizontal)
         }
         count += 1
         if button?.update() != 0 {
@@ -286,7 +286,7 @@ final class Episode {
             Video.width - (Constants.objectivesBorder << 1),
             Video.height  - (Constants.objectivesBorder << 1) - hudHeight,
             Theme.alpha,
-            Surface.centerVertical | Surface.centerHorizontal
+            .center
         )
 
         if currentPage == 0 {
@@ -299,7 +299,7 @@ final class Episode {
 
         let strIdx = Res.STR_PRIMER_BATALLA + currentPage +
                      ((currentLevel?.currentBattleIndex ?? 0) * Constants.pagesPerIntro)
-        video.write(strIdx, 0, -(hudHeight >> 1), Surface.centerVertical | Surface.centerHorizontal)
+        video.write(strIdx, 0, -(hudHeight >> 1), .center)
         button?.draw(video)
     }
 
@@ -308,7 +308,7 @@ final class Episode {
     private func updateShowObjectiveState() {
         if count == 0 {
             acceptButton?.setPosition(x: 0, y: Constants.objectivesBoxButtonY,
-                                      anchor: Surface.centerHorizontal | Surface.centerVertical)
+                                      anchor: .center)
         }
         count += 1
         if acceptButton?.update() != 0 {
@@ -330,7 +330,7 @@ final class Episode {
             0, -(hudHeight / 2),
             Constants.objectivesBoxWidth, Constants.objectivesBoxHeight,
             Theme.alpha,
-            Surface.centerVertical | Surface.centerHorizontal
+            .center
         )
 
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
@@ -338,14 +338,14 @@ final class Episode {
         video.write(
             Res.STR_OBJETIVOS, 0,
             -(hudHeight / 2) - Constants.objectivesBoxHeight / 2 + 50,
-            Surface.centerVertical | Surface.centerHorizontal
+            .center
         )
 
         video.font = ResourceManager.shared.fonts[FontConstants.objectivesFont]
         video.fontColor = Theme.text
         let strIdx = Res.STR_PRIMER_BATALLA + currentPage +
                      ((currentLevel?.currentBattleIndex ?? 0) * Constants.pagesPerIntro)
-        video.write(strIdx, 0, -(hudHeight >> 1) + 30, Surface.centerVertical | Surface.centerHorizontal)
+        video.write(strIdx, 0, -(hudHeight >> 1) + 30, .center)
 
         acceptButton?.draw(video)
     }
@@ -416,18 +416,18 @@ final class Episode {
             video.fontColor = Theme.title
             video.write(Res.STR_OBJETIVOS,
                        Layout.objectivesOffset << 1,
-                       cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) - 10, 0)
+                       cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) - 10, [])
             let strIdx = Res.STR_OBJETIVO_BATALLA_1_1 + (currentLevel?.completedObjectiveCount ?? 0)
             video.write(strIdx,
                        Layout.objectivesOffset << 1,
-                       cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) + 5, 0)
+                       cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) + 5, [])
             _ = hudHeight  // suppress warning
         }
 
         if Mouse.shared.isDragging() {
             video.color = GameColor.green
             let r = Mouse.shared.dragRect
-            video.drawRect(Int(r.minX), Int(r.minY), Int(r.width), Int(r.height), 0)
+            video.drawRect(Int(r.minX), Int(r.minY), Int(r.width), Int(r.height), [])
         }
     }
 
@@ -532,7 +532,7 @@ final class Episode {
         button?.draw(video)
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
-        video.write(Res.STR_GANASTE, 0, 0, Surface.centerHorizontal | Surface.centerVertical)
+        video.write(Res.STR_GANASTE, 0, 0, .center)
     }
 
     // MARK: - LOST state
@@ -554,7 +554,7 @@ final class Episode {
         drawPlayingState(video)
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
-        video.write(Res.STR_PERDISTE, 0, -100, Surface.centerHorizontal | Surface.centerVertical)
+        video.write(Res.STR_PERDISTE, 0, -100, .center)
         if count > Constants.countdownToRestart {
             gameOverMenu.draw(video)
         }

@@ -103,7 +103,7 @@ final class ArgentineTeam: Player {
         // Draw orientation arrow only if objective is off-screen
         guard command != nil, orientationArrow != nil else { return }
         guard !isObjectiveVisible() else { return }
-        orientationArrow?.draw(video: video, x: arrowPos.x, y: arrowPos.y, anchor: 0)
+        orientationArrow?.draw(video: video, x: arrowPos.x, y: arrowPos.y, anchor: [])
     }
 
     // MARK: - Rendering coordinates for Episode

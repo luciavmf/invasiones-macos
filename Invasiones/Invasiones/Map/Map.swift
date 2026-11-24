@@ -183,7 +183,7 @@ final class Map {
             if greyTileImage == nil {
                 greyTileImage = ResourceManager.shared.getImage(Res.IMG_TILE_GRIS)
             }
-            video.draw(greyTileImage, posX, posY, 128, 0)
+            video.draw(greyTileImage, posX, posY, 128, [])
         }
     }
 

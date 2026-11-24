@@ -63,12 +63,12 @@ final class Obstacle: MapObject {
         guard let img = image, let map = MapObject.map else { return }
         img.setClip(x: index * frameWidth, y: 0, w: frameWidth, h: frameHeight)
         if isBuilding {
-            video.draw(img, x, y - frameHeight + map.tileHeight / 2, 0)
+            video.draw(img, x, y - frameHeight + map.tileHeight / 2, [])
         } else {
             video.draw(img,
                       x - frameWidth / 2 + map.tileWidth / 2,
                       y - frameHeight  + map.tileHeight / 2,
-                      0)
+                      [])
         }
     }
 }
