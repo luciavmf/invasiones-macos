@@ -27,6 +27,9 @@ class Player {
     /// Animated ring displayed at the current order target position.
     var ring: AnimObject?
 
+    /// The most units a drag rectangle can select at once (6 in the C# original).
+    static let maxSelectedUnits = 6
+
     var hud: Hud
     var units: [Unit] = []
     /// The shared object table indexed by physical tile position (updated each frame).
@@ -134,7 +137,7 @@ class Player {
             updateAndMoveUnitInObjectMap(unit)
 
             if checkSelection, unit.isSelected {
-                if selectedUnits.count < 6 {
+                if selectedUnits.count < Player.maxSelectedUnits {
                     hud.selectedUnit = unit
                     selectedUnits.append(unit)
                 } else {

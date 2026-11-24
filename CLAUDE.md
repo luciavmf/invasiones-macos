@@ -49,21 +49,22 @@ Episode
 │   └── Groups → Units
 ├── EnemyTeam       [AI forces]
 │   └── Groups → Units
-└── IA              [enemy decision-making]
+└── AI              [enemy decision-making]
 ```
 
 Battle lifecycle: `LOADING → SHOW_INTRO → PLAYING → WON/LOST`
 
 ### Unit System
 
-`Unit` has stats (health, attack, resistance, visibility, aim, range, speed) and states: `IDLE`, `MOVING`, `DYING`, `ATTACKING`, `CHASING`, `DEAD`, `PATROLLING`, `HEALING`.
+`Unit` has stats (health, attack, resistance, visibility, aim, range, speed) and states: `idle`, `moving`, `dying`, `attacking`, `pursuingUnit`, `dead`, `patrolling`, `healing`.
 
 `Group` wraps a squad of units. `Command` is a single order. `Objective` is a stack of commands.
 
 **Combat notes:**
 - Damage is always `attackPoints` — no accuracy roll. `aim` is loaded from CSV but was never used in the original C# attack logic.
 - Enemy units without a group (`AI`) are set to `PATROLLING` on load and wander randomly between `RANDOM_PATRULLA_MIN=8` and `RANDOM_PATRULLA_MAX=16` tiles from their spawn position.
-- Counter-attack (`contraAtacar`): when a unit enters `ATTACKING`, it notifies the target to counter-attack if idle. **Not yet ported to Swift.**
+- Counter-attack (`contraAtacar` → `Unit.counterAttack`): when a unit enters `attacking`, it notifies the target, which fights back if it is idle and in range.
+- Drag selection: dragging a rectangle selects at most **6** units (`Player.maxSelectedUnits`, as in the C# original); more than one becomes a `Group` that moves together.
 
 ### Rendering (`Video`)
 
@@ -98,7 +99,7 @@ Unit tests (`InvasionesTests`, Swift Testing) run inside the app (`TEST_HOST`). 
 
 ### Resources
 
-`ResourceManager` (singleton, `static let shared`) loads and caches all assets from `data/res.xml`:
+`ResourceManager` (singleton, `static let shared`) loads and caches all assets listed in `data/res.json`:
 - Images → `Surface` (wraps `SKTexture`)
 - Fonts → `GameFont`
 - Sprites → `Sprite` (collection of `Animation` objects)
@@ -107,15 +108,15 @@ Unit tests (`InvasionesTests`, Swift Testing) run inside the app (`TEST_HOST`). 
 
 Resources are identified by typed enums (`StringID`, `SoundID`, `ImageID`, `FontFamily`, `UnitType`, `SpriteID`, `AnimationID`, `TilesetID`, `TileKind`). Except `StringID` (raw value = JSON key) and `TileKind`, their raw values are positions in the lists of `data/res.json`, so reordering that file means reordering the enum; `ResourceIDTests` checks they match.
 
-`GameText` loads localised strings from `data/strings.xml`.
+`GameText` loads localised strings from `data/strings_es.json` / `strings_en.json` / `strings_de.json` (by `Language.current`).
 
-### res.xml Parsing — Critical Gotcha
+### res.json Parsing — Critical Gotcha
 
-`res.xml` uses **Spanish element names** that must match exactly in the XML parsers:
-- `<unidad>` (not `<unit>`) — unit file references
-- `<animacion>` (not `<animation>`) — animation definitions in `<anims>`
+`res.json` uses **Spanish keys** that must match the property names of the `Decodable` model (`ResJSON` in `ResourceManager.swift`) exactly:
+- `fuentes`, `imagenes`, `unidades`, `anims`, `sprites`
+- `escenarios` → `tilesets`, `mapas`; `sonidos` → `sfx`
 
-Translating these element name strings will silently break loading (no compile error).
+Renaming these properties (or the keys) breaks loading at runtime with a decoding error, not at compile time. Level files (`nivel/*.xml`) and tilesets (`escenarios/*.tsx`) also use Spanish element, attribute and property names (`<batalla>`, `<objetivo>`, `cantidad`, `PATRICIO`…) that the XML parsers match as strings.
 
 ## Swiftify Progress
 
@@ -134,15 +135,17 @@ The codebase has been progressively Swiftified from the C# port style. Completed
 12. Simple setters → properties (`Sound.isMuted`, `Video.color`/`font`/`fontColor`, `Group.ai`, `Mouse.cursor`, `Unit.objectiveCommand`, `Surface.alpha`)
 13. `State` is a protocol (missing `start`/`update`/`draw`/`exit` fails at compile time); each state declares only the members it uses
 14. All classes are `final` except `MapObject` and `Player`, which have subclasses
+15. `Anchor` OptionSet instead of `Int` anchor flags; `GameColor` struct instead of `Int` colours
+16. Optionals instead of `-1` sentinels; enums compared directly instead of through `.rawValue`
+17. `Res` integer constants → typed resource IDs (`StringID`, `SoundID`, `ImageID`, …)
 
 In progress / not yet done:
 - `throws` instead of `Bool` returns
-- `struct` for value types (`Tile`, etc.)
-- Raw `Int` constants → typed Swift enums
+- `struct` for other value types
 
 ## Conventions
 
-**Language:** All code, comments, and identifiers are in English. `res.xml` and data files remain in Spanish — do not translate XML element/attribute names.
+**Language:** All code, comments, and identifiers are in English. `res.json` and the other data files remain in Spanish — do not translate their keys, element or attribute names.
 
 **Key vocabulary (C# → Swift):**
 | C# (Spanish) | Swift (English) |
@@ -171,8 +174,7 @@ A complete TypeScript/PixiJS port lives at https://github.com/luciavmf/invasione
 
 - Rendering: PixiJS v8 instead of SpriteKit. `Video` wraps a `PIXI.Container` canvas rebuilt each frame.
 - Coordinate origin: top-left (Y down), matching C#/SDL — no Y-flip needed unlike SpriteKit.
-- Resource manifest: `data/res.json` replaces `data/res.xml` (same structure, JSON format).
-- String tables: `data/strings_es.json` / `strings_en.json` / `strings_de.json` replace `data/strings.xml`.
+- Same data files: `data/res.json` and `data/strings_*.json`.
 - All loading is async (`fetch` + `DOMParser` / `PIXI.Assets`).
 - No `Log`, `GameError`, `Utils`, `AppDelegate`, `ViewController`, or `GameScene` — browser equivalents used directly.
 - `erasableSyntaxOnly` TypeScript config: no `enum`, uses `const` objects + type aliases.
@@ -183,9 +185,11 @@ A complete TypeScript/PixiJS port lives at https://github.com/luciavmf/invasione
 
 | Path | Purpose |
 |---|---|
-| `res.xml` | Resource manifest (all asset paths, sprite/animation definitions) |
-| `strings.xml` | Localised text strings |
+| `res.json` | Resource manifest (all asset paths, sprite/animation definitions) |
+| `strings_es.json` / `strings_en.json` / `strings_de.json` | Localised text strings and tips |
 | `nivel/nivel_N.xml` | Level definitions (objectives, units, starting orders) |
-| `unidades/*.csv` | Unit animation frame data |
+| `unidades/*.csv` | Unit type stats and sprite name |
 | `imagenes/` | PNG sprites and UI assets |
 | `fuentes/` | TTF font files |
+| `escenarios/` | Tiled maps (`.tmx`) and tilesets (`.tsx`) |
+| `sonidos/` | Sound effects |
