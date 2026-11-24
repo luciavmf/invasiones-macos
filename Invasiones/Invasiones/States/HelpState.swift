@@ -126,9 +126,8 @@ final class HelpState: State {
     // MARK: - Private
 
     private func loadScreenshot(_ sub: Substate) {
-        let animIdx = Res.ANIM_AYUDA_SELECCION + sub.rawValue
-        let anims = ResourceManager.shared.animations
-        guard animIdx < anims.count, let anim = anims[animIdx] else {
+        guard let id = AnimationID.helpScreens[safe: sub.rawValue],
+              let anim = ResourceManager.shared.animations[id] else {
             currentScreenshot = nil
             return
         }

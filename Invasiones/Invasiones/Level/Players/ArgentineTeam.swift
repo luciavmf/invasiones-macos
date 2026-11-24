@@ -33,11 +33,11 @@ final class ArgentineTeam: Player {
         Group.map = map
 
         let anims = ResourceManager.shared.animations
-        if Res.ANIM_AROS < anims.count, let animAros = anims[Res.ANIM_AROS] {
+        if let animAros = anims[.rings] {
             ring = AnimObject(Animation(copia: animAros), 0, 0)
         }
 
-        if Res.ANIM_FLECHA_GUIA < anims.count, let animFlecha = anims[Res.ANIM_FLECHA_GUIA] {
+        if let animFlecha = anims[.guideArrow] {
             orientationArrow = Animation(copia: animFlecha)
             try? orientationArrow?.load()
         }

@@ -31,22 +31,6 @@ enum Res {
     static let MAP_NIVEL1 = 14
     static let MAP_COUNT = 1
 
-    // MARK: - Anim Ids
-    static let ANIM_AROS = 0
-    static let ANIM_FLECHA_GUIA = 1
-    static let ANIM_FUEGO_1 = 2
-    static let ANIM_FUEGO_2 = 3
-    static let ANIM_AYUDA_SELECCION = 4
-    static let ANIM_AYUDA_MOVER = 5
-    static let ANIM_AYUDA_ATACAR = 6
-    static let ANIM_AYUDA_OBJETIVO = 7
-    static let ANIM_AYUDA_SCROLL = 8
-    static let ANIM_AYUDA_HUD = 9
-    static let ANIM_AYUDA_SANAR = 10
-    static let ANIM_AYUDA_TIPS = 11
-    static let ANIM_AYUDA_GANAR = 12
-    static let ANIM_COUNT = 13
-
     // MARK: - Tile Ids
     static let TILE_DEBUG_ID_TILES_VECINOS = 0
     static let TILE_DEBUG_ID_TILE_CHICO = 1

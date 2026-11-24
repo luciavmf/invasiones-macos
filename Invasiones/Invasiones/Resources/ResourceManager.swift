@@ -33,8 +33,8 @@ final class ResourceManager {
     /// Loaded soldier sprites.
     private(set) var sprites: [SpriteID: Sprite] = [:]
 
-    /// Loaded animations (Res.ANIM_COUNT = 13).
-    private(set) var animations: [Animation?] = []
+    /// Loaded standalone animations.
+    private(set) var animations: [AnimationID: Animation] = [:]
 
     /// Unit type templates, copied when units are placed.
     private(set) var unitTypes: [UnitType: Unit] = [:]
@@ -168,10 +168,11 @@ final class ResourceManager {
     func readAnimationInfo() throws {
         let res = try decodeResJSON()
 
-        animations = Array(repeating: nil, count: Res.ANIM_COUNT)
-        for (i, animJSON) in res.anims.prefix(Res.ANIM_COUNT).enumerated() {
+        animations = [:]
+        for (i, animJSON) in res.anims.enumerated() {
+            guard let id = AnimationID(rawValue: i) else { break }
             let path = Utils.getPath(animJSON.imagepath) ?? ""
-            animations[i] = Animation(idx: 0, path: path, ticks: animJSON.frameticks,
+            animations[id] = Animation(idx: 0, path: path, ticks: animJSON.frameticks,
                                       frameWidth: animJSON.framewidth, frameHeight: animJSON.frameheight,
                                       offsetX: animJSON.offsetX, offsetY: animJSON.offsetY)
         }
