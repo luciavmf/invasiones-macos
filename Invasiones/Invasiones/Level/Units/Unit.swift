@@ -518,19 +518,23 @@ final class Unit: MapObject {
         substate = .incrementStep
     }
 
-    // MARK: - Selección por arrastre de mouse (rectangle)
-    /// Selects the unit if its sprite overlaps the drag-selection rectangle.
+    // MARK: - Drag-rectangle selection
+    /// Selects the unit if its sprite is inside the drag-selection rectangle.
+    /// - Parameters:
+    ///   - rectX: Left edge of the rectangle, in screen coordinates.
+    ///   - rectY: Top edge of the rectangle, in screen coordinates.
     /// - Returns: `true` if the unit was selected.
-    func selectIfInRect(x: Int, y: Int, w: Int, h: Int) -> Bool {
+    func selectIfInRect(x rectX: Int, y rectY: Int, w: Int, h: Int) -> Bool {
         let fw = sprite?.frameWidth ?? (frameWidth > 0 ? frameWidth : 20)
         let fh = sprite?.frameHeight  ?? (frameHeight  > 0 ? frameHeight  : 30)
-        // In Swift, x = sprite horizontal center, y = sprite bottom.
+        // The unit's x is the sprite's horizontal center, y its bottom.
         // Sprite bounds: left = x-fw/2, right = x+fw/2, top = y-fh, bottom = y.
         // Matches the original C# check (translated from top-left convention to center/bottom).
-        let inRange = x <= x - fw / 2
-                  && y <= y - fh / 2
-                  && x + w > x + fw / 2
-                  && y + h > y
+        // The rectangle parameters have their own names so they can't shadow the unit's x/y.
+        let inRange = rectX <= x - fw / 2
+                  && rectY <= y - fh / 2
+                  && rectX + w > x + fw / 2
+                  && rectY + h > y
         if inRange { isSelected = true }
         return inRange
     }
