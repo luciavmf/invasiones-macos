@@ -31,28 +31,6 @@ enum Res {
     static let MAP_NIVEL1 = 14
     static let MAP_COUNT = 1
 
-    // MARK: - Unidades Ids
-    static let UNIDAD_PATRICIO = 0
-    static let UNIDAD_INGLES = 1
-    static let UNIDAD_COUNT = 2
-
-    // MARK: - Sprite Ids
-    static let SPR_PATRICIO = 0
-    static let SPR_ANIM_PATRICIO_QUIETO_N = 0
-    static let SPR_ANIM_PATRICIO_CAMINA_N = 8
-    static let SPR_ANIM_PATRICIO_MUERE_N = 16
-    static let SPR_ANIM_PATRICIO_ATACA_N = 24
-    static let SPR_PATRICIO_PACK_COUNT = 4
-
-    static let SPR_INGLES = 1
-    static let SPR_ANIM_INGLES_QUIETO_N = 0
-    static let SPR_ANIM_INGLES_CAMINA_N = 8
-    static let SPR_ANIM_INGLES_MUERE_N = 16
-    static let SPR_ANIM_INGLES_ATACA_N = 24
-    static let SPR_INGLES_PACK_COUNT = 4
-
-    static let SPR_COUNT = 2
-
     // MARK: - Anim Ids
     static let ANIM_AROS = 0
     static let ANIM_FLECHA_GUIA = 1

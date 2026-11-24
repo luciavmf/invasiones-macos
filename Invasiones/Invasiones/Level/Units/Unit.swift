@@ -46,8 +46,8 @@ final class Unit: MapObject {
     }
 
     // MARK: - Attributes
-    /// The unit type index (e.g. UNIDAD_PATRICIO or UNIDAD_INGLES).
-    private var type: Int = 0
+    /// The kind of soldier.
+    private var type: UnitType = .patricio
     private var substate: Substep = .incrementStep
     /// The faction this unit belongs to.
     var faction: Episode.Faction = .enemy
@@ -143,17 +143,16 @@ final class Unit: MapObject {
         super.init()
     }
 
-    /// Template copy initializer (id = index in unitTypes).
-    init(_ id: Int, pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
+    /// Creates a unit by copying the loaded template for its type.
+    init(_ type: UnitType, pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
         self.pathFinder = pathFinder
         self.sound = sound
         super.init()
-        let types = ResourceManager.shared.unitTypes
-        guard id >= 0, id < types.count, let copia = types[id] else {
-            Log.shared.debug("Unit copy not loaded: id=\(id)")
+        guard let copia = ResourceManager.shared.unitTypes[type] else {
+            Log.shared.debug("Unit copy not loaded: \(type)")
             return
         }
-        type = copia.type
+        self.type = copia.type
         currentSpeed = copia.currentSpeed
         defaultSpeedVec = copia.currentSpeed
         health = copia.resistancePoints
@@ -573,17 +572,25 @@ final class Unit: MapObject {
         sprite?.update()
     }
 
+    /// Index of the first animation of each pack in a soldier sprite. Each pack has
+    /// one animation per direction (8), in the order of `res.json`'s animpaks.
+    private enum AnimationPack: Int {
+        case idle = 0
+        case walking = 8
+        case dying = 16
+        case attacking = 24
+    }
+
+    /// The animation index for the current state, before adding the direction.
     private func firstAnimation() -> Int {
+        let pack: AnimationPack
         switch stateValue {
-        case .idle, .healing:
-            return type == 0 ? Res.SPR_ANIM_PATRICIO_QUIETO_N : Res.SPR_ANIM_INGLES_QUIETO_N
-        case .moving, .pursuingUnit, .patrolling:
-            return type == 0 ? Res.SPR_ANIM_PATRICIO_CAMINA_N : Res.SPR_ANIM_INGLES_CAMINA_N
-        case .dying, .dead:
-            return type == 0 ? Res.SPR_ANIM_PATRICIO_MUERE_N : Res.SPR_ANIM_INGLES_MUERE_N
-        case .attacking:
-            return type == 0 ? Res.SPR_ANIM_PATRICIO_ATACA_N : Res.SPR_ANIM_INGLES_ATACA_N
+        case .idle, .healing: pack = .idle
+        case .moving, .pursuingUnit, .patrolling: pack = .walking
+        case .dying, .dead: pack = .dying
+        case .attacking: pack = .attacking
         }
+        return pack.rawValue
     }
 
     // MARK: - Movement
@@ -851,7 +858,7 @@ final class Unit: MapObject {
         Log.shared.debug("Unit: died.")
         setState(.dying)
         enemy = nil
-        if type == Res.UNIDAD_PATRICIO {
+        if type == .patricio {
             sound.play(id: .patricioDeath, loop: 0)
         }
     }
@@ -876,7 +883,7 @@ final class Unit: MapObject {
     }
 
     private func playShotSound() {
-        let sfx: SoundID = type == 0 ? .patricioShot : .britishShot
+        let sfx: SoundID = type == .patricio ? .patricioShot : .britishShot
         sound.play(id: sfx, loop: 0)
     }
 
@@ -896,16 +903,16 @@ final class Unit: MapObject {
     // MARK: - Loadingr desde CSV
 
     /// Reads the unit stats (speed, health, attack, etc.) from the CSV data file for the given unit type id.
-    /// - Parameter id: The index into the resource manager's unit paths array.
-    func readUnit(_ id: Int) {
+    /// - Parameter type: The unit type, whose CSV file is listed in res.json.
+    func readUnit(_ type: UnitType) {
         let paths = ResourceManager.shared.unitPaths
-        guard id >= 0, id < paths.count, let path = paths[id],
+        guard let path = paths[safe: type.rawValue] ?? nil,
               let contenido = try? String(contentsOfFile: path, encoding: .utf8) else {
-            Log.shared.error("Unit: failed to read unit with id=\(id)")
+            Log.shared.error("Unit: failed to read unit \(type)")
             return
         }
 
-        type = id
+        self.type = type
 
         for line in contenido.components(separatedBy: .newlines) {
             let partes = line.components(separatedBy: ";")
@@ -915,10 +922,9 @@ final class Unit: MapObject {
 
             switch clave {
             case "Sprite":
-                let spriteIdx = value == "patricio" ? Res.SPR_PATRICIO : Res.SPR_INGLES
-                firstSprite = 0  // animaciones comienzan en 0 dentro del sprite
-                let sprs = ResourceManager.shared.sprites
-                if spriteIdx >= 0, spriteIdx < sprs.count, let spr = sprs[spriteIdx] {
+                let spriteID = SpriteID(csvName: value) ?? .british
+                firstSprite = 0  // animations start at 0 inside the sprite
+                if let spr = ResourceManager.shared.sprites[spriteID] {
                     sprite = Sprite(copia: spr)
                 }
             case "Velocidad":

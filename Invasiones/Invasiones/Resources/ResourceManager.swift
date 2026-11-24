@@ -30,14 +30,14 @@ final class ResourceManager {
     /// Loaded fonts (one per Definitions.FNT variant).
     private(set) var fonts: [FontIndex: GameFont] = [:]
 
-    /// Loaded sprites (Res.SPR_COUNT = 2).
-    private(set) var sprites: [Sprite?] = []
+    /// Loaded soldier sprites.
+    private(set) var sprites: [SpriteID: Sprite] = [:]
 
     /// Loaded animations (Res.ANIM_COUNT = 13).
     private(set) var animations: [Animation?] = []
 
-    /// Unit type templates (Res.UNIDAD_COUNT = 2).
-    private(set) var unitTypes: [Unit?] = []
+    /// Unit type templates, copied when units are placed.
+    private(set) var unitTypes: [UnitType: Unit] = [:]
 
     // MARK: - Initializer (private)
     private init() {}
@@ -130,11 +130,11 @@ final class ResourceManager {
     // MARK: - Unit types
 
     func loadUnitTypes() {
-        unitTypes = Array(repeating: nil, count: Res.UNIDAD_COUNT)
-        for i in 0..<Res.UNIDAD_COUNT {
+        unitTypes = [:]
+        for type in UnitType.allCases {
             let u = Unit()
-            u.readUnit(i)
-            unitTypes[i] = u
+            u.readUnit(type)
+            unitTypes[type] = u
         }
     }
 
@@ -143,8 +143,9 @@ final class ResourceManager {
     func readSpriteInfo() throws {
         let res = try decodeResJSON()
 
-        sprites = Array(repeating: nil, count: Res.SPR_COUNT)
-        for (i, sprJSON) in res.sprites.prefix(Res.SPR_COUNT).enumerated() {
+        sprites = [:]
+        for (i, sprJSON) in res.sprites.enumerated() {
+            guard let id = SpriteID(rawValue: i) else { break }
             let anims = sprJSON.animpaks.map { pak -> Animation in
                 let img = pak.image
                 let path = Utils.getPath(img.path) ?? ""
@@ -158,7 +159,7 @@ final class ResourceManager {
                 spr.addAnimation(i: j, anim: anim)
             }
             try? spr.load()
-            sprites[i] = spr
+            sprites[id] = spr
         }
     }
 

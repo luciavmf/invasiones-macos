@@ -74,7 +74,7 @@ final class ArgentineTeam: Player {
                       let tile = unitsTileset.tiles[localId],
                       tile.id == Res.TILE_UNIDADES_ID_PATRICIO else { continue }
 
-                let list = placeUnits(type: Res.UNIDAD_PATRICIO, count: tile.count, x: i << 1, y: j << 1)
+                let list = placeUnits(type: .patricio, count: tile.count, x: i << 1, y: j << 1)
 
                 if list.count > 1 {
                     if groups == nil { groups = [] }

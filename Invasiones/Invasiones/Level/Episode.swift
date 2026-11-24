@@ -153,9 +153,9 @@ final class Episode {
     }
 
     private func loadSprites() {
-        let sprs = ResourceManager.shared.sprites
-        if Res.SPR_PATRICIO < sprs.count { try? sprs[Res.SPR_PATRICIO]?.load() }
-        if Res.SPR_INGLES   < sprs.count { try? sprs[Res.SPR_INGLES]?.load()   }
+        for sprite in ResourceManager.shared.sprites.values {
+            try? sprite.load()
+        }
     }
 
     private func loadPaintObjects() -> Bool {

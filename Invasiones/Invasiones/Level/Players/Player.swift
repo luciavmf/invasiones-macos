@@ -291,7 +291,7 @@ class Player {
     ///   - x: Target tile column (physical grid).
     ///   - y: Target tile row (physical grid).
     /// - Returns: The list of placed units.
-    func placeUnits(type: Int, count: Int, x: Int, y: Int) -> [Unit] {
+    func placeUnits(type: UnitType, count: Int, x: Int, y: Int) -> [Unit] {
         guard count > 0 else {
             Log.shared.error("Player: cannot create a group with 0 units.")
             return []
@@ -332,7 +332,7 @@ class Player {
         return group
     }
 
-    private func placeUnitInternal(type: Int, i: Int, j: Int) -> Unit? {
+    private func placeUnitInternal(type: UnitType, i: Int, j: Int) -> Unit? {
         guard map.isWalkable(x: i, y: j) else {
             Log.shared.debug("Player: cannot place unit — tile not walkable.")
             return nil
