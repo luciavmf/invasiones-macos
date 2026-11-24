@@ -88,7 +88,6 @@ final class Unit: MapObject {
     /// The base tile position used as the centre of the patrol area.
     private var patrolPosition: (x: Int, y: Int) = (0, 0)
     private var desiredPosition: (x: Int, y: Int) = (0, 0)  // offset en formación
-    private var recoveryTicks: Int = 0
     private var isCommander: Bool = false
     private var group: Group?
     private var completedObjectiveOrder: Bool = false
@@ -176,7 +175,7 @@ final class Unit: MapObject {
         case .patrolling:
             movedOnMap = updatePatrollingState()
         case .pursuingUnit:
-            updatePursuingUnitState()
+            movedOnMap = updatePursuingUnitState()
         case .attacking:
             updateAttackingState()
         case .dying:
@@ -746,39 +745,50 @@ final class Unit: MapObject {
 
     // MARK: - Pursuit and attack
 
-    private func updatePursuingUnitState() {
+    /// Chases the enemy: the path is recalculated whenever it changes tile, and the unit
+    /// starts shooting once closer than its range. Returns true if the unit moved to a new tile.
+    private func updatePursuingUnitState() -> Bool {
         guard let enemy = enemy else {
             setState(.idle)
-            return
+            return false
         }
         if enemy.isDead() {
             self.enemy = nil
             setState(.idle)
-            return
+            return false
         }
 
-        let dist = calculateDistance(toI: enemy.physicalTilePos.x, toJ: enemy.physicalTilePos.y)
+        nextStateValue = .attacking
+        var moved = false
 
-        if dist <= Double(stats.attackRange) {
-            // In range: attack
+        if targetPos.map({ $0 != enemy.physicalTilePos }) ?? true {
+            targetPos = enemy.physicalTilePos
+            let path = pathFinder.findShortestPath(
+                startI: physicalTilePos.x, startJ: physicalTilePos.y,
+                targetI: enemy.physicalTilePos.x, targetJ: enemy.physicalTilePos.y)
+            guard let c = path, !c.isEmpty else {
+                setState(.idle)
+                return false
+            }
+            pathToFollow = Array(c.dropLast())   // the last node is the start
+            substate = .incrementStep
+        }
+
+        if calculateDistance(toI: enemy.physicalTilePos.x, toJ: enemy.physicalTilePos.y) < Double(stats.attackRange) {
             aimAtUnit(enemy)
             setState(.attacking)
         } else {
-            // Move closer
-            let targetMoved = targetPos.map { $0 != enemy.physicalTilePos } ?? true
-            if pathToFollow == nil || targetMoved {
-                targetPos = enemy.physicalTilePos
-                move(x: enemy.physicalTilePos.x, y: enemy.physicalTilePos.y)
-            } else {
-                _ = moverse()
-            }
+            moved = moverse()
         }
 
         let anim = firstAnimation() + direction
         sprite?.setAnimation(anim: anim)
         sprite?.play()
+        return moved
     }
 
+    /// Shoots the enemy every `attackInterval` frames, following it while it stays in range
+    /// and chasing it when it leaves.
     private func updateAttackingState() {
         guard let enemy = enemy else {
             setState(.idle)
@@ -790,24 +800,32 @@ final class Unit: MapObject {
             return
         }
 
-        count += 1
         let anim = firstAnimation() + direction
         sprite?.setAnimation(anim: anim)
         sprite?.play()
 
-        if count >= attackInterval {
-            count = 0
-            let hit = calculateDamage()
-            if hit > 0 {
-                enemy.takeDamage(hit)
-                playShotSound()
+        // If the enemy moved, aim again, or chase it if it's out of range.
+        if targetPos.map({ $0 != enemy.physicalTilePos }) ?? true {
+            if calculateDistance(toI: enemy.physicalTilePos.x, toJ: enemy.physicalTilePos.y) < Double(stats.attackRange) {
+                aimAtUnit(enemy)
+                targetPos = enemy.physicalTilePos
+            } else {
+                setState(.pursuingUnit)
+                nextStateValue = .attacking
             }
         }
 
-        // Resume pursuit if it moved away
-        let dist = calculateDistance(toI: enemy.physicalTilePos.x, toJ: enemy.physicalTilePos.y)
-        if dist > Double(stats.attackRange) {
-            setState(.pursuingUnit)
+        // The original compares before counting, so a shot comes one frame after the interval.
+        let ready = count >= attackInterval
+        count += 1
+        guard ready else { return }
+
+        playShotSound()
+        count = 0
+        enemy.takeDamage(attackPoints)
+        if enemy.isDead() {
+            self.enemy = nil
+            setState(.idle)
         }
     }
 
@@ -823,10 +841,6 @@ final class Unit: MapObject {
         direction = mapping[index]
     }
 
-    private func calculateDamage() -> Int {
-        return attackPoints
-    }
-
     /// Applies `danio` points of damage to this unit, triggering death if health reaches zero.
     func takeDamage(_ danio: Int) {
         health -= danio
@@ -836,20 +850,20 @@ final class Unit: MapObject {
         }
     }
 
-    /// Transitions the unit into the dying state and plays the death sound.
+    /// Transitions the unit into the dying state.
     func morir() {
         Log.shared.debug("Unit: died.")
         setState(.dying)
         enemy = nil
-        if type == .patricio {
-            sound.play(id: .patricioDeath, loop: 0)
-        }
     }
 
+    /// Plays the death animation once, then the unit is dead after `deathFrameCount` frames.
     private func updateDyingState() {
         if count == 0 {
             let anim = firstAnimation() + direction
             sprite?.setAnimation(anim: anim)
+            // The original plays the Patricio's death sound for every unit, British ones included.
+            sound.play(id: .patricioDeath, loop: 0)
             sprite?.loop = false
             sprite?.play()
         }
@@ -859,26 +873,33 @@ final class Unit: MapObject {
             sprite?.stop()
         }
 
-        count += 1
         if count >= Constants.deathFrameCount {
             setState(.dead)
+            return
         }
+        count += 1
     }
 
     private func playShotSound() {
-        let sfx: SoundID = type == .patricio ? .patricioShot : .britishShot
+        let sfx: SoundID = faction == .argentine ? .patricioShot : .britishShot
         sound.play(id: sfx, loop: 0)
     }
 
     // MARK: - Healing
 
+    /// Recovers `recoveryPoints` health every `ticksPerRecovery` counts until full.
     private func updateHealingState() {
-        recoveryTicks += 1
-        if recoveryTicks >= stats.ticksPerRecovery {
-            recoveryTicks = 0
-            health = min(health + stats.recoveryPoints, resistancePoints)
-        }
+        // The original counts each frame twice (two increments), so recoveries come
+        // about twice as often as ticksPerRecovery suggests.
+        count += 1
+        let due = count > stats.ticksPerRecovery
+        count += 1
+        guard due else { return }
+
+        count = 0
+        health += stats.recoveryPoints
         if health >= resistancePoints {
+            health = resistancePoints
             setState(.idle)
         }
     }
