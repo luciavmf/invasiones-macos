@@ -113,6 +113,14 @@ enum GameText {
             throw GameError.fileNotFound("No se encuentra el archivo \(filename).")
         }
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
+        let parsed = try parse(data, filename: filename)
+        s_strings = parsed.strings
+        s_tips = parsed.tips
+    }
+
+    /// Parses a strings JSON file without touching the cache.
+    /// - Returns: The strings in `Res.STR_*` order (`""` for a missing key) and the tips.
+    static func parse(_ data: Data, filename: String) throws -> (strings: [String], tips: [String]) {
         let raw: [String: Any]
         do {
             raw = try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
@@ -120,9 +128,11 @@ enum GameText {
             throw GameError.parsingFailed("GameText: failed to parse \(filename): \(error).")
         }
         let dict = raw.compactMapValues { $0 as? String }
-        s_strings = keyOrder.map { dict[$0] ?? "" }
-        s_tips = raw["tips"] as? [String] ?? []
+        return (keyOrder.map { dict[$0] ?? "" }, raw["tips"] as? [String] ?? [])
     }
+
+    /// Number of indexed strings (the size of the `Res.STR_*` table).
+    static var keyCount: Int { keyOrder.count }
 
     // MARK: - Access
 
