@@ -327,17 +327,7 @@ final class ArgentineTeam: Player {
             } else {
                 // Non-walkable tile: check if it's the infirmary
                 let tileUnderMouse = map.tileUnderMouse
-                guard tileUnderMouse.y < map.height  && tileUnderMouse.y >= 0 &&
-                      tileUnderMouse.x < map.width && tileUnderMouse.x >= 0 else { return }
-
-                let buildingTileId = map.buildingsLayer[tileUnderMouse.x][tileUnderMouse.y]
-                guard buildingTileId != 0, let ts = map.getTileset(buildingTileId) else { return }
-
-                let localId = buildingTileId - ts.firstGid
-                guard localId >= 0, localId < ts.tiles.count,
-                      let tileProp = ts.tiles[localId],
-                      ts.id == .invalidated,
-                      tileProp.kind == .infirmary else { return }
+                guard map.isInfirmary(x: tileUnderMouse.x, y: tileUnderMouse.y) else { return }
 
                 Log.shared.debug("Unit ordered to heal.")
                 if let group = selectedGroup,
@@ -430,17 +420,7 @@ final class ArgentineTeam: Player {
         }
 
         let tileUnderMouse = map.tileUnderMouse
-        guard tileUnderMouse.y < map.height  && tileUnderMouse.y >= 0 &&
-              tileUnderMouse.x < map.width && tileUnderMouse.x >= 0 else { return }
-
-        let buildingTileId = map.buildingsLayer[tileUnderMouse.x][tileUnderMouse.y]
-        guard buildingTileId != 0, let ts = map.getTileset(buildingTileId) else { return }
-
-        let localId = buildingTileId - ts.firstGid
-        guard localId >= 0, localId < ts.tiles.count,
-              let tileProp = ts.tiles[localId],
-              ts.id == .invalidated,
-              tileProp.kind == .infirmary else { return }
+        guard map.isInfirmary(x: tileUnderMouse.x, y: tileUnderMouse.y) else { return }
 
         let needsHeal = (selectedUnit.map { $0.health < $0.resistancePoints } ?? false)
                      || (selectedGroup.map  { $0.health < $0.resistancePoints } ?? false)

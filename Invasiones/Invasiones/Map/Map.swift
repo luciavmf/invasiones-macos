@@ -287,6 +287,17 @@ final class Map {
         return id == .grass || id == .dirt
     }
 
+    /// Whether the map tile at (x, y) (map resolution, not physical) is part of an infirmary,
+    /// where hurt units can be sent to heal.
+    func isInfirmary(x: Int, y: Int) -> Bool {
+        guard x >= 0, y >= 0, x < width, y < height else { return false }
+        let tileId = buildingsLayer[x][y]
+        guard tileId != 0, let ts = getTileset(tileId), ts.id == .invalidated else { return false }
+        let localId = tileId - ts.firstGid
+        guard localId >= 0, localId < ts.tiles.count else { return false }
+        return ts.tiles[localId]?.kind == .infirmary
+    }
+
     func invalidateTile(x: Int, y: Int) {
         guard x >= 0, y >= 0,
               x + 1 < width * 2,
