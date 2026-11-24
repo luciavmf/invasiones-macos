@@ -32,7 +32,7 @@ struct Button {
 
     // MARK: - Methods
 
-    mutating func setPosition(x: Int, y: Int, anchor: Int) {
+    mutating func setPosition(x: Int, y: Int, anchor: Anchor) {
         frame.setPosition(x: x, y: y, anchor: anchor)
     }
 
@@ -61,7 +61,7 @@ struct Button {
             label,
             frame.posX - Video.width  / 2 + frame.width  / 2,
             frame.posY - Video.height / 2 + frame.height / 2,
-            Surface.centerHorizontal | Surface.centerVertical
+            .center
         )
     }
 }

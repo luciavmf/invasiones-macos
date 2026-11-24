@@ -16,12 +16,6 @@ import SpriteKit
 /// sub-texture clipping, and per-surface alpha.
 final class Surface {
 
-    // MARK: - Anchor constants (equivalent to SDL flags)
-    /// Anchor flag: centre horizontally.
-    static let centerHorizontal: Int = 1
-    /// Anchor flag: centre vertically.
-    static let centerVertical: Int = 2
-
     // MARK: - Declarations
     /// The full texture (sprite sheet or complete image).
     private(set) var texture: SKTexture?

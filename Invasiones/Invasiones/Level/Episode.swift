@@ -83,7 +83,7 @@ final class Episode {
     // MARK: - Initializer
     init() {
         gameOverMenu = ConfirmationMenu(Res.STR_CONTINUARJUEGO, Res.STR_NO, Res.STR_SI)
-        gameOverMenu.setPosition(x: 0, y: 0, anchor: Surface.centerVertical | Surface.centerHorizontal)
+        gameOverMenu.setPosition(x: 0, y: 0, anchor: .center)
     }
 
     // MARK: - Public control
@@ -149,7 +149,7 @@ final class Episode {
         video.color = Theme.title
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
-        video.write(Res.STR_CARGANDO, 0, Constants.loadingY, Surface.centerHorizontal)
+        video.write(Res.STR_CARGANDO, 0, Constants.loadingY, .centerHorizontal)
     }
 
     private func loadSprites() {
@@ -245,7 +245,7 @@ final class Episode {
 
     private func updateShowIntroState() {
         if count == 0 {
-            button?.setPosition(x: 0, y: Constants.objectivesButtonY, anchor: Surface.centerHorizontal)
+            button?.setPosition(x: 0, y: Constants.objectivesButtonY, anchor: .centerHorizontal)
         }
         count += 1
         if button?.update() != 0 {
@@ -286,7 +286,7 @@ final class Episode {
             Video.width - (Constants.objectivesBorder << 1),
             Video.height  - (Constants.objectivesBorder << 1) - hudHeight,
             Theme.alpha,
-            Surface.centerVertical | Surface.centerHorizontal
+            .center
         )
 
         if currentPage == 0 {
@@ -299,7 +299,7 @@ final class Episode {
 
         let strIdx = Res.STR_PRIMER_BATALLA + currentPage +
                      ((currentLevel?.currentBattleIndex ?? 0) * Constants.pagesPerIntro)
-        video.write(strIdx, 0, -(hudHeight >> 1), Surface.centerVertical | Surface.centerHorizontal)
+        video.write(strIdx, 0, -(hudHeight >> 1), .center)
         button?.draw(video)
     }
 
@@ -308,7 +308,7 @@ final class Episode {
     private func updateShowObjectiveState() {
         if count == 0 {
             acceptButton?.setPosition(x: 0, y: Constants.objectivesBoxButtonY,
-                                      anchor: Surface.centerHorizontal | Surface.centerVertical)
+                                      anchor: .center)
         }
         count += 1
         if acceptButton?.update() != 0 {
@@ -330,7 +330,7 @@ final class Episode {
             0, -(hudHeight / 2),
             Constants.objectivesBoxWidth, Constants.objectivesBoxHeight,
             Theme.alpha,
-            Surface.centerVertical | Surface.centerHorizontal
+            .center
         )
 
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
@@ -338,14 +338,14 @@ final class Episode {
         video.write(
             Res.STR_OBJETIVOS, 0,
             -(hudHeight / 2) - Constants.objectivesBoxHeight / 2 + 50,
-            Surface.centerVertical | Surface.centerHorizontal
+            .center
         )
 
         video.font = ResourceManager.shared.fonts[FontConstants.objectivesFont]
         video.fontColor = Theme.text
         let strIdx = Res.STR_PRIMER_BATALLA + currentPage +
                      ((currentLevel?.currentBattleIndex ?? 0) * Constants.pagesPerIntro)
-        video.write(strIdx, 0, -(hudHeight >> 1) + 30, Surface.centerVertical | Surface.centerHorizontal)
+        video.write(strIdx, 0, -(hudHeight >> 1) + 30, .center)
 
         acceptButton?.draw(video)
     }
@@ -416,18 +416,18 @@ final class Episode {
             video.fontColor = Theme.title
             video.write(Res.STR_OBJETIVOS,
                        Layout.objectivesOffset << 1,
-                       cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) - 10, 0)
+                       cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) - 10, [])
             let strIdx = Res.STR_OBJETIVO_BATALLA_1_1 + (currentLevel?.completedObjectiveCount ?? 0)
             video.write(strIdx,
                        Layout.objectivesOffset << 1,
-                       cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) + 5, 0)
+                       cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) + 5, [])
             _ = hudHeight  // suppress warning
         }
 
         if Mouse.shared.isDragging() {
             video.color = GameColor.green
             let r = Mouse.shared.dragRect
-            video.drawRect(Int(r.minX), Int(r.minY), Int(r.width), Int(r.height), 0)
+            video.drawRect(Int(r.minX), Int(r.minY), Int(r.width), Int(r.height), [])
         }
     }
 
@@ -532,7 +532,7 @@ final class Episode {
         button?.draw(video)
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
-        video.write(Res.STR_GANASTE, 0, 0, Surface.centerHorizontal | Surface.centerVertical)
+        video.write(Res.STR_GANASTE, 0, 0, .center)
     }
 
     // MARK: - LOST state
@@ -542,10 +542,10 @@ final class Episode {
         guard count > Constants.countdownToRestart else { return }
 
         let result = gameOverMenu.update()
-        if result == ConfirmationMenu.Selection.left.rawValue {
+        if result == .left {
             setState(.end)
         }
-        if result == ConfirmationMenu.Selection.right.rawValue {
+        if result == .right {
             setState(.loading)
         }
     }
@@ -554,7 +554,7 @@ final class Episode {
         drawPlayingState(video)
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
-        video.write(Res.STR_PERDISTE, 0, -100, Surface.centerHorizontal | Surface.centerVertical)
+        video.write(Res.STR_PERDISTE, 0, -100, .center)
         if count > Constants.countdownToRestart {
             gameOverMenu.draw(video)
         }
@@ -563,43 +563,43 @@ final class Episode {
     // MARK: - Cheats
 
     private func checkCheats() {
-        let keys = Keyboard.shared.pressedKeys
+        let keyboard = Keyboard.shared
 
-        if keys.contains(Keyboard.Key.g.rawValue) && cheatWinIndex == 0 {
+        if keyboard.isPressed(.g) && cheatWinIndex == 0 {
             cheatWinIndex += 1
-        } else if keys.contains(Keyboard.Key.a.rawValue) && cheatWinIndex == 1 {
+        } else if keyboard.isPressed(.a) && cheatWinIndex == 1 {
             cheatWinIndex += 1
-        } else if keys.contains(Keyboard.Key.n.rawValue) && cheatWinIndex == 2 {
+        } else if keyboard.isPressed(.n) && cheatWinIndex == 2 {
             cheatWinIndex += 1
-        } else if keys.contains(Keyboard.Key.x.rawValue) && cheatWinIndex == 3 {
+        } else if keyboard.isPressed(.x) && cheatWinIndex == 3 {
             cheatWinIndex += 1
-        } else if keys.contains(Keyboard.Key.w.rawValue) && cheatWinIndex == 4 {
+        } else if keyboard.isPressed(.w) && cheatWinIndex == 4 {
             setState(.won)
             cheatWinIndex = 0
-        } else if keys.contains(Keyboard.Key.p.rawValue) && cheatLoseIndex == 0 {
+        } else if keyboard.isPressed(.p) && cheatLoseIndex == 0 {
             cheatLoseIndex += 1
-        } else if keys.contains(Keyboard.Key.e.rawValue) && cheatLoseIndex == 1 {
+        } else if keyboard.isPressed(.e) && cheatLoseIndex == 1 {
             cheatLoseIndex += 1
-        } else if keys.contains(Keyboard.Key.r.rawValue) && cheatLoseIndex == 2 {
+        } else if keyboard.isPressed(.r) && cheatLoseIndex == 2 {
             cheatLoseIndex += 1
-        } else if keys.contains(Keyboard.Key.x.rawValue) && cheatLoseIndex == 3 {
+        } else if keyboard.isPressed(.x) && cheatLoseIndex == 3 {
             cheatLoseIndex += 1
-        } else if keys.contains(Keyboard.Key.w.rawValue) && cheatLoseIndex == 4 {
+        } else if keyboard.isPressed(.w) && cheatLoseIndex == 4 {
             setState(.lost)
             cheatLoseIndex = 0
-        } else if keys.contains(Keyboard.Key.o.rawValue) && cheatObjectiveIndex == 0 {
+        } else if keyboard.isPressed(.o) && cheatObjectiveIndex == 0 {
             cheatObjectiveIndex += 1
-        } else if keys.contains(Keyboard.Key.b.rawValue) && cheatObjectiveIndex == 1 {
+        } else if keyboard.isPressed(.b) && cheatObjectiveIndex == 1 {
             cheatObjectiveIndex += 1
-        } else if keys.contains(Keyboard.Key.j.rawValue) && cheatObjectiveIndex == 2 {
+        } else if keyboard.isPressed(.j) && cheatObjectiveIndex == 2 {
             cheatObjectiveIndex += 1
-        } else if keys.contains(Keyboard.Key.x.rawValue) && cheatObjectiveIndex == 3 {
+        } else if keyboard.isPressed(.x) && cheatObjectiveIndex == 3 {
             cheatObjectiveIndex += 1
-        } else if keys.contains(Keyboard.Key.w.rawValue) && cheatObjectiveIndex == 4 {
+        } else if keyboard.isPressed(.w) && cheatObjectiveIndex == 4 {
             setNewObjective()
             cheatObjectiveIndex = 0
-        } else if !keys.isEmpty {
-            if keys.contains(Keyboard.Key.u.rawValue) { player?.selectNextUnit() }
+        } else if !keyboard.pressedKeys.isEmpty {
+            if keyboard.isPressed(.u) { player?.selectNextUnit() }
             Log.shared.debug("Resetting all cheat indices.")
             cheatObjectiveIndex = 0
             cheatWinIndex = 0

@@ -110,6 +110,6 @@ final class Mouse {
     /// Draws the custom cursor at the current position using the Video context.
     func drawCursor(_ video: Video) {
         guard !cursorHidden, let sup = cursor else { return }
-        video.draw(sup, Int(_x), Int(_y), 255, 0)
+        video.draw(sup, Int(_x), Int(_y), 255, [])
     }
 }

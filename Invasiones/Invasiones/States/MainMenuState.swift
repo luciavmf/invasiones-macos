@@ -38,7 +38,6 @@ final class MainMenuState: State {
     }
 
     // MARK: - Declarations
-    private var selectedItem: Int = -1
     private var menu: Menu?
     /// The final Y position the menu should reach after animating in.
     private var menuTargetY: Int = 0
@@ -66,7 +65,7 @@ final class MainMenuState: State {
             itemCount: 5,
             x: 0,
             y: Video.height - Constants.mainMenuYOffset,
-            anchor: Surface.centerHorizontal
+            anchor: .centerHorizontal
         )
 
         newMenu.addItem(index: Item.newGame.rawValue,  stringId: Res.STR_MENU_NUEVO_JUEGO, flag: Menu.Constants.itemVisible)
@@ -79,7 +78,7 @@ final class MainMenuState: State {
             firstBuild = false
             menuTargetY = Video.height - newMenu.frame.height - Constants.mainMenuYOffset
             posY = Video.height + newMenu.frame.height + Constants.mainMenuYOffset
-            newMenu.setPosition(x: 0, y: Video.height + 15, anchor: Surface.centerHorizontal)
+            newMenu.setPosition(x: 0, y: Video.height + 15, anchor: .centerHorizontal)
         }
 
         newMenu.font = ResourceManager.shared.fonts[FontConstants.menuFont]
@@ -97,29 +96,27 @@ final class MainMenuState: State {
             if posY > menuTargetY {
                 posY -= menuSlideSpeed
             }
-            menu.setPosition(x: 0, y: posY, anchor: Surface.centerHorizontal)
+            menu.setPosition(x: 0, y: posY, anchor: .centerHorizontal)
         }
 
-        selectedItem = menu.update()
+        guard let index = menu.update(), let item = Item(rawValue: index) else { return }
 
-        switch selectedItem {
-        case Item.newGame.rawValue:
+        switch item {
+        case .newGame:
             stateMachine.setNextState(.game)
-        case Item.help.rawValue:
+        case .help:
             stateMachine.setNextState(.help)
-        case Item.options.rawValue:
+        case .options:
             stateMachine.setNextState(.options)
-        case Item.credits.rawValue:
+        case .credits:
             stateMachine.setNextState(.credits)
-        case Item.quit.rawValue:
+        case .quit:
             stateMachine.setNextState(.quit)
-        default:
-            break
         }
     }
 
     func draw(_ video: Video) {
-        video.draw(background, 0, 0, 0)
+        video.draw(background, 0, 0, [])
         menu?.draw(video)
     }
 

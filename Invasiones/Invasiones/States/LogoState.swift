@@ -55,7 +55,7 @@ final class LogoState: State {
             if alpha < 255 - 10 {
                 alpha += 10
             }
-            video.draw(logo, 0, 0, alpha, Surface.centerHorizontal | Surface.centerVertical)
+            video.draw(logo, 0, 0, alpha, .center)
         }
     }
 

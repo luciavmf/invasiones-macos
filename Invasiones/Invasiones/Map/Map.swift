@@ -183,7 +183,7 @@ final class Map {
             if greyTileImage == nil {
                 greyTileImage = ResourceManager.shared.getImage(Res.IMG_TILE_GRIS)
             }
-            video.draw(greyTileImage, posX, posY, 128, 0)
+            video.draw(greyTileImage, posX, posY, 128, [])
         }
     }
 
@@ -286,8 +286,8 @@ final class Map {
 
     /// Walks from (x1,y1) toward (x2,y2) along the Bresenham-style parametric line and
     /// returns the first walkable tile it encounters (port of C# ObtenerPosicionEnLineaDeVision).
-    /// Returns (-1,-1) if no walkable tile is found.
-    func getLineOfSightPosition(x1: Int, x2: Int, y1: Int, y2: Int) -> (x: Int, y: Int) {
+    /// Returns `nil` if no walkable tile is found.
+    func getLineOfSightPosition(x1: Int, x2: Int, y1: Int, y2: Int) -> (x: Int, y: Int)? {
         var col = Float(x1)
         var row = Float(y1)
 
@@ -311,7 +311,7 @@ final class Map {
                 col += colSlope
             }
         }
-        return (-1, -1)
+        return nil
     }
 
     private func getRowSlope(x1: Int, x2: Int, y1: Int, y2: Int) -> Float {

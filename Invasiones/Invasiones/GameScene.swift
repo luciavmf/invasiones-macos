@@ -17,7 +17,7 @@ final class GameScene: SKScene {
 
     // MARK: - Declarations
     private var gameFrame = GameFrame()
-    private var lastKeyPressed: Int = -1
+    private var lastKeyPressed: Int?
 
     // MARK: - Scene lifecycle
     override func didMove(to view: SKView) {
@@ -108,7 +108,7 @@ final class GameScene: SKScene {
     }
 
     override func keyUp(with event: NSEvent) {
-        lastKeyPressed = -1
+        lastKeyPressed = nil
         Keyboard.shared.releaseKey(Int(event.keyCode))
     }
 }

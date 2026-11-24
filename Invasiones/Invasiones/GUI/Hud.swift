@@ -52,7 +52,7 @@ final class Hud {
         tipsWindow.setPosition(
             x: ((Video.width - tipsWindow.frame.width) / 2) + 175,
             y: posY - tipsWindow.frame.height - 75,
-            anchor: 0
+            anchor: []
         )
     }
 
@@ -68,40 +68,40 @@ final class Hud {
     func draw(_ video: Video) {
         if let img = image {
             // V_FONDO = draws at the bottom
-            video.draw(img, 0, posY, 0)
+            video.draw(img, 0, posY, [])
         }
         tipsWindow.draw(video)
 
-        video.font = ResourceManager.shared.fonts[FontIndex.sans12.rawValue]
+        video.font = ResourceManager.shared.fonts[.sans12]
         video.fontColor = GameColor.black
-        video.write("\(enemyCount)", Constants.attrsEnemyCountX, posY + Constants.attrsCountY, 0)
-        video.write("\(argentineCount)", Constants.attrsArgentineCountX, posY + Constants.attrsCountY, 0)
+        video.write("\(enemyCount)", Constants.attrsEnemyCountX, posY + Constants.attrsCountY, [])
+        video.write("\(argentineCount)", Constants.attrsArgentineCountX, posY + Constants.attrsCountY, [])
 
-        video.font = ResourceManager.shared.fonts[FontIndex.sans12.rawValue]
+        video.font = ResourceManager.shared.fonts[.sans12]
         video.fontColor = GameColor.white
 
         guard let uni = unitToShow else { return }
 
         if let av = uni.avatar {
-            video.draw(av, Constants.avatarX, posY + Constants.avatarY, 0)
+            video.draw(av, Constants.avatarX, posY + Constants.avatarY, [])
         }
-        video.write(uni.name, Constants.avatarNameX, posY + Constants.avatarNameY, 0)
+        video.write(uni.name, Constants.avatarNameX, posY + Constants.avatarNameY, [])
 
         video.color = GameColor.black
 
         let s = GameText.Strings
         video.write("\(s[safe: Res.STR_ALCANCE] ?? ""): \(uni.range)",
-                Constants.attrsStartX1, posY + Constants.attrsStartY, 0)
+                Constants.attrsStartX1, posY + Constants.attrsStartY, [])
         video.write("\(s[safe: Res.STR_PUNTERIA] ?? ""): \(uni.aim)",
-                Constants.attrsStartX1, posY + Constants.attrsStartY + lineSpacing, 0)
+                Constants.attrsStartX1, posY + Constants.attrsStartY + lineSpacing, [])
         video.write("\(s[safe: Res.STR_PUNTOS_DE_ATAQUE] ?? ""): \(uni.attackPoints)",
-                Constants.attrsStartX2, posY + Constants.attrsStartY, 0)
+                Constants.attrsStartX2, posY + Constants.attrsStartY, [])
         video.write("\(s[safe: Res.STR_PUNTOS_DE_RESISTENCIA] ?? ""): \(uni.health)/\(uni.resistancePoints)",
-                Constants.attrsStartX2, posY + Constants.attrsStartY + lineSpacing, 0)
+                Constants.attrsStartX2, posY + Constants.attrsStartY + lineSpacing, [])
         video.write("\(s[safe: Res.STR_VELOCIDAD] ?? ""): \(uni.defaultSpeed)",
-                Constants.attrsStartX3, posY + Constants.attrsStartY, 0)
+                Constants.attrsStartX3, posY + Constants.attrsStartY, [])
         video.write("\(s[safe: Res.STR_VISIBILIDAD] ?? ""): \(uni.visibility)",
-                Constants.attrsStartX3, posY + Constants.attrsStartY + lineSpacing, 0)
+                Constants.attrsStartX3, posY + Constants.attrsStartY + lineSpacing, [])
     }
 }
 

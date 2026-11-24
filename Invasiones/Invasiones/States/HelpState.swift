@@ -41,7 +41,7 @@ final class HelpState: State {
     func start() {
         background = ResourceManager.shared.getImage(Res.IMG_FONDO)
 
-        let fnt = ResourceManager.shared.fonts[FontIndex.sans18.rawValue]
+        let fnt = ResourceManager.shared.fonts[.sans18]
 
         button = Button(label: Res.STR_BOTON_MENU, font: fnt)
         let bw = button?.frame.width  ?? 0
@@ -49,7 +49,7 @@ final class HelpState: State {
         button?.setPosition(
             x: Video.width  - bw - Button.Constants.screenEdgeOffset,
             y: Video.height - bh - Button.Constants.screenEdgeOffset,
-            anchor: 0
+            anchor: []
         )
 
         nextButton = Button(label: Res.STR_SIGUIENTE, font: fnt)
@@ -58,14 +58,14 @@ final class HelpState: State {
         nextButton?.setPosition(
             x: Video.width  - nw - Button.Constants.screenEdgeOffset,
             y: Video.height - nh - Button.Constants.screenEdgeOffset,
-            anchor: 0
+            anchor: []
         )
 
         backButton = Button(label: Res.STR_ATRAS, font: fnt)
         backButton?.setPosition(
             x: Video.width  - nw * 2 - Button.Constants.screenEdgeOffset,
             y: Video.height - nh     - Button.Constants.screenEdgeOffset,
-            anchor: 0
+            anchor: []
         )
 
         substate = .select
@@ -95,25 +95,25 @@ final class HelpState: State {
     }
 
     func draw(_ video: Video) {
-        video.draw(background, 0, 0, 0)
+        video.draw(background, 0, 0, [])
 
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
-        video.write(Res.STR_MENU_AYUDA, 0, Layout.titleYPosition, Surface.centerHorizontal)
+        video.write(Res.STR_MENU_AYUDA, 0, Layout.titleYPosition, .centerHorizontal)
 
         if substate.rawValue < Substate.total {
             video.font = ResourceManager.shared.fonts[FontConstants.helpTitleFont]
             video.fontColor = Theme.text
             video.write(Res.STR_MENU_AYUDA_TEXTO_SELECCIONAR_01 + substate.rawValue * 2,
-                       0, Constants.helpItemY, Surface.centerHorizontal)
+                       0, Constants.helpItemY, .centerHorizontal)
 
             video.font = ResourceManager.shared.fonts[FontConstants.helpFont]
             video.fontColor = Theme.text
             video.write(Res.STR_MENU_AYUDA_TEXTO_SELECCIONAR_02 + substate.rawValue * 2,
-                       0, Constants.helpTextY, Surface.centerHorizontal)
+                       0, Constants.helpTextY, .centerHorizontal)
         }
 
-        currentScreenshot?.draw(video: video, x: 0, y: 150, anchor: Surface.centerHorizontal | Surface.centerVertical)
+        currentScreenshot?.draw(video: video, x: 0, y: 150, anchor: .center)
 
         if substate != .select { backButton?.draw(video) }
         if substate != .win {

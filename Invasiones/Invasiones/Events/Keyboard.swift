@@ -49,4 +49,9 @@ final class Keyboard {
     func clearKeys() {
         pressedKeys.removeAll()
     }
+
+    /// Whether the given key is currently held down.
+    func isPressed(_ key: Key) -> Bool {
+        pressedKeys.contains(key.rawValue)
+    }
 }

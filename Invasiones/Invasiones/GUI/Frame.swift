@@ -16,10 +16,10 @@ struct Frame {
     var width:  Int = 0
     var height: Int = 0
 
-    mutating func setPosition(x: Int, y: Int, anchor: Int) {
+    mutating func setPosition(x: Int, y: Int, anchor: Anchor) {
         posX = x
         posY = y
-        if (anchor & Surface.centerVertical)   != 0 { posY += (Video.height >> 1) - (height >> 1) }
-        if (anchor & Surface.centerHorizontal) != 0 { posX += (Video.width  >> 1) - (width  >> 1) }
+        if anchor.contains(.centerVertical) { posY += (Video.height >> 1) - (height >> 1) }
+        if anchor.contains(.centerHorizontal) { posX += (Video.width  >> 1) - (width  >> 1) }
     }
 }

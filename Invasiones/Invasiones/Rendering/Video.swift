@@ -93,13 +93,13 @@ final class Video {
     // MARK: - Draw surfaces
 
     /// Draws a surface (or its active clip) at C# coordinates (x, y) with an anchor.
-    func draw(_ surface: Surface?, _ x: Int, _ y: Int, _ anchor: Int) {
+    func draw(_ surface: Surface?, _ x: Int, _ y: Int, _ anchor: Anchor) {
         let alpha = Int((surface?.alpha ?? 1.0) * 255.0)
         draw(surface, x, y, alpha, anchor)
     }
 
     /// Draws a surface with an explicit transparency value (alpha 0-255).
-    func draw(_ surface: Surface?, _ x: Int, _ y: Int, _ alpha: Int, _ anchor: Int) {
+    func draw(_ surface: Surface?, _ x: Int, _ y: Int, _ alpha: Int, _ anchor: Anchor) {
         guard let sup = surface,
               let tex = sup.currentTexture ?? sup.texture else { return }
 
@@ -107,8 +107,8 @@ final class Video {
         let fw = Int(tex.size().width)
         let fh = Int(tex.size().height)
 
-        if (anchor & Surface.centerHorizontal) != 0 { px += Video.width / 2 - fw / 2 }
-        if (anchor & Surface.centerVertical) != 0 { py += Video.height  / 2 - fh / 2 }
+        if anchor.contains(.centerHorizontal) { px += Video.width / 2 - fw / 2 }
+        if anchor.contains(.centerVertical) { py += Video.height  / 2 - fh / 2 }
 
         let node = nextPoolNode()
         node.texture   = tex
@@ -170,21 +170,21 @@ final class Video {
     // MARK: - Write text
 
     /// Writes the string identified by its ID (index in GameText.Strings) with an anchor.
-    func write(_ stringId: Int, _ x: Int, _ y: Int, _ anchor: Int) {
+    func write(_ stringId: Int, _ x: Int, _ y: Int, _ anchor: Anchor) {
         let strings = GameText.Strings
         guard stringId >= 0, stringId < strings.count else { return }
         writeText(strings[stringId], x, y, anchor)
     }
 
     /// Writes a string literal (for debug output and dynamic text).
-    func write(_ text: String, _ x: Int, _ y: Int, _ anchor: Int) {
+    func write(_ text: String, _ x: Int, _ y: Int, _ anchor: Anchor) {
         writeText(text, x, y, anchor)
     }
 
-    private func writeText(_ text: String, _ x: Int, _ y: Int, _ anchor: Int) {
+    private func writeText(_ text: String, _ x: Int, _ y: Int, _ anchor: Anchor) {
         var px = x, py = y
-        if (anchor & Surface.centerHorizontal) != 0 { px += Video.width / 2 }
-        if (anchor & Surface.centerVertical) != 0 { py += Video.height  / 2 }
+        if anchor.contains(.centerHorizontal) { px += Video.width / 2 }
+        if anchor.contains(.centerVertical) { py += Video.height  / 2 }
 
         let label = SKLabelNode()
         let nsFont: NSFont
@@ -204,8 +204,8 @@ final class Video {
             .paragraphStyle: paraStyle
         ]
         label.attributedText = NSAttributedString(string: text, attributes: attrs)
-        label.horizontalAlignmentMode = (anchor & Surface.centerHorizontal) != 0 ? .center : .left
-        label.verticalAlignmentMode = (anchor & Surface.centerVertical) != 0 ? .center : .top
+        label.horizontalAlignmentMode = anchor.contains(.centerHorizontal) ? .center : .left
+        label.verticalAlignmentMode = anchor.contains(.centerVertical) ? .center : .top
         label.numberOfLines = 0      // allows line breaks with \n
         label.preferredMaxLayoutWidth = CGFloat(Video.width - 80)  // enables word-wrap and avoids clipping
         label.position = CGPoint(x: px, y: Video.height - py)
@@ -219,10 +219,10 @@ final class Video {
 
     /// Fills a rectangle with the current colour, optional alpha and anchor.
     func fillRect(_ x: Int, _ y: Int, _ w: Int, _ h: Int,
-                  _ alpha: Int = 255, _ anchor: Int = 0) {
+                  _ alpha: Int = 255, _ anchor: Anchor = []) {
         var px = x, py = y
-        if (anchor & Surface.centerHorizontal) != 0 { px += Video.width / 2 - w / 2 }
-        if (anchor & Surface.centerVertical) != 0 { py += Video.height  / 2 - h / 2 }
+        if anchor.contains(.centerHorizontal) { px += Video.width / 2 - w / 2 }
+        if anchor.contains(.centerVertical) { py += Video.height  / 2 - h / 2 }
         let node = nextPoolNode()
         node.texture   = nil
         node.color     = currentColor
@@ -236,10 +236,10 @@ final class Video {
 
     /// Fills a rounded rectangle with the current colour, optional alpha and anchor.
     func fillRoundedRect(_ x: Int, _ y: Int, _ w: Int, _ h: Int,
-                         _ radius: Int, _ alpha: Int = 255, _ anchor: Int = 0) {
+                         _ radius: Int, _ alpha: Int = 255, _ anchor: Anchor = []) {
         var px = x, py = y
-        if (anchor & Surface.centerHorizontal) != 0 { px += Video.width  / 2 - w / 2 }
-        if (anchor & Surface.centerVertical)   != 0 { py += Video.height / 2 - h / 2 }
+        if anchor.contains(.centerHorizontal) { px += Video.width  / 2 - w / 2 }
+        if anchor.contains(.centerVertical) { py += Video.height / 2 - h / 2 }
         let rect = CGRect(x: px, y: Video.height - py - h, width: w, height: h)
         let shape = SKShapeNode(rect: rect, cornerRadius: CGFloat(radius))
         shape.fillColor   = currentColor
@@ -258,10 +258,10 @@ final class Video {
     }
 
     /// Draws the outline of a rectangle (no fill) with the current colour.
-    func drawRect(_ x: Int, _ y: Int, _ w: Int, _ h: Int, _ anchor: Int) {
+    func drawRect(_ x: Int, _ y: Int, _ w: Int, _ h: Int, _ anchor: Anchor) {
         var px = x, py = y
-        if (anchor & Surface.centerHorizontal) != 0 { px += Video.width / 2 - w / 2 }
-        if (anchor & Surface.centerVertical) != 0 { py += Video.height  / 2 - h / 2 }
+        if anchor.contains(.centerHorizontal) { px += Video.width / 2 - w / 2 }
+        if anchor.contains(.centerVertical) { py += Video.height  / 2 - h / 2 }
 
         let shape = SKShapeNode(rect: CGRect(x: px, y: Video.height - py - h, width: w, height: h))
         shape.strokeColor = currentColor

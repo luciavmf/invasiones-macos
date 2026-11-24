@@ -55,7 +55,7 @@ final class OptionsState: State {
         button?.setPosition(
             x: Video.width  - bw - Button.Constants.screenEdgeOffset,
             y: Video.height - bh - Button.Constants.screenEdgeOffset,
-            anchor: 0)
+            anchor: [])
     }
 
     func update() {
@@ -98,17 +98,17 @@ final class OptionsState: State {
     }
 
     func draw(_ video: Video) {
-        video.draw(background, 0, 0, 0)
+        video.draw(background, 0, 0, [])
 
         // Title
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_MENU_OPCIONES, 0, Layout.titleYPosition, Surface.centerHorizontal)
+        video.write(Res.STR_MENU_OPCIONES, 0, Layout.titleYPosition, .centerHorizontal)
 
         // Sound section
         video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_SOUND_LABEL, 0, SoundLayout.labelY, Surface.centerHorizontal)
+        video.write(Res.STR_SOUND_LABEL, 0, SoundLayout.labelY, .centerHorizontal)
 
         let indSoundY = SoundLayout.startY + (SoundLayout.rowHeight - SoundLayout.indSize) / 2
         if soundRowHovered {
@@ -118,7 +118,7 @@ final class OptionsState: State {
                                   4, Theme.alpha)
         }
         video.color = Theme.text
-        video.drawRect(SoundLayout.indX, indSoundY, SoundLayout.indSize, SoundLayout.indSize, 0)
+        video.drawRect(SoundLayout.indX, indSoundY, SoundLayout.indSize, SoundLayout.indSize, [])
         if !Sound.shared.isMuted {
             let inset = 3
             video.fillRect(SoundLayout.indX + inset, indSoundY + inset,
@@ -126,12 +126,12 @@ final class OptionsState: State {
         }
         let soundTextY = SoundLayout.startY + SoundLayout.rowHeight / 2 - Video.height / 2
         let soundLabel = Sound.shared.isMuted ? "Off" : "On"
-        video.write(soundLabel, SoundLayout.textX, soundTextY, Surface.centerVertical)
+        video.write(soundLabel, SoundLayout.textX, soundTextY, .centerVertical)
 
         // Language section
         video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_LANGUAGE_LABEL, 0, RadioLayout.startY - 28, Surface.centerHorizontal)
+        video.write(Res.STR_LANGUAGE_LABEL, 0, RadioLayout.startY - 28, .centerHorizontal)
 
         for (i, lang) in Language.allCases.enumerated() {
             let rowY = RadioLayout.startY + i * RadioLayout.rowHeight
@@ -145,7 +145,7 @@ final class OptionsState: State {
             }
 
             video.color = Theme.text
-            video.drawRect(RadioLayout.indX, indY, RadioLayout.indSize, RadioLayout.indSize, 0)
+            video.drawRect(RadioLayout.indX, indY, RadioLayout.indSize, RadioLayout.indSize, [])
 
             if lang == Language.current {
                 let inset = 3
@@ -154,7 +154,7 @@ final class OptionsState: State {
             }
 
             let textY = rowY + RadioLayout.rowHeight / 2 - Video.height / 2
-            video.write(lang.displayName, RadioLayout.textX, textY, Surface.centerVertical)
+            video.write(lang.displayName, RadioLayout.textX, textY, .centerVertical)
         }
 
         button?.draw(video)

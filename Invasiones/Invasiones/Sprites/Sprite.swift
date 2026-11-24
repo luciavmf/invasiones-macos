@@ -15,7 +15,7 @@ final class Sprite {
     // MARK: - Declarations
     var animations: [Animation?] = []
     private var currentAnim: Animation?
-    private var currentAnimId: Int = -1
+    private var currentAnimId: Int?
 
     // MARK: - Initializeres
     init() {}
@@ -88,7 +88,7 @@ final class Sprite {
 
     func draw(video: Video, x: Int, y: Int) {
         guard let img = currentAnim?.image else { return }
-        video.draw(img, x, y, 0)
+        video.draw(img, x, y, [])
     }
 
     func load() throws {

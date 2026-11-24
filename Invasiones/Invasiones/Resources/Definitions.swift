@@ -9,9 +9,9 @@
 
 import Foundation
 
-/// Font slot indices into `ResourceManager.fonts`.
-enum FontIndex: Int {
-    case sans12 = 0
+/// Font slots: keys into `ResourceManager.fonts`.
+enum FontIndex {
+    case sans12
     case sans14
     case sans18
     case sans20
@@ -22,7 +22,6 @@ enum FontIndex: Int {
     case lblack18
     case lblack20
     case lblack28
-    case total
 }
 
 /// Eight compass directions used for unit sprite animation.
@@ -56,13 +55,13 @@ enum Theme {
 
 /// Fonts used in the ui
 enum FontConstants {
-    static let titleFont = FontIndex.lblack28.rawValue
-    static let helpTitleFont = FontIndex.sans24.rawValue
-    static let helpFont = FontIndex.sans18.rawValue
-    static let menuFont = FontIndex.sans20.rawValue
-    static let buttonFont = FontIndex.sans14.rawValue
-    static let objectivesReminderFont = FontIndex.sans14.rawValue
-    static let objectivesFont = FontIndex.sans20.rawValue
+    static let titleFont = FontIndex.lblack28
+    static let helpTitleFont = FontIndex.sans24
+    static let helpFont = FontIndex.sans18
+    static let menuFont = FontIndex.sans20
+    static let buttonFont = FontIndex.sans14
+    static let objectivesReminderFont = FontIndex.sans14
+    static let objectivesFont = FontIndex.sans20
 }
 
 /// Layout

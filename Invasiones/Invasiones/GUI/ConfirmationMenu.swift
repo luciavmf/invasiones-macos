@@ -12,10 +12,9 @@ import Foundation
 final class ConfirmationMenu {
 
     // MARK: - Enum
-    enum Selection: Int {
-        case none  = -1
-        case left  =  0
-        case right =  1
+    enum Selection {
+        case left
+        case right
     }
 
     enum Constants {
@@ -35,36 +34,37 @@ final class ConfirmationMenu {
     init(_ lbl: Int, _ boton1: Int, _ boton2: Int) {
         label = lbl
         leftButton  = Button(label: boton1, font: nil)
-        leftButton.setPosition(x: 0, y: 0, anchor: 0)
+        leftButton.setPosition(x: 0, y: 0, anchor: [])
         rightButton = Button(label: boton2, font: nil)
-        rightButton.setPosition(x: 200, y: 200, anchor: 0)
+        rightButton.setPosition(x: 200, y: 200, anchor: [])
     }
 
     // MARK: - Methods
 
-    func setPosition(x: Int, y: Int, anchor: Int) {
+    func setPosition(x: Int, y: Int, anchor: Anchor) {
         frame.posX = x
         frame.posY = y
-        if (anchor & Surface.centerHorizontal) != 0 { frame.posX += (Video.width  >> 1) - (frame.width  >> 1) }
-        if (anchor & Surface.centerVertical)   != 0 { frame.posY += (Video.height >> 1) - (frame.height >> 1) }
+        if anchor.contains(.centerHorizontal) { frame.posX += (Video.width  >> 1) - (frame.width  >> 1) }
+        if anchor.contains(.centerVertical) { frame.posY += (Video.height >> 1) - (frame.height >> 1) }
 
         leftButton.setPosition(
             x: frame.posX + Button.Constants.screenEdgeOffset,
             y: frame.posY + frame.height - leftButton.frame.height - Button.Constants.screenEdgeOffset,
-            anchor: 0
+            anchor: []
         )
         rightButton.setPosition(
             x: frame.posX + frame.width - rightButton.frame.width - Button.Constants.screenEdgeOffset,
             y: frame.posY + frame.height - rightButton.frame.height - Button.Constants.screenEdgeOffset,
-            anchor: 0
+            anchor: []
         )
     }
 
+    /// Returns the clicked button, or `nil` if neither was clicked this frame.
     @discardableResult
-    func update() -> Int {
-        if leftButton.update()  != 0 { return Selection.left.rawValue  }
-        if rightButton.update() != 0 { return Selection.right.rawValue }
-        return Selection.none.rawValue
+    func update() -> Selection? {
+        if leftButton.update()  != 0 { return .left }
+        if rightButton.update() != 0 { return .right }
+        return nil
     }
 
     func draw(_ video: Video) {
@@ -77,7 +77,7 @@ final class ConfirmationMenu {
             label,
             frame.posX - (Video.width >> 1) + (frame.width >> 1),
             frame.posY + frame.height / 5,
-            Surface.centerHorizontal
+            .centerHorizontal
         )
 
         leftButton.draw(video)
