@@ -8,26 +8,28 @@
 //
 
 import Foundation
-internal import CoreGraphics
 
 /// The player-controlled Argentine faction.
-/// Handles mouse-driven unit selection, movement orders, attack orders, group creation,
-/// the orientation arrow, and objective progress.
+/// Carries out the player's intents (read by `PlayerInput`): unit selection, group creation,
+/// movement, attack and heal orders. Also handles the orientation arrow and objective progress.
 final class ArgentineTeam: Player {
 
     // MARK: - Attributes
-    private var unitUnderMouse: Unit?
+    private var unitUnderPointer: Unit?
     private var count: Int = 0
     private var arrowObj: MapObject?
     private var orientationArrow: Animation?
     private var commandTargetPos: (x: Int, y: Int) = (0, 0)
     private var arrowPos: (x: Int, y: Int) = (0, 0)
     private var unitToFindIdx: Int = 0
+    private let input: PlayerInput
 
     private let arrowMaxCount = 100
 
     // MARK: - Initializer
-    override init(map: Map, camera: Camera, objectsToDraw: ObjectTable, hud: Hud) {
+    init(map: Map, camera: Camera, objectsToDraw: ObjectTable, hud: Hud,
+         pointer: any PointerDevice = Mouse.shared) {
+        input = PlayerInput(map: map, pointer: pointer)
         super.init(map: map, camera: camera, objectsToDraw: objectsToDraw, hud: hud)
         faction = .argentine
 
@@ -150,14 +152,17 @@ final class ArgentineTeam: Player {
         objectToTake?.update()
         ring?.update()
 
-        unitUnderMouse = getUnitUnderMouse()
+        unitUnderPointer = unitAt(x: input.position.x, y: input.position.y)
         selectedUnits = []
 
-        selectUnitsInDragRect()
+        if let selection = input.dragSelection() { handle(selection) }
         updateUnits()
-        createGroups()
-        checkUnitOrders()
-        updateCursor()
+        input.clickIntents(unitUnderPointer: unitUnderPointer, hasSelection: hasSelection).forEach(handle)
+
+        let hadSelection = hasSelection
+        if let unit = selectedUnit, unit.isDead() { clearSelection() }
+        input.show(input.cursor(unitUnderPointer: unitUnderPointer, hasSelection: hadSelection,
+                                selectionNeedsHealing: selectionNeedsHealing))
 
         fireEffects?.forEach { $0.update() }
         updateGroups()
@@ -237,9 +242,10 @@ final class ArgentineTeam: Player {
                commandTargetPos.y < camera.height
     }
 
-    // MARK: - Unit under mouse
+    // MARK: - Unit under the pointer
 
-    private func getUnitUnderMouse() -> Unit? {
+    /// The unit drawn at a screen point, searching the visible tiles in drawing order.
+    private func unitAt(x: Int, y: Int) -> Unit? {
         let rect = getPaintCoordinates()
         var startCol = rect.x, startRow = rect.y
         let endI = rect.w, endJ = rect.h
@@ -251,7 +257,7 @@ final class ArgentineTeam: Player {
             while tileX <= endI && j >= 0 {
                 if i >= 0 && i < map.physicalMapHeight && j < map.physicalMapWidth {
                     if let uni = objectsToDraw.tabla[i][j] as? Unit,
-                       uni.isUnderMouse() {
+                       uni.isUnder(x: x, y: y) {
                         return uni
                     }
                 }
@@ -272,94 +278,68 @@ final class ArgentineTeam: Player {
         return nil
     }
 
-    // MARK: - Orders
+    // MARK: - Intents
 
-    private func checkUnitOrders() {
-        // Left click on an Argentine unit: select it
-        if Mouse.shared.pressedButtons.contains(Mouse.Constants.leftButton) {
-            if let unitUnderMouse = unitUnderMouse, unitUnderMouse.faction == .argentine {
-                let up = Mouse.shared.dragRect
-                let isDragging = Mouse.shared.isDragging()
-                    && Int(up.width) >= 4 && Int(up.height) >= 4
-                if !isDragging {
-                    clearSelection()
-                    unitUnderMouse.isSelected = true
-                    hud.selectedUnit = unitUnderMouse
-                    selectedUnit = unitUnderMouse
-
-                    if unitUnderMouse.belongsToGroup {
-                        unitUnderMouse.myGroup?.removeUnit(unitUnderMouse)
-                        unitUnderMouse.leaveGroup()
-                    }
-                    Mouse.shared.releaseButton(Mouse.Constants.leftButton)
-                }
+    /// Carries out one request from the player.
+    func handle(_ intent: PlayerIntent) {
+        switch intent {
+        case let .selectInRect(x, y, w, h):
+            guard selectedUnit == nil && selectedGroup == nil else { return }
+            for unit in units where unit.faction == .argentine {
+                _ = unit.selectIfInRect(x: x, y: y, w: w, h: h)
             }
-        }
+            collectSelectedUnits()
+            createGroups()
 
-        guard selectedUnit != nil || selectedGroup != nil else { return }
+        case let .select(unit):
+            guard unit.faction == .argentine else { return }
+            clearSelection()
+            unit.isSelected = true
+            hud.selectedUnit = unit
+            selectedUnit = unit
+            // A unit picked out of a group leaves it.
+            if unit.belongsToGroup {
+                unit.myGroup?.removeUnit(unit)
+                unit.leaveGroup()
+            }
 
-        // Right click: move or attack
-        if Mouse.shared.pressedButtons.contains(Mouse.Constants.rightButton) {
-            Mouse.shared.releaseButton(Mouse.Constants.rightButton)
+        case .deselect:
+            selectedUnits.forEach { $0.isSelected = false }
+            clearSelection()
 
-            let tile = map.smallTileUnderMouse
-
-            if map.isWalkable(x: tile.x, y: tile.y) {
-                // There is an enemy unit under the mouse → attack
-                if let unitUnderMouse = unitUnderMouse,
-                   unitUnderMouse.faction == .enemy,
-                   !unitUnderMouse.isDead() {
-                    if let group = selectedGroup {
-                        group.attack(enemy: unitUnderMouse)
-                    } else {
-                        selectedUnit?.attack(enemy: unitUnderMouse)
-                    }
-                } else {
-                    // Mover
-                    if let group = selectedGroup {
-                        group.move(x: tile.x, y: tile.y)
-                    } else {
-                        selectedUnit?.move(x: tile.x, y: tile.y)
-                    }
-                    count = 0
-                    arrowObj?.setTilePosition(i: tile.x, j: tile.y)
-                }
+        case let .move(x, y):
+            if let group = selectedGroup {
+                group.move(x: x, y: y)
             } else {
-                // Non-walkable tile: check if it's the infirmary
-                let tileUnderMouse = map.tileUnderMouse
-                guard tileUnderMouse.y < map.height  && tileUnderMouse.y >= 0 &&
-                      tileUnderMouse.x < map.width && tileUnderMouse.x >= 0 else { return }
+                selectedUnit?.move(x: x, y: y)
+            }
+            count = 0
+            arrowObj?.setTilePosition(i: x, j: y)
 
-                let buildingTileId = map.buildingsLayer[tileUnderMouse.x][tileUnderMouse.y]
-                guard buildingTileId != 0, let ts = map.getTileset(buildingTileId) else { return }
+        case let .attack(enemy):
+            if let group = selectedGroup {
+                group.attack(enemy: enemy)
+            } else {
+                selectedUnit?.attack(enemy: enemy)
+            }
 
-                let localId = buildingTileId - ts.firstGid
-                guard localId >= 0, localId < ts.tiles.count,
-                      let tileProp = ts.tiles[localId],
-                      ts.id == .invalidated,
-                      tileProp.kind == .infirmary else { return }
-
-                Log.shared.debug("Unit ordered to heal.")
-                if let group = selectedGroup,
-                   group.health < group.resistancePoints {
-                    group.heal(x: tile.x, y: tile.y)
-                } else if let unit = selectedUnit,
-                          unit.health < unit.resistancePoints {
-                    unit.heal(x: tile.x, y: tile.y)
-                }
+        case let .heal(x, y):
+            Log.shared.debug("Unit ordered to heal.")
+            if let group = selectedGroup, group.health < group.resistancePoints {
+                group.heal(x: x, y: y)
+            } else if let unit = selectedUnit, unit.health < unit.resistancePoints {
+                unit.heal(x: x, y: y)
             }
         }
+    }
 
-        // Left click without dragging: deselect
-        if Mouse.shared.pressedButtons.contains(Mouse.Constants.leftButton) {
-            let up = Mouse.shared.dragRect
-            let isDragging = Mouse.shared.isDragging()
-                && Int(up.width) >= 4 && Int(up.height) >= 4
-            if !isDragging {
-                selectedUnits.forEach { $0.isSelected = false }
-                clearSelection()
-            }
-        }
+    /// Whether a unit or group is selected.
+    var hasSelection: Bool { selectedUnit != nil || selectedGroup != nil }
+
+    /// Whether the selected unit or group has lost health, so it can be sent to heal.
+    var selectionNeedsHealing: Bool {
+        (selectedUnit.map { $0.health < $0.resistancePoints } ?? false)
+            || (selectedGroup.map { $0.health < $0.resistancePoints } ?? false)
     }
 
     // MARK: - Group creation and management
@@ -414,41 +394,6 @@ final class ArgentineTeam: Player {
         }
     }
 
-    // MARK: - Cursor
-
-    private func updateCursor() {
-        Mouse.shared.cursor = ResourceManager.shared.getImage(.cursor)
-
-        guard selectedUnit != nil || selectedGroup != nil else { return }
-
-        if let unitUnderMouse = unitUnderMouse, unitUnderMouse.faction == .enemy {
-            Mouse.shared.cursor = ResourceManager.shared.getImage(.swordCursor)
-        }
-
-        if let u = selectedUnit, u.isDead() {
-            clearSelection()
-        }
-
-        let tileUnderMouse = map.tileUnderMouse
-        guard tileUnderMouse.y < map.height  && tileUnderMouse.y >= 0 &&
-              tileUnderMouse.x < map.width && tileUnderMouse.x >= 0 else { return }
-
-        let buildingTileId = map.buildingsLayer[tileUnderMouse.x][tileUnderMouse.y]
-        guard buildingTileId != 0, let ts = map.getTileset(buildingTileId) else { return }
-
-        let localId = buildingTileId - ts.firstGid
-        guard localId >= 0, localId < ts.tiles.count,
-              let tileProp = ts.tiles[localId],
-              ts.id == .invalidated,
-              tileProp.kind == .infirmary else { return }
-
-        let needsHeal = (selectedUnit.map { $0.health < $0.resistancePoints } ?? false)
-                     || (selectedGroup.map  { $0.health < $0.resistancePoints } ?? false)
-        if needsHeal {
-            Mouse.shared.cursor = ResourceManager.shared.getImage(.infirmaryCursor)
-        }
-    }
-
     // MARK: - Objetivos
 
     private func updateObjectives() {
@@ -467,22 +412,6 @@ final class ArgentineTeam: Player {
     }
 
     // MARK: - Private helpers
-
-    private func selectUnitsInDragRect() {
-        // Fire on the frame the drag ends (matches original C# TerminoDeArrastrar() check).
-        guard Mouse.shared.didFinishDragging() else { return }
-
-        let up = Mouse.shared.dragRect
-        guard Int(up.width) >= 4 && Int(up.height) >= 4 else { return }
-
-        guard selectedUnit == nil && selectedGroup == nil else { return }
-
-        for unit in units where unit.faction == .argentine {
-            _ = unit.selectIfInRect(
-                x: Int(up.origin.x), y: Int(up.origin.y),
-                w: Int(up.width),    h: Int(up.height))
-        }
-    }
 
     private func calculateFirstTileToDraw(x: Int, y: Int) -> (x: Int, y: Int) {
         let th = map.tileHeight > 0 ? map.tileHeight / 2 : 1

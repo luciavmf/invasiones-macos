@@ -9,6 +9,7 @@ macOS port of a Windows C# RTS (real-time strategy) game, translated to Swift us
 ## Documentation
 
 - `docs/architecture.md` — how the game is structured today. Update it when a change alters that structure.
+- `docs/specs/` — the rules of specific areas (e.g. `selection-and-orders.md`), as the game behaves today. Update a spec when its rules change.
 - Plans for larger changes live in their GitHub issue (e.g. #3), not in the repo.
 
 ## Build & Run
@@ -70,6 +71,7 @@ Battle lifecycle: `LOADING → SHOW_INTRO → PLAYING → WON/LOST`
 - Enemy units without a group (`AI`) are set to `PATROLLING` on load and wander randomly between `RANDOM_PATRULLA_MIN=8` and `RANDOM_PATRULLA_MAX=16` tiles from their spawn position.
 - Counter-attack (`contraAtacar` → `Unit.counterAttack`): when a unit enters `attacking`, it notifies the target, which fights back if it is idle and in range.
 - Drag selection: dragging a rectangle selects at most **6** units (`Player.maxSelectedUnits`, as in the C# original); more than one becomes a `Group` that moves together.
+- Player input: `PlayerInput` turns the mouse into `PlayerIntent`s, which `ArgentineTeam.handle(_:)` carries out. `ArgentineTeam` doesn't read `Mouse` itself.
 
 ### Rendering (`Video`)
 
@@ -83,7 +85,7 @@ GUI components use composition: each embeds `var frame: Frame` (defined in `GUI/
 
 `Frame` is a plain struct holding `posX`, `posY`, `width`, `height` and a `mutating setPosition(x:y:anchor:)` helper. Styling (font, image, label) lives on each component individually.
 
-Components: `Button` (struct), `Menu` (class), `ConfirmationMenu` (class), `Tips` (class), `Hud`, `Ring`.
+Components: `Button` (struct), `Menu` (class), `ConfirmationMenu` (class), `Tips` (class), `Hud`.
 
 Input from `NSEvent` flows through `GameScene` into `Mouse` and `Keyboard` singletons.
 
@@ -99,7 +101,7 @@ Input from `NSEvent` flows through `GameScene` into `Mouse` and `Keyboard` singl
 
 Unit tests (`InvasionesTests`, Swift Testing) run inside the app (`TEST_HOST`). Test suites touching game types need `@MainActor` (the app target defaults to MainActor isolation).
 
-- `TestSupport.swift` has `TestGrid` (walkability from strings, `.` = walkable), `FakeSound`, `FakeClock`, and `GameUnit` (Foundation also declares `Unit`, so use `GameUnit` in tests).
+- `TestSupport.swift` has `TestGrid` (walkability from strings, `.` = walkable), `FakeSound`, `FakeClock`, `FakePointer` (a mouse), `FakeInputMap` (the tile under the pointer), and `GameUnit` (Foundation also declares `Unit`, so use `GameUnit` in tests).
 - `Unit` takes its `PathFinder` and `SoundPlayer` as init parameters defaulting to `.shared`; pass fakes in tests. Follow the same pattern when making other classes testable.
 
 ### Resources

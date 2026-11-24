@@ -5,6 +5,7 @@
 //  Fakes and fixtures shared by the unit tests.
 //
 
+import CoreGraphics
 import Foundation
 @testable import Invasiones
 
@@ -47,6 +48,46 @@ final class FakeSound: SoundPlayer {
 
     func stop(_ id: SoundID) {
         stopped.append(id)
+    }
+}
+
+/// A mouse the test sets by hand.
+final class FakePointer: PointerDevice {
+    var x: CGFloat = 0
+    var y: CGFloat = 0
+    var pressedButtons: [Int] = []
+    var dragRect: CGRect = .zero
+    var dragging = false
+    var finishedDragging = false
+    var cursor: Surface?
+
+    func isDragging() -> Bool { dragging }
+    func didFinishDragging() -> Bool { finishedDragging }
+    func releaseButton(_ button: Int) { pressedButtons.removeAll { $0 == button } }
+
+    func press(_ button: Int) { pressedButtons.append(button) }
+}
+
+/// The one tile under the pointer, as player input sees it.
+final class FakeInputMap: InputMap {
+    /// The map tile and the physical tile under the pointer.
+    var tile = (x: 1, y: 2)
+    var physicalTile = (x: 3, y: 4)
+    /// Whether the physical tile under the pointer is walkable.
+    var walkable = true
+    /// Whether the map tile under the pointer is part of an infirmary.
+    var infirmary = false
+
+    func tiles(atScreenX x: Int, y: Int) -> (tile: (x: Int, y: Int), physicalTile: (x: Int, y: Int)) {
+        (tile, physicalTile)
+    }
+
+    func isWalkable(x: Int, y: Int) -> Bool {
+        walkable && (x, y) == physicalTile
+    }
+
+    func isInfirmary(x: Int, y: Int) -> Bool {
+        infirmary && (x, y) == tile
     }
 }
 
