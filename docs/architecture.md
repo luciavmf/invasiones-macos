@@ -2,7 +2,7 @@
 
 How the macOS port of *Invasiones* is put together today. The game logic is a Swift translation of the original C# game ([luciavmf/invasiones](https://github.com/luciavmf/invasiones), `Juego/Invasiones/fuente/`), which stays the reference for behaviour.
 
-Planned changes to this structure are tracked in issue [#3](https://github.com/luciavmf/invasiones-macos/issues/3).
+Planned changes to this structure are tracked in issue [#3](https://github.com/luciavmf/invasiones-macos/issues/3). The rules of specific areas are described in [`docs/specs/`](specs/).
 
 ## Overview
 
@@ -27,12 +27,12 @@ GameScene (SpriteKit, 20 FPS)
 |---|---|
 | `StateMachine/`, `States/` | Top-level screens and the machine that switches between them |
 | `Level/` | `Episode`, `Battlefield`, `Level`, `AI`, `Command`, `Objective`, `MapObject`, `Obstacle`, `ObjectTable` |
-| `Level/Players/` | `Player` and its subclasses `ArgentineTeam`, `EnemyTeam` |
+| `Level/Players/` | `Player` and its subclasses `ArgentineTeam`, `EnemyTeam`; `PlayerInput`, `PlayerIntent` |
 | `Level/Units/` | `Unit`, `Group` |
 | `Map/` | `Map`, `Tileset`, `Tile`, `Camera`, `TilesetID`, line of sight, `PathFinder/` |
 | `Rendering/`, `Sprites/` | `Video`, `Surface`, `GameFont`, `Anchor`, `Sprite`, `Animation`, `AnimObject` |
 | `GUI/` | `Button`, `Menu`, `ConfirmationMenu`, `Hud`, `Tips`, `Frame` |
-| `Events/` | `Mouse`, `Keyboard` |
+| `Events/` | `Mouse`, `Keyboard`, `PointerDevice` |
 | `Audio/` | `Sound`, `SoundID` |
 | `Resources/` | `ResourceManager`, `GameText`, resource ID enums, `Utils` |
 
@@ -65,8 +65,8 @@ loading → showIntro → playing ⇄ showObjectives → won / lost
 
 ## Teams, groups and units
 
-- `Player` holds a team's units, groups, the selected unit or group, and the current objective. `updateUnits()` moves every unit, collects units selected by a drag rectangle (at most `Player.maxSelectedUnits`, 6), resolves collisions and removes dead units.
-- `ArgentineTeam` adds the player's controls: it reads `Mouse` directly to select units, drag-select, give move, attack and heal orders, form groups and change the cursor.
+- `Player` holds a team's units, groups, the selected unit or group, and the current objective. `updateUnits()` moves every unit, resolves collisions and triggers attacks on visible enemies; dead units are removed afterwards.
+- `ArgentineTeam` is the player's side. `handle(_:)` carries out `PlayerIntent`s: selecting units (a drag selects at most `Player.maxSelectedUnits`, 6, and forms a group), deselecting, and move, attack and heal orders. See [Input](#input) and [`specs/selection-and-orders.md`](specs/selection-and-orders.md).
 - `EnemyTeam` places the British units, and `AI` gives their groups orders from the level file. Units without a group patrol around their starting point.
 - `Group` moves several units together behind a commander.
 - `Unit` (a `MapObject`) has stats read from `unidades/*.csv` and a state machine: `idle`, `moving`, `pursuingUnit`, `attacking`, `dying`, `dead`, `patrolling`, `healing`. It also draws itself, its health bar and its selection, and tests whether the mouse is over it.
@@ -88,7 +88,17 @@ loading → showIntro → playing ⇄ showObjectives → won / lost
 
 ## Input
 
-`GameScene` turns `NSEvent`s into the `Mouse` and `Keyboard` singletons. `Mouse.update()` tracks the drag rectangle; game code reads the pressed buttons, position and rectangle wherever it needs them (mostly `ArgentineTeam`, `Menu` and `Button`).
+`GameScene` turns `NSEvent`s into the `Mouse` and `Keyboard` singletons. `Mouse.update()` tracks the drag rectangle.
+
+In battle, `PlayerInput` reads the mouse for the player's team, each frame:
+
+1. A drag that ended becomes a *select in rectangle* intent, handled before the units update.
+2. After the units update, clicks become intents: *select* a unit, *deselect*, or an order (*move*, *attack*, *heal*) depending on what is under the pointer. Handled clicks are released so they aren't read twice.
+3. The cursor is picked from the selection and what is under the pointer.
+
+`PlayerInput` reads a `PointerDevice` (`Mouse` conforms) and asks the map through `InputMap` (`Map` conforms), so tests use fakes for both.
+
+Elsewhere, code reads the mouse directly: the menus and buttons, `Map` (edge scrolling) and `Episode` (the drag rectangle it draws).
 
 ## Resources
 
@@ -100,10 +110,10 @@ Several parts of the game are reached through globals rather than passed in:
 
 | Global | Used by |
 |---|---|
-| `Mouse.shared`, `Keyboard.shared` | `ArgentineTeam`, GUI, `Map`, `Episode` |
+| `Mouse.shared`, `Keyboard.shared` | GUI, `Map`, `Episode`; default parameter of `ArgentineTeam` (passed to `PlayerInput`) |
 | `ResourceManager.shared` | about 60 call sites |
 | `Sound.shared`, `PathFinder.shared` | default parameters of `Unit` (tests pass fakes) |
 
 ## Tests
 
-`InvasionesTests` (Swift Testing) runs inside the app. It covers the pathfinder, line of sight, map objects and units on a hand-made `Battlefield` (`TestGrid` is a `BattleMap`), `StateMachine`, `GameText`, `Command`, `Objective`, `Camera` and that the resource enums match `res.json`. Combat, selection and orders aren't covered yet (see #3).
+`InvasionesTests` (Swift Testing) runs inside the app. It covers the pathfinder, line of sight, map objects and units on a hand-made `Battlefield` (`TestGrid` is a `BattleMap`), selection and orders (`PlayerInput` with `FakePointer` and `FakeInputMap`, `ArgentineTeam.handle(_:)`), infirmary lookup on the first level's map, `StateMachine`, `GameText`, `Command`, `Objective`, `Camera` and that the resource enums match `res.json`. Combat isn't covered yet (see #3).
