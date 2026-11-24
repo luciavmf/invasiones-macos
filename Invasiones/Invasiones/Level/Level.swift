@@ -58,8 +58,10 @@ final class Level {
     // MARK: - Loading
 
     /// Reads the level definition from nivel_{levelIndex}.xml and populates the battles array.
-    /// - Parameter levelIndex: The level number to load.
-    func load(_ levelIndex: Int) {
+    /// - Parameters:
+    ///   - levelIndex: The level number to load.
+    ///   - battlefield: The map and camera, for the fire animations that trigger commands place.
+    func load(_ levelIndex: Int, battlefield: Battlefield) {
         let pathStr = ResourcePath.levelPath + "/nivel_\(levelIndex).xml"
         guard let path = Utils.getPath(pathStr) else {
             Log.shared.debug("Level: objectives file not found: \(pathStr)")
@@ -70,7 +72,7 @@ final class Level {
         battleCount = 0
 
         guard let parser = XMLParser(contentsOf: URL(fileURLWithPath: path)) else { return }
-        let d = LevelXMLDelegate()
+        let d = LevelXMLDelegate(battlefield: battlefield)
         parser.delegate = d
         parser.parse()
         withExtendedLifetime(d) {}
@@ -121,6 +123,13 @@ private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
     struct BattleData { var objectives: [Objective] = [] }
     var batallas: [BattleData] = []
 
+    private let battlefield: Battlefield
+
+    init(battlefield: Battlefield) {
+        self.battlefield = battlefield
+        super.init()
+    }
+
     private var inBattle = false
     private var inObjective = false
     private var currentObj: Objective?
@@ -161,7 +170,7 @@ private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
                 }
                 if let animID,
                    let anim = ResourceManager.shared.animations[animID] {
-                    let animObj = AnimObject(Animation(copia: anim), iVal, jVal)
+                    let animObj = AnimObject(Animation(copia: anim), iVal, jVal, battlefield: battlefield)
                     ord = Command(type, iVal, jVal, animObj)
                 } else {
                     ord = Command(type, iVal, jVal)

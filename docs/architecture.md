@@ -26,12 +26,12 @@ GameScene (SpriteKit, 20 FPS)
 | Folder | Contents |
 |---|---|
 | `StateMachine/`, `States/` | Top-level screens and the machine that switches between them |
-| `Level/` | `Episode`, `Level`, `AI`, `Command`, `Objective`, `MapObject`, `Obstacle`, `ObjectTable` |
+| `Level/` | `Episode`, `Battlefield`, `Level`, `AI`, `Command`, `Objective`, `MapObject`, `Obstacle`, `ObjectTable` |
 | `Level/Players/` | `Player` and its subclasses `ArgentineTeam`, `EnemyTeam` |
 | `Level/Units/` | `Unit`, `Group` |
-| `Map/` | `Map`, `Tileset`, `Tile`, `Camera`, `TilesetID`, `PathFinder/` |
+| `Map/` | `Map`, `Tileset`, `Tile`, `Camera`, `TilesetID`, line of sight, `PathFinder/` |
 | `Rendering/`, `Sprites/` | `Video`, `Surface`, `GameFont`, `Anchor`, `Sprite`, `Animation`, `AnimObject` |
-| `GUI/` | `Button`, `Menu`, `ConfirmationMenu`, `Hud`, `Tips`, `Ring`, `Frame` |
+| `GUI/` | `Button`, `Menu`, `ConfirmationMenu`, `Hud`, `Tips`, `Frame` |
 | `Events/` | `Mouse`, `Keyboard` |
 | `Audio/` | `Sound`, `SoundID` |
 | `Resources/` | `ResourceManager`, `GameText`, resource ID enums, `Utils` |
@@ -55,7 +55,7 @@ The first state is set with `setState`, which skips `start()`, so start-up code 
 loading → showIntro → playing ⇄ showObjectives → won / lost
 ```
 
-- **loading** reads the level, the map and both teams' units, and sets the static `MapObject.map` and `MapObject.camera` that units and map objects read (`ArgentineTeam` sets `Group.map`).
+- **loading** creates the map, the camera and a `Battlefield` holding both, then reads the level, the obstacles and both teams' units. Everything placed on the map receives the `Battlefield` when it's created.
 - **showIntro** shows the battle's intro pages (`StringID.introPages`).
 - **playing** updates the map (camera scroll), both teams, the HUD, the objectives and the obstacles; it checks whether the player has lost.
 - **showObjectives** shows the current objective over the paused game.
@@ -75,7 +75,12 @@ loading → showIntro → playing ⇄ showObjectives → won / lost
 
 - `Map` loads a Tiled `.tmx` map and its `.tsx` tilesets. Besides the drawable layers it keeps `physicalTilesLayer`, a grid at twice the map resolution holding each cell's `TilesetID`. Grass and dirt are walkable; `invalidateTile` marks cells as trees to block them.
 - `PathFinder` runs A* on that grid through the `WalkableGrid` protocol (10 per straight step, 14 per diagonal, no corner cutting, 4.5 s timeout).
+- `getLineOfSightPosition` (an extension on `WalkableGrid`) walks from a target toward a unit and returns the first walkable tile; healing uses it to stop next to an infirmary.
 - `Camera` is the visible part of the map; `Map.update()` scrolls it when the mouse is near the screen edge.
+
+## Battlefield
+
+`Battlefield` is a small struct holding the battle's map and camera. `Episode` creates it; `Player.battlefield` hands it to the units and objects a team places, and `Level` to the fire animations it creates. Map objects see the map only through the `BattleMap` protocol (walkability and tile size), so tests can place units on a `TestGrid`. Unit templates in `ResourceManager` have no battlefield, since they're only copied.
 
 ## Rendering
 
@@ -95,11 +100,10 @@ Several parts of the game are reached through globals rather than passed in:
 
 | Global | Used by |
 |---|---|
-| `MapObject.map`, `MapObject.camera` (static, set by `Episode`), `Group.map` (static, set by `ArgentineTeam`) | units, groups, obstacles, animations |
 | `Mouse.shared`, `Keyboard.shared` | `ArgentineTeam`, GUI, `Map`, `Episode` |
 | `ResourceManager.shared` | about 60 call sites |
 | `Sound.shared`, `PathFinder.shared` | default parameters of `Unit` (tests pass fakes) |
 
 ## Tests
 
-`InvasionesTests` (Swift Testing) runs inside the app. It covers the pathfinder, `Unit` movement with fakes, `StateMachine`, `GameText`, `Command`, `Objective`, `Camera` and that the resource enums match `res.json`. Battle rules, selection and orders aren't covered yet (see #3).
+`InvasionesTests` (Swift Testing) runs inside the app. It covers the pathfinder, line of sight, map objects and units on a hand-made `Battlefield` (`TestGrid` is a `BattleMap`), `StateMachine`, `GameText`, `Command`, `Objective`, `Camera` and that the resource enums match `res.json`. Combat, selection and orders aren't covered yet (see #3).

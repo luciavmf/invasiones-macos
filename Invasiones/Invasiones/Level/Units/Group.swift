@@ -20,10 +20,6 @@ final class Group {
         case waitingCommand, grouping, moving, healing, attacking, eliminating, pursuingEnemy
     }
 
-    // MARK: - Statics
-    /// The map shared by all groups (used for pathfinding and walkability checks).
-    static var map: Map?
-
     // MARK: - Attributes
     /// The AI controller that provides scripted orders for enemy groups.
     /// Assigning one puts the group into the waiting-for-command state.
@@ -139,7 +135,7 @@ final class Group {
         receivedCommand = Command(.heal, x, y)
         if commander == nil { setAuxCommander() }
 
-        guard let map = Group.map, let cmd = commander else { return }
+        guard let cmd = commander, let map = cmd.battlefield?.map else { return }
         guard let p = map.getLineOfSightPosition(
             x1: x, x2: cmd.physicalTilePos.x,
             y1: y, y2: cmd.physicalTilePos.y) else {
@@ -291,10 +287,9 @@ final class Group {
     }
 
     private func moveUnitsToFormation() {
-        guard let cmd = commander else { return }
+        guard let cmd = commander, let map = cmd.battlefield?.map else { return }
         let x = cmd.physicalTilePos.x
         let y = cmd.physicalTilePos.y
-        guard let map = Group.map else { return }
 
         var i = 0, j = 0, inc = 2
         var dir = 1  // UP

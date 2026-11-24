@@ -57,6 +57,8 @@ final class Episode {
     private var enemy: EnemyTeam?
     private var player: ArgentineTeam?
     private var map: Map?
+    /// The map and camera, given to everything placed on the map.
+    private var battlefield: Battlefield?
     private var stateValue: State = .loading
     private var hud: Hud?
     /// General-purpose frame counter used by multiple states.
@@ -159,7 +161,7 @@ final class Episode {
     }
 
     private func loadPaintObjects() -> Bool {
-        guard let map = map else { return false }
+        guard let map = map, let battlefield = battlefield else { return false }
 
         objectsToDraw.tabla = Array(repeating: Array(repeating: nil, count: map.physicalMapWidth),
                                        count: map.physicalMapHeight)
@@ -172,7 +174,7 @@ final class Episode {
                 guard let ts = map.getTileset(tileId) else { continue }
 
                 let localId = tileId - Int(ts.firstGid)
-                let obs = Obstacle(index: localId, i: i * 2, j: j * 2, tileset: ts)
+                let obs = Obstacle(index: localId, i: i * 2, j: j * 2, tileset: ts, battlefield: battlefield)
                 obstacles.append(obs)
 
                 let fi = i * 2, fj = j * 2
@@ -191,20 +193,19 @@ final class Episode {
             let hudHeight = hud?.height ?? 0
             let camera = Camera(x: 0, y: 0, height: Video.height - hudHeight)
             self.camera = camera
-            map = Map(camera: camera)
+            let map = Map(camera: camera)
+            self.map = map
+            battlefield = Battlefield(map: map, camera: camera)
 
         } else if count == 1 {
-                        guard let map = map else {
+            guard let map = map, let battlefield = battlefield else {
                 count += 1
                 return false
             }
             try map.load(level: levelIndex)
 
-            MapObject.map = map
-            MapObject.camera = camera
-
             let level = Level()
-            level.load(levelIndex)
+            level.load(levelIndex, battlefield: battlefield)
             currentLevel = level
 
         } else if count == 2 {

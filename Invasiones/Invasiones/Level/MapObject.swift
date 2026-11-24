@@ -13,11 +13,10 @@ import Foundation
 /// Stores position in tile space and derived screen-space coordinates used for rendering.
 class MapObject {
 
-    // MARK: - Shared statics (equivalent to static fields in C#)
-    /// The camera used by all map objects to convert world positions to screen positions.
-    static var camera: Camera?
-    /// The map shared by all map objects (used for tile/world coordinate conversion).
-    static var map: Map?
+    // MARK: - Battlefield
+    /// The map and camera this object is placed on. `nil` for unit templates,
+    /// which are only copied, never placed.
+    let battlefield: Battlefield?
 
     // MARK: - Attributes
     /// The image (sprite sheet) used to draw this object.
@@ -43,14 +42,18 @@ class MapObject {
 
     // MARK: - Initializeres
 
-    init() {}
+    init(battlefield: Battlefield?) {
+        self.battlefield = battlefield
+    }
 
     /// Creates a map object at tile position (i, j) using the given surface.
     /// - Parameters:
     ///   - sup: The image (or sprite sheet) for this object.
     ///   - i: Tile column (i coordinate).
     ///   - j: Tile row (j coordinate).
-    init(sup: Surface?, i: Int, j: Int) {
+    ///   - battlefield: The map and camera the object is placed on.
+    init(sup: Surface?, i: Int, j: Int, battlefield: Battlefield) {
+        self.battlefield = battlefield
         self.image = sup
         if let img = sup {
             frameHeight = img.height
@@ -71,13 +74,13 @@ class MapObject {
 
     /// Recalculates the screen-space (x, y) coordinates from the current camera and world position.
     func updateScreenPos() {
-        guard let cam = MapObject.camera else { return }
+        guard let cam = battlefield?.camera else { return }
         x = cam.startX + worldPos.x + cam.x
         y = cam.startY + worldPos.y + cam.y
     }
 
     func draw(_ video: Video) {
-        guard let img = image, let map = MapObject.map else { return }
+        guard let img = image, let map = battlefield?.map else { return }
         video.draw(
             img,
             x - frameWidth / 2 + map.tileWidth / 2,
@@ -87,7 +90,7 @@ class MapObject {
 
     /// Transforms tile (i, j) into (x, y) position in the flat world.
     func tileToWorld(i: Int, j: Int) -> (x: Int, y: Int) {
-        guard let map = MapObject.map else { return (0, 0) }
+        guard let map = battlefield?.map else { return (0, 0) }
         let x = ((i - j) * map.tileWidth / 2) >> 1
         let y = ((i + j) * map.tileHeight  / 2) >> 1
         return (x, y)

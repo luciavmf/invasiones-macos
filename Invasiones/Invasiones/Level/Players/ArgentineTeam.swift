@@ -30,11 +30,10 @@ final class ArgentineTeam: Player {
     override init(map: Map, camera: Camera, objectsToDraw: ObjectTable, hud: Hud) {
         super.init(map: map, camera: camera, objectsToDraw: objectsToDraw, hud: hud)
         faction = .argentine
-        Group.map = map
 
         let anims = ResourceManager.shared.animations
         if let animAros = anims[.rings] {
-            ring = AnimObject(Animation(copia: animAros), 0, 0)
+            ring = AnimObject(Animation(copia: animAros), 0, 0, battlefield: battlefield)
         }
 
         if let animFlecha = anims[.guideArrow] {
@@ -55,7 +54,7 @@ final class ArgentineTeam: Player {
 
     override func loadUnits(_ levelIndex: Int) throws {
         arrowObj = MapObject(sup: ResourceManager.shared.getImage(.arrow),
-                               i: 0, j: 0)
+                               i: 0, j: 0, battlefield: battlefield)
         count = 99999
 
         guard let unitsTileset = map.tilesets.compactMap({ $0 }).first(where: {
@@ -112,9 +111,7 @@ final class ArgentineTeam: Player {
     /// Used by Episode to determine which objects to draw each frame.
     /// - Returns: (x, y) of the first tile to draw, (w, h) as the tile count in each dimension.
     func getPaintCoordinates() -> (x: Int, y: Int, w: Int, h: Int) {
-        guard let cam = MapObject.camera else {
-            return (0, 0, map.physicalMapHeight, map.physicalMapWidth)
-        }
+        let cam = camera
         let p = calculateFirstTileToDraw(x: cam.x, y: cam.y)
         let tw = map.physicalTileWidth > 0 ? map.physicalTileWidth : 1
         let th = map.physicalTileHeight > 0 ? map.physicalTileHeight : 1

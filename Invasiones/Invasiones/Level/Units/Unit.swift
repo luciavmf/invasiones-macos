@@ -137,17 +137,19 @@ final class Unit: MapObject {
 
     // MARK: - Initializers
 
-    init(pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
+    /// Creates an empty unit. Without a battlefield it can't be placed on the map;
+    /// `ResourceManager` uses that for the unit templates.
+    init(battlefield: Battlefield? = nil, pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
         self.pathFinder = pathFinder
         self.sound = sound
-        super.init()
+        super.init(battlefield: battlefield)
     }
 
     /// Creates a unit by copying the loaded template for its type.
-    init(_ type: UnitType, pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
+    init(_ type: UnitType, battlefield: Battlefield, pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
         self.pathFinder = pathFinder
         self.sound = sound
-        super.init()
+        super.init(battlefield: battlefield)
         guard let copia = ResourceManager.shared.unitTypes[type] else {
             Log.shared.debug("Unit copy not loaded: \(type)")
             return
@@ -211,7 +213,7 @@ final class Unit: MapObject {
     }
 
     override func updateScreenPos() {
-        guard let cam = MapObject.camera, let map = MapObject.map else { return }
+        guard let cam = battlefield?.camera, let map = battlefield?.map else { return }
         x = cam.startX + worldPos.x + cam.x + map.tileWidth / 2
         y = cam.startY + worldPos.y + cam.y + map.tileHeight / 4
     }
@@ -328,7 +330,7 @@ final class Unit: MapObject {
 
     /// Returns `true` if the unit's screen position falls within the camera's visible area.
     func isOnScreen() -> Bool {
-        guard let cam = MapObject.camera else { return false }
+        guard let cam = battlefield?.camera else { return false }
         return x >= cam.startX && x <= cam.startX + cam.width &&
                y >= cam.startY && y <= cam.startY + cam.height
     }
@@ -382,7 +384,7 @@ final class Unit: MapObject {
     ///   - offsetY: Formation tile offset along the j axis.
     func calculatePathAtDistance(commanderPath: [(i: Int, j: Int)],
                                  offsetX: Int, offsetY: Int) {
-        guard let map = MapObject.map else { return }
+        guard let map = battlefield?.map else { return }
 
         setState(.moving)
         nextStateValue = .idle
@@ -444,7 +446,7 @@ final class Unit: MapObject {
     }
 
     private func findNextValidPosition(_ list: [(i: Int, j: Int)], from start: Int) -> Int? {
-        guard let map = MapObject.map else { return nil }
+        guard let map = battlefield?.map else { return nil }
         var idx = start
         while idx < list.count, !map.isWalkable(x: list[idx].i, y: list[idx].j) {
             idx += 1
@@ -467,7 +469,7 @@ final class Unit: MapObject {
     }
 
     private func findPrevValidPosition(_ list: [(i: Int, j: Int)], from start: Int) -> Int? {
-        guard let map = MapObject.map else { return nil }
+        guard let map = battlefield?.map else { return nil }
         var idx = start
         while idx >= 0, !map.isWalkable(x: list[idx].i, y: list[idx].j) {
             idx -= 1
@@ -490,7 +492,7 @@ final class Unit: MapObject {
     func heal(x: Int, y: Int) {
         command = Command(.heal, x, y)
 
-        guard let map = MapObject.map else { return }
+        guard let map = battlefield?.map else { return }
         guard let p = map.getLineOfSightPosition(x1: x, x2: physicalTilePos.x, y1: y, y2: physicalTilePos.y) else {
             Log.shared.debug("Unit: cannot send to heal.")
             return
@@ -741,7 +743,7 @@ final class Unit: MapObject {
     // MARK: - Patrolling
 
     private func findRandomPatrolPath(i: Int, j: Int) -> [(i: Int, j: Int)]? {
-        guard let map = MapObject.map else { return nil }
+        guard let map = battlefield?.map else { return nil }
         let range = Constants.patrolRandomMax - Constants.patrolRandomMin
         // Mirror original C#: loop until a valid path is found.
         // Use the stored patrol base position as the destination origin (not current pos).

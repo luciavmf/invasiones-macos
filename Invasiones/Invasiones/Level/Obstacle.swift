@@ -25,8 +25,9 @@ final class Obstacle: MapObject {
     ///   - i: The tile column (i coordinate).
     ///   - j: The tile row (j coordinate).
     ///   - tileset: The tileset that contains this obstacle's image.
-    init(index idx: Int, i: Int, j: Int, tileset: Tileset) {
-        super.init()
+    ///   - battlefield: The map and camera the obstacle is placed on.
+    init(index idx: Int, i: Int, j: Int, tileset: Tileset, battlefield: Battlefield) {
+        super.init(battlefield: battlefield)
         index = idx
 
         frameHeight = Int(tileset.tileHeight)
@@ -60,7 +61,7 @@ final class Obstacle: MapObject {
     }
 
     override func draw(_ video: Video) {
-        guard let img = image, let map = MapObject.map else { return }
+        guard let img = image, let map = battlefield?.map else { return }
         img.setClip(x: index * frameWidth, y: 0, w: frameWidth, h: frameHeight)
         if isBuilding {
             video.draw(img, x, y - frameHeight + map.tileHeight / 2, [])

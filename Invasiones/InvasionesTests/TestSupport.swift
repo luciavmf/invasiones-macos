@@ -12,8 +12,12 @@ import Foundation
 /// Row index is `x` (the pathfinder's `i`), column index is `y` (`j`).
 ///
 /// `PathFinder` holds its grid weakly, so keep a reference to the grid for as long as the test uses it.
-final class TestGrid: WalkableGrid {
+///
+/// It is also a `BattleMap`, with 64×32 tiles like the game's map, so units and map objects can be placed on it.
+final class TestGrid: BattleMap {
     private var cells: [[Bool]]
+    let tileWidth = 64
+    let tileHeight = 32
 
     init(_ rows: [String]) {
         cells = rows.map { row in row.map { $0 == "." } }
