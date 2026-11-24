@@ -19,13 +19,13 @@ final class GameFont {
     private(set) var size: Int
 
     // MARK: - Initializer
-    /// Creates a font from a font ID (index in PathsFuentes) and the point size.
-    init(fontId: Int, size: Int) {
+    /// Creates a font from one of the font files in res.json and a point size.
+    init(family: FontFamily, size: Int) {
         self.size = size
 
         let paths = ResourceManager.shared.fontPaths
-        guard fontId < paths.count, let path = paths[fontId] else {
-            Log.shared.error("GameFont: invalid path for id \(fontId)")
+        guard let path = paths[safe: family.rawValue] ?? nil else {
+            Log.shared.error("GameFont: invalid path for \(family)")
             self.name = ""
             return
         }

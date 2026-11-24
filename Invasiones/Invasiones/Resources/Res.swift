@@ -11,11 +11,6 @@ import Foundation
 
 enum Res {
 
-    // MARK: - Font Ids
-    static let FNT_SANS = 0
-    static let FNT_LBLACK = 1
-    static let FNT_COUNT = 2
-
     // MARK: - Tileset Ids
     static let TLS_DEBUG = 0
     static let TLS_PASTO = 1
@@ -35,19 +30,6 @@ enum Res {
 
     static let MAP_NIVEL1 = 14
     static let MAP_COUNT = 1
-
-    // MARK: - Image Ids
-    static let IMG_CURSOR_ESPADA = 0
-    static let IMG_CURSOR_ENFERMERIA = 1
-    static let IMG_CURSOR = 2
-    static let IMG_FLECHA = 3
-    static let IMG_ICONO = 4
-    static let IMG_LOGO = 5
-    static let IMG_SPLASH = 6
-    static let IMG_FONDO = 7
-    static let IMG_TILE_GRIS = 8
-    static let IMG_HUD = 9
-    static let IMG_COUNT = 10
 
     // MARK: - Unidades Ids
     static let UNIDAD_PATRICIO = 0

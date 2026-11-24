@@ -55,9 +55,9 @@ final class MainMenuState: State {
     // MARK: - Methods
 
     func start() {
-        background = ResourceManager.shared.getImage(Res.IMG_SPLASH)
+        background = ResourceManager.shared.getImage(.splash)
 
-        Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR)
+        Mouse.shared.cursor = ResourceManager.shared.getImage(.cursor)
         Mouse.shared.showCursor()
 
         let newMenu = Menu(

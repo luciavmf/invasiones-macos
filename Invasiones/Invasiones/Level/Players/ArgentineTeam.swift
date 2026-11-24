@@ -54,7 +54,7 @@ final class ArgentineTeam: Player {
     }
 
     override func loadUnits(_ levelIndex: Int) throws {
-        arrowObj = MapObject(sup: ResourceManager.shared.getImage(Res.IMG_FLECHA),
+        arrowObj = MapObject(sup: ResourceManager.shared.getImage(.arrow),
                                i: 0, j: 0)
         count = 99999
 
@@ -420,12 +420,12 @@ final class ArgentineTeam: Player {
     // MARK: - Cursor
 
     private func updateCursor() {
-        Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR)
+        Mouse.shared.cursor = ResourceManager.shared.getImage(.cursor)
 
         guard selectedUnit != nil || selectedGroup != nil else { return }
 
         if let unitUnderMouse = unitUnderMouse, unitUnderMouse.faction == .enemy {
-            Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR_ESPADA)
+            Mouse.shared.cursor = ResourceManager.shared.getImage(.swordCursor)
         }
 
         if let u = selectedUnit, u.isDead() {
@@ -448,7 +448,7 @@ final class ArgentineTeam: Player {
         let needsHeal = (selectedUnit.map { $0.health < $0.resistancePoints } ?? false)
                      || (selectedGroup.map  { $0.health < $0.resistancePoints } ?? false)
         if needsHeal {
-            Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR_ENFERMERIA)
+            Mouse.shared.cursor = ResourceManager.shared.getImage(.infirmaryCursor)
         }
     }
 

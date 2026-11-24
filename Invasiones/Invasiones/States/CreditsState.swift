@@ -20,7 +20,7 @@ final class CreditsState: State {
     }
 
     func start() {
-        background = ResourceManager.shared.getImage(Res.IMG_FONDO)
+        background = ResourceManager.shared.getImage(.background)
         button = Button(label: .buttonBack, font: nil)
         let bw = button?.frame.width  ?? 0
         let bh = button?.frame.height ?? 0

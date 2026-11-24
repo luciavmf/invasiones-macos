@@ -46,7 +46,7 @@ final class Hud {
 
     // MARK: - Initializer
     init() {
-        image = ResourceManager.shared.getImage(Res.IMG_HUD)
+        image = ResourceManager.shared.getImage(.hud)
         posY = Video.height - (image?.height ?? 0)
         tipsWindow = Tips()
         tipsWindow.setPosition(

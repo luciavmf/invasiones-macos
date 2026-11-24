@@ -181,7 +181,7 @@ final class Map {
 
         if semiTransparent {
             if greyTileImage == nil {
-                greyTileImage = ResourceManager.shared.getImage(Res.IMG_TILE_GRIS)
+                greyTileImage = ResourceManager.shared.getImage(.greyTile)
             }
             video.draw(greyTileImage, posX, posY, 128, [])
         }

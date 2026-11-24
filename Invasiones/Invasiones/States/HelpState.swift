@@ -39,7 +39,7 @@ final class HelpState: State {
     // MARK: - Methods
 
     func start() {
-        background = ResourceManager.shared.getImage(Res.IMG_FONDO)
+        background = ResourceManager.shared.getImage(.background)
 
         let fnt = ResourceManager.shared.fonts[.sans18]
 
