@@ -36,8 +36,8 @@ final class ResourceManager {
     /// Loaded standalone animations.
     private(set) var animations: [AnimationID: Animation] = [:]
 
-    /// Unit type templates, copied when units are placed.
-    private(set) var unitTypes: [UnitType: Unit] = [:]
+    /// The stats of each unit type, read from its CSV file.
+    private(set) var unitStats: [UnitType: UnitStats] = [:]
 
     // MARK: - Initializer (private)
     private init() {}
@@ -130,11 +130,14 @@ final class ResourceManager {
     // MARK: - Unit types
 
     func loadUnitTypes() {
-        unitTypes = [:]
+        unitStats = [:]
         for type in UnitType.allCases {
-            let u = Unit()
-            u.readUnit(type)
-            unitTypes[type] = u
+            guard let path = unitPaths[safe: type.rawValue] ?? nil,
+                  let csv = try? String(contentsOfFile: path, encoding: .utf8) else {
+                Log.shared.error("Unit: failed to read unit \(type)")
+                continue
+            }
+            unitStats[type] = UnitStats(csv: csv)
         }
     }
 

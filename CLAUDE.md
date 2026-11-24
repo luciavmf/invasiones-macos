@@ -111,7 +111,7 @@ Unit tests (`InvasionesTests`, Swift Testing) run inside the app (`TEST_HOST`). 
 - Fonts → `GameFont`
 - Sprites → `Sprite` (collection of `Animation` objects)
 - Animation metadata → `Animation` (sprite sheet controller)
-- Unit type templates → `Unit`
+- Unit stats → `UnitStats` (parsed from `unidades/*.csv`; Spanish keys)
 
 Resources are identified by typed enums (`StringID`, `SoundID`, `ImageID`, `FontFamily`, `UnitType`, `SpriteID`, `AnimationID`, `TilesetID`, `TileKind`). Except `StringID` (raw value = JSON key) and `TileKind`, their raw values are positions in the lists of `data/res.json`, so reordering that file means reordering the enum; `ResourceIDTests` checks they match.
 

@@ -14,8 +14,8 @@ import Foundation
 class MapObject {
 
     // MARK: - Battlefield
-    /// The map and camera this object is placed on. `nil` for unit templates,
-    /// which are only copied, never placed.
+    /// The map and camera this object is placed on. `nil` only for units made in tests
+    /// without a map.
     let battlefield: Battlefield?
 
     // MARK: - Attributes
