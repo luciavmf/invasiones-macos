@@ -145,7 +145,7 @@ final class Episode {
     }
 
     private func drawLoadingState(_ video: Video) {
-        video.fillRect(0)
+        video.fillRect(.black)
         video.color = Theme.title
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
