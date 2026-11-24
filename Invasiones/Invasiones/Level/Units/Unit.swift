@@ -478,10 +478,8 @@ final class Unit: MapObject {
         return idx
     }
 
-    /// Returns `true` if the mouse cursor is currently over this unit's sprite bounding box.
-    func isUnderMouse() -> Bool {
-        let mx = Int(Mouse.shared.x)
-        let my = Int(Mouse.shared.y)
+    /// Returns `true` if the screen point (mx, my) is inside this unit's sprite bounding box.
+    func isUnder(x mx: Int, y my: Int) -> Bool {
         let fw = sprite?.frameWidth ?? (frameWidth > 0 ? frameWidth : 20)
         let fh = sprite?.frameHeight  ?? (frameHeight  > 0 ? frameHeight  : 30)
         let hw = fw / 2

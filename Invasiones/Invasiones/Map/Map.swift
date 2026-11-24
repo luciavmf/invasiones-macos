@@ -50,9 +50,6 @@ final class Map {
 
     private static var tilesetDebug: Tileset?
 
-    // MARK: - Mouse on tile
-    private(set) var tileUnderMouse: (x: Int, y: Int) = (0, 0)
-    private(set) var smallTileUnderMouse: (x: Int, y: Int) = (0, 0)
 
     // MARK: - Physical map (small tiles, ×2 resolution)
     private(set) var physicalTilesLayer: [[TilesetID]] = []  // [col * 2][row * 2]
@@ -262,8 +259,6 @@ final class Map {
                 camera.x -= camera.speed
             }
         }
-
-        updateMouseCoords()
     }
 
     // MARK: - Public queries
@@ -318,15 +313,11 @@ final class Map {
         return (a - b - 2, a + b - 1)
     }
 
-    private func updateMouseCoords() {
-        guard mapLoaded else { return }
-        let p = tilePositionFromXY(x: Int(Mouse.shared.x), y: Int(Mouse.shared.y))
-        tileUnderMouse = p
-    }
-
-    private func tilePositionFromXY(x: Int, y: Int) -> (x: Int, y: Int) {
-        guard tileHeight > 0, tileWidth > 0 else { return (0, 0) }
-        // Logical tile coords (for tileUnderMouse — buildings, obstacles)
+    /// The map tile (for buildings) and the physical tile (2× resolution, for pathfinding and movement)
+    /// under a screen point.
+    func tiles(atScreenX x: Int, y: Int) -> (tile: (x: Int, y: Int), physicalTile: (x: Int, y: Int)) {
+        guard mapLoaded, tileHeight > 0, tileWidth > 0 else { return ((0, 0), (0, 0)) }
+        // Map tile
         let a = (y - camera.y - camera.startY) / tileHeight
         let b: Int
         if x - camera.x > 0 {
@@ -334,7 +325,7 @@ final class Map {
         } else {
             b = (x - camera.x - camera.startX - tileWidth) / tileWidth
         }
-        // Physical tile coords (2× resolution — for smallTileUnderMouse, pathfinding, movement)
+        // Physical tile
         let aF = (y - camera.y - camera.startY) / physicalTileHeight
         let bF: Int
         if x - camera.x > 0 {
@@ -342,8 +333,7 @@ final class Map {
         } else {
             bF = (x - camera.x - camera.startX - physicalTileWidth) / physicalTileWidth
         }
-        smallTileUnderMouse = (aF + bF, aF - bF)
-        return (a + b, a - b)
+        return ((a + b, a - b), (aF + bF, aF - bF))
     }
 
     // MARK: - Internal TMX loading
