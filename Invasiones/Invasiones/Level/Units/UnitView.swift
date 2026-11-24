@@ -35,7 +35,28 @@ final class UnitView {
         static let defaultSize = (width: 20, height: 30)
     }
 
+    /// The first animation of each pack in a soldier sprite. Each pack has one animation
+    /// per direction (8), in the order of `res.json`'s animpaks.
+    enum AnimationPack: Int {
+        case idle = 0
+        case walking = 8
+        case dying = 16
+        case attacking = 24
+
+        /// The pack shown in each unit state, as in the original.
+        init(_ state: Unit.State) {
+            switch state {
+            case .idle, .healing: self = .idle
+            case .moving, .pursuingUnit, .patrolling: self = .walking
+            case .dying, .dead: self = .dying
+            case .attacking: self = .attacking
+            }
+        }
+    }
+
     private let sprite: (any UnitSprite)?
+    /// The state the animation was last chosen for.
+    private var shownState: Unit.State?
 
     init(sprite: (any UnitSprite)?) {
         self.sprite = sprite
@@ -49,28 +70,27 @@ final class UnitView {
 
     // MARK: - Animation
 
-    /// Switches to an animation (if it isn't already shown) and plays it.
-    func show(animation: Int) {
-        sprite?.setAnimation(anim: animation)
-        sprite?.play()
-    }
-
-    /// Starts an animation that plays once, like dying.
-    func showOnce(animation: Int) {
-        sprite?.setAnimation(anim: animation)
-        sprite?.loop = false
-        sprite?.play()
-    }
-
-    /// Once a non-looping animation is done, keeps its last frame on screen.
-    func holdLastFrameWhenDone() {
-        guard let sprite, sprite.isAnimationDone() else { return }
-        sprite.setFrame(sprite.frameCount - 1)
-        sprite.stop()
-    }
-
-    /// Advances the animation by one frame.
-    func advance() {
+    /// Shows the animation for the unit's state and direction (0 = north, clockwise),
+    /// then advances it by one frame. Called once per frame.
+    ///
+    /// The dying animation plays once and then stays on its last frame.
+    func update(state: Unit.State, direction: Int) {
+        let animation = AnimationPack(state).rawValue + direction
+        if AnimationPack(state) == .dying {
+            if shownState.map(AnimationPack.init) != .dying {
+                sprite?.setAnimation(anim: animation)
+                sprite?.loop = false
+                sprite?.play()
+            }
+            if let sprite, sprite.isAnimationDone() {
+                sprite.setFrame(sprite.frameCount - 1)
+                sprite.stop()
+            }
+        } else {
+            sprite?.setAnimation(anim: animation)
+            sprite?.play()
+        }
+        shownState = state
         sprite?.update()
     }
 

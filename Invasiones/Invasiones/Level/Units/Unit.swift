@@ -166,7 +166,7 @@ final class Unit: MapObject {
 
         switch stateValue {
         case .idle:
-            updateIdleAnimation()
+            break
         case .moving:
             movedOnMap = updateMovingState()
         case .patrolling:
@@ -187,7 +187,7 @@ final class Unit: MapObject {
         checkOrderCompleted()
 
         super.update()
-        dibujarSpriteActual()
+        view.update(state: stateValue, direction: direction)
         return movedOnMap
     }
 
@@ -513,36 +513,6 @@ final class Unit: MapObject {
         }
     }
 
-    private func updateIdleAnimation() {
-        view.advance()
-        view.show(animation: firstAnimation() + direction)
-    }
-
-    private func dibujarSpriteActual() {
-        view.advance()
-    }
-
-    /// Index of the first animation of each pack in a soldier sprite. Each pack has
-    /// one animation per direction (8), in the order of `res.json`'s animpaks.
-    private enum AnimationPack: Int {
-        case idle = 0
-        case walking = 8
-        case dying = 16
-        case attacking = 24
-    }
-
-    /// The animation index for the current state, before adding the direction.
-    private func firstAnimation() -> Int {
-        let pack: AnimationPack
-        switch stateValue {
-        case .idle, .healing: pack = .idle
-        case .moving, .pursuingUnit, .patrolling: pack = .walking
-        case .dying, .dead: pack = .dying
-        case .attacking: pack = .attacking
-        }
-        return pack.rawValue
-    }
-
     // MARK: - Movement
 
     private func updateMovingState() -> Bool {
@@ -578,9 +548,6 @@ final class Unit: MapObject {
         }
 
         if let dir = getDirection(targetX: nextStep.x, targetY: nextStep.y) { direction = dir }
-
-        // Update walking animation
-        view.show(animation: firstAnimation() + direction)
 
         let arrived = moveToNextStep()
 
@@ -747,7 +714,6 @@ final class Unit: MapObject {
             moved = moverse()
         }
 
-        view.show(animation: firstAnimation() + direction)
         return moved
     }
 
@@ -763,8 +729,6 @@ final class Unit: MapObject {
             setState(.idle)
             return
         }
-
-        view.show(animation: firstAnimation() + direction)
 
         // If the enemy moved, aim again, or chase it if it's out of range.
         if targetPos.map({ $0 != enemy.physicalTilePos }) ?? true {
@@ -819,15 +783,12 @@ final class Unit: MapObject {
         enemy = nil
     }
 
-    /// Plays the death animation once, then the unit is dead after `deathFrameCount` frames.
+    /// The unit is dead after `deathFrameCount` frames (its view plays the death animation once).
     private func updateDyingState() {
         if count == 0 {
-            view.showOnce(animation: firstAnimation() + direction)
             // The original plays the Patricio's death sound for every unit, British ones included.
             sound.play(id: .patricioDeath, loop: 0)
         }
-
-        view.holdLastFrameWhenDone()
 
         if count >= Constants.deathFrameCount {
             setState(.dead)
