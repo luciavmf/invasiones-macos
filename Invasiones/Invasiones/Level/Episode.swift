@@ -542,10 +542,10 @@ final class Episode {
         guard count > Constants.countdownToRestart else { return }
 
         let result = gameOverMenu.update()
-        if result == ConfirmationMenu.Selection.left.rawValue {
+        if result == .left {
             setState(.end)
         }
-        if result == ConfirmationMenu.Selection.right.rawValue {
+        if result == .right {
             setState(.loading)
         }
     }
@@ -563,43 +563,43 @@ final class Episode {
     // MARK: - Cheats
 
     private func checkCheats() {
-        let keys = Keyboard.shared.pressedKeys
+        let keyboard = Keyboard.shared
 
-        if keys.contains(Keyboard.Key.g.rawValue) && cheatWinIndex == 0 {
+        if keyboard.isPressed(.g) && cheatWinIndex == 0 {
             cheatWinIndex += 1
-        } else if keys.contains(Keyboard.Key.a.rawValue) && cheatWinIndex == 1 {
+        } else if keyboard.isPressed(.a) && cheatWinIndex == 1 {
             cheatWinIndex += 1
-        } else if keys.contains(Keyboard.Key.n.rawValue) && cheatWinIndex == 2 {
+        } else if keyboard.isPressed(.n) && cheatWinIndex == 2 {
             cheatWinIndex += 1
-        } else if keys.contains(Keyboard.Key.x.rawValue) && cheatWinIndex == 3 {
+        } else if keyboard.isPressed(.x) && cheatWinIndex == 3 {
             cheatWinIndex += 1
-        } else if keys.contains(Keyboard.Key.w.rawValue) && cheatWinIndex == 4 {
+        } else if keyboard.isPressed(.w) && cheatWinIndex == 4 {
             setState(.won)
             cheatWinIndex = 0
-        } else if keys.contains(Keyboard.Key.p.rawValue) && cheatLoseIndex == 0 {
+        } else if keyboard.isPressed(.p) && cheatLoseIndex == 0 {
             cheatLoseIndex += 1
-        } else if keys.contains(Keyboard.Key.e.rawValue) && cheatLoseIndex == 1 {
+        } else if keyboard.isPressed(.e) && cheatLoseIndex == 1 {
             cheatLoseIndex += 1
-        } else if keys.contains(Keyboard.Key.r.rawValue) && cheatLoseIndex == 2 {
+        } else if keyboard.isPressed(.r) && cheatLoseIndex == 2 {
             cheatLoseIndex += 1
-        } else if keys.contains(Keyboard.Key.x.rawValue) && cheatLoseIndex == 3 {
+        } else if keyboard.isPressed(.x) && cheatLoseIndex == 3 {
             cheatLoseIndex += 1
-        } else if keys.contains(Keyboard.Key.w.rawValue) && cheatLoseIndex == 4 {
+        } else if keyboard.isPressed(.w) && cheatLoseIndex == 4 {
             setState(.lost)
             cheatLoseIndex = 0
-        } else if keys.contains(Keyboard.Key.o.rawValue) && cheatObjectiveIndex == 0 {
+        } else if keyboard.isPressed(.o) && cheatObjectiveIndex == 0 {
             cheatObjectiveIndex += 1
-        } else if keys.contains(Keyboard.Key.b.rawValue) && cheatObjectiveIndex == 1 {
+        } else if keyboard.isPressed(.b) && cheatObjectiveIndex == 1 {
             cheatObjectiveIndex += 1
-        } else if keys.contains(Keyboard.Key.j.rawValue) && cheatObjectiveIndex == 2 {
+        } else if keyboard.isPressed(.j) && cheatObjectiveIndex == 2 {
             cheatObjectiveIndex += 1
-        } else if keys.contains(Keyboard.Key.x.rawValue) && cheatObjectiveIndex == 3 {
+        } else if keyboard.isPressed(.x) && cheatObjectiveIndex == 3 {
             cheatObjectiveIndex += 1
-        } else if keys.contains(Keyboard.Key.w.rawValue) && cheatObjectiveIndex == 4 {
+        } else if keyboard.isPressed(.w) && cheatObjectiveIndex == 4 {
             setNewObjective()
             cheatObjectiveIndex = 0
-        } else if !keys.isEmpty {
-            if keys.contains(Keyboard.Key.u.rawValue) { player?.selectNextUnit() }
+        } else if !keyboard.pressedKeys.isEmpty {
+            if keyboard.isPressed(.u) { player?.selectNextUnit() }
             Log.shared.debug("Resetting all cheat indices.")
             cheatObjectiveIndex = 0
             cheatWinIndex = 0

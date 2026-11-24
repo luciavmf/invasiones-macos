@@ -28,10 +28,10 @@ final class ExitState: State {
 
     func update() {
         guard let result = confirmMenu?.update() else { return }
-        if result == ConfirmationMenu.Selection.right.rawValue {
+        if result == .right {
             stateMachine.setState(.end)
         }
-        if result == ConfirmationMenu.Selection.left.rawValue {
+        if result == .left {
             stateMachine.setNextState(.mainMenu)
         }
     }

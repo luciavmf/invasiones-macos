@@ -41,7 +41,7 @@ final class HelpState: State {
     func start() {
         background = ResourceManager.shared.getImage(Res.IMG_FONDO)
 
-        let fnt = ResourceManager.shared.fonts[FontIndex.sans18.rawValue]
+        let fnt = ResourceManager.shared.fonts[.sans18]
 
         button = Button(label: Res.STR_BOTON_MENU, font: fnt)
         let bw = button?.frame.width  ?? 0

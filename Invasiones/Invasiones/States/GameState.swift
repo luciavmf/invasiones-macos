@@ -84,10 +84,10 @@ final class GameState: State {
 
         case .confirmation:
             if let result = confirmMenu?.update() {
-                if result == ConfirmationMenu.Selection.left.rawValue {
+                if result == .left {
                     setState(.playing)
                 }
-                if result == ConfirmationMenu.Selection.right.rawValue {
+                if result == .right {
                     stateMachine.setNextState(.mainMenu)
                 }
             }

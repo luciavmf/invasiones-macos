@@ -72,12 +72,12 @@ final class Hud {
         }
         tipsWindow.draw(video)
 
-        video.font = ResourceManager.shared.fonts[FontIndex.sans12.rawValue]
+        video.font = ResourceManager.shared.fonts[.sans12]
         video.fontColor = GameColor.black
         video.write("\(enemyCount)", Constants.attrsEnemyCountX, posY + Constants.attrsCountY, [])
         video.write("\(argentineCount)", Constants.attrsArgentineCountX, posY + Constants.attrsCountY, [])
 
-        video.font = ResourceManager.shared.fonts[FontIndex.sans12.rawValue]
+        video.font = ResourceManager.shared.fonts[.sans12]
         video.fontColor = GameColor.white
 
         guard let uni = unitToShow else { return }

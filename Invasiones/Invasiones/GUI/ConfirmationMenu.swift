@@ -12,10 +12,9 @@ import Foundation
 final class ConfirmationMenu {
 
     // MARK: - Enum
-    enum Selection: Int {
-        case none  = -1
-        case left  =  0
-        case right =  1
+    enum Selection {
+        case left
+        case right
     }
 
     enum Constants {
@@ -60,11 +59,12 @@ final class ConfirmationMenu {
         )
     }
 
+    /// Returns the clicked button, or `nil` if neither was clicked this frame.
     @discardableResult
-    func update() -> Int {
-        if leftButton.update()  != 0 { return Selection.left.rawValue  }
-        if rightButton.update() != 0 { return Selection.right.rawValue }
-        return Selection.none.rawValue
+    func update() -> Selection? {
+        if leftButton.update()  != 0 { return .left }
+        if rightButton.update() != 0 { return .right }
+        return nil
     }
 
     func draw(_ video: Video) {
