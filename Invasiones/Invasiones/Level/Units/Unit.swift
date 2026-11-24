@@ -852,7 +852,7 @@ final class Unit: MapObject {
         setState(.dying)
         enemy = nil
         if type == Res.UNIDAD_PATRICIO {
-            sound.play(id: Res.SFX_MUERTE_PATRICIO, loop: 0)
+            sound.play(id: .patricioDeath, loop: 0)
         }
     }
 
@@ -876,7 +876,7 @@ final class Unit: MapObject {
     }
 
     private func playShotSound() {
-        let sfx = type == 0 ? Res.SFX_DISPARO_PATRICIO : Res.SFX_DISPARO_INGLES
+        let sfx: SoundID = type == 0 ? .patricioShot : .britishShot
         sound.play(id: sfx, loop: 0)
     }
 

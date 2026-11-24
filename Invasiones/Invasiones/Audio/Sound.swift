@@ -4,18 +4,27 @@
 //
 //  Created by Lucia Medina Fretes on 06.04.26.
 //
-//  Port of Sonido.cs — playback of sound effects and background music.
+//  Port of Sonido.cs — playback of sound effects (the game has no background music).
 //  SDL_mixer replaced by AVFoundation.
 //
 
 import AVFoundation
 import Foundation
 
+/// A sound effect. The raw value is its position in the `sonidos.sfx` list of `data/res.json`.
+enum SoundID: Int, CaseIterable {
+    case splash
+    case patricioShot
+    case britishShot
+    case patricioDeath
+    case battle
+}
+
 /// Plays and stops sound effects. `Sound` provides it in the game; tests use a fake that records calls.
 protocol SoundPlayer: AnyObject {
     @discardableResult
-    func play(id: Int, loop: Int) -> Bool
-    func stop(_ id: Int)
+    func play(id: SoundID, loop: Int) -> Bool
+    func stop(_ id: SoundID)
 }
 
 final class Sound: SoundPlayer {
@@ -24,9 +33,7 @@ final class Sound: SoundPlayer {
     static let shared = Sound()
 
     // MARK: - Declarations
-    private var sfxPlayers: [AVAudioPlayer?] = Array(repeating: nil, count: Res.SFX_COUNT)
-    private var musicPlayer: AVAudioPlayer?
-    private var currentMusic: Int?
+    private var players: [SoundID: AVAudioPlayer] = [:]
 #if DEBUG
     var isMuted = true { didSet { applyVolume() } }
 #else
@@ -38,8 +45,7 @@ final class Sound: SoundPlayer {
     /// Applies the current mute state to every loaded player.
     private func applyVolume() {
         let volume: Float = isMuted ? 0 : 1
-        sfxPlayers.compactMap { $0 }.forEach { $0.volume = volume }
-        musicPlayer?.volume = volume
+        players.values.forEach { $0.volume = volume }
     }
 
     // MARK: - Methods
@@ -47,64 +53,45 @@ final class Sound: SoundPlayer {
     func loadAllSounds() {
         let paths = ResourceManager.shared.soundPaths
 
-        // First Res.SND_COUNT entries are background music (= 0 in this game).
-        // Next Res.SFX_COUNT entries are sound effects.
-        for i in 0..<Res.SFX_COUNT {
-            let pathIdx = Res.SND_COUNT + i
-            guard pathIdx < paths.count, let path = paths[pathIdx] else { continue }
+        for id in SoundID.allCases {
+            guard let path = paths[safe: id.rawValue] ?? nil else { continue }
             do {
                 let player = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: path))
                 player.prepareToPlay()
                 player.volume = isMuted ? 0 : 1
-                sfxPlayers[i] = player
+                players[id] = player
             } catch {
                 Log.shared.error("Sound: failed to load \(path): \(error)")
             }
         }
     }
 
+    /// Plays a sound effect unless it is already playing.
+    /// - Parameter loop: Extra repetitions; `-1` loops forever.
     @discardableResult
-    func play(id: Int, loop: Int) -> Bool {
-        guard id >= 0, id < Res.SND_COUNT + Res.SFX_COUNT else {
-            Log.shared.warn("Sound: cannot play \(id): not found.")
+    func play(id: SoundID, loop: Int) -> Bool {
+        guard let player = players[id] else {
+            Log.shared.warn("Sound: cannot play \(id): not loaded.")
             return false
         }
-
-        if id >= Res.SND_COUNT {
-            let idx = id - Res.SND_COUNT
-            guard let player = sfxPlayers[idx] else { return false }
-            if player.isPlaying { return false }
-            player.volume = isMuted ? 0 : 1
-            player.numberOfLoops = loop < -1 ? 0 : loop
-            player.play()
-        }
-        // No background music (SND_COUNT = 0).
+        if player.isPlaying { return false }
+        player.volume = isMuted ? 0 : 1
+        player.numberOfLoops = loop < -1 ? 0 : loop
+        player.play()
         return true
     }
 
-    /// Stops every sound effect and the music.
+    /// Stops every sound effect.
     func stopAll() {
-        sfxPlayers.compactMap { $0 }.forEach {
+        players.values.forEach {
             $0.stop()
             $0.currentTime = 0
         }
-        musicPlayer?.stop()
-        musicPlayer?.currentTime = 0
-        currentMusic = nil
     }
 
-    func stop(_ id: Int) {
-        guard id >= 0, id < Res.SND_COUNT + Res.SFX_COUNT else { return }
-
-        if id >= Res.SND_COUNT {
-            let p = sfxPlayers[id - Res.SND_COUNT]
-            p?.stop()
-            p?.currentTime = 0
-        } else {
-            musicPlayer?.stop()
-            musicPlayer?.currentTime = 0
-            currentMusic = nil
-        }
+    func stop(_ id: SoundID) {
+        guard let player = players[id] else { return }
+        player.stop()
+        player.currentTime = 0
     }
-
 }

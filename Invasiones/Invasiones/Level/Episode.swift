@@ -135,8 +135,8 @@ final class Episode {
             if try loadLevel(0) {
                 updatePlayingState()
                 setNewObjective()
-                Sound.shared.stop(Res.SFX_SPLASH)
-                Sound.shared.play(id: Res.SFX_BATALLA, loop: -1)
+                Sound.shared.stop(.splash)
+                Sound.shared.play(id: .battle, loop: -1)
                 setState(.showIntro)
             }
         } catch {

@@ -54,7 +54,7 @@ struct UnitTests {
 
         #expect(unit.currentState == .dying)
         #expect(unit.isDead())
-        #expect(sound.played == [Res.SFX_MUERTE_PATRICIO])
+        #expect(sound.played == [.patricioDeath])
     }
 
     @Test func dragRectangleAroundTheUnitSelectsIt() {

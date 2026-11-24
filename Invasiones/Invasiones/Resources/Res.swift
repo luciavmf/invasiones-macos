@@ -36,15 +36,6 @@ enum Res {
     static let MAP_NIVEL1 = 14
     static let MAP_COUNT = 1
 
-    // MARK: - Sound Ids
-    static let SND_COUNT = 0
-    static let SFX_SPLASH = 0
-    static let SFX_DISPARO_PATRICIO = 1
-    static let SFX_DISPARO_INGLES = 2
-    static let SFX_MUERTE_PATRICIO = 3
-    static let SFX_BATALLA = 4
-    static let SFX_COUNT = 5
-
     // MARK: - Image Ids
     static let IMG_CURSOR_ESPADA = 0
     static let IMG_CURSOR_ENFERMERIA = 1

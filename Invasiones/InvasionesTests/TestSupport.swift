@@ -32,16 +32,16 @@ final class TestGrid: WalkableGrid {
 
 /// Records every call instead of playing audio.
 final class FakeSound: SoundPlayer {
-    private(set) var played: [Int] = []
-    private(set) var stopped: [Int] = []
+    private(set) var played: [SoundID] = []
+    private(set) var stopped: [SoundID] = []
 
     @discardableResult
-    func play(id: Int, loop: Int) -> Bool {
+    func play(id: SoundID, loop: Int) -> Bool {
         played.append(id)
         return true
     }
 
-    func stop(_ id: Int) {
+    func stop(_ id: SoundID) {
         stopped.append(id)
     }
 }

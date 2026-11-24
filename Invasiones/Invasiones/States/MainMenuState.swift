@@ -84,8 +84,8 @@ final class MainMenuState: State {
         newMenu.font = ResourceManager.shared.fonts[FontConstants.menuFont]
         menu = newMenu
 
-        Sound.shared.stop(Res.SFX_BATALLA)
-        Sound.shared.play(id: Res.SFX_SPLASH, loop: -1)
+        Sound.shared.stop(.battle)
+        Sound.shared.play(id: .splash, loop: -1)
     }
 
     func update() {
