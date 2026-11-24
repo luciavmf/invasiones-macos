@@ -54,3 +54,11 @@ enum Utils {
         return (NSTemporaryDirectory() as NSString).appendingPathComponent(name)
     }
 }
+
+extension Array {
+    /// The element at `index`, or `nil` if the index is out of bounds.
+    subscript(safe index: Int) -> Element? {
+        guard index >= 0, index < count else { return nil }
+        return self[index]
+    }
+}

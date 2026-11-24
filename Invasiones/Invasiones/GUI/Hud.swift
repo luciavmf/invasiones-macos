@@ -89,25 +89,17 @@ final class Hud {
 
         video.color = GameColor.black
 
-        let s = GameText.Strings
-        video.write("\(s[safe: Res.STR_ALCANCE] ?? ""): \(uni.range)",
+        video.write("\(GameText.text(.range)): \(uni.range)",
                 Constants.attrsStartX1, posY + Constants.attrsStartY, [])
-        video.write("\(s[safe: Res.STR_PUNTERIA] ?? ""): \(uni.aim)",
+        video.write("\(GameText.text(.aim)): \(uni.aim)",
                 Constants.attrsStartX1, posY + Constants.attrsStartY + lineSpacing, [])
-        video.write("\(s[safe: Res.STR_PUNTOS_DE_ATAQUE] ?? ""): \(uni.attackPoints)",
+        video.write("\(GameText.text(.attackPoints)): \(uni.attackPoints)",
                 Constants.attrsStartX2, posY + Constants.attrsStartY, [])
-        video.write("\(s[safe: Res.STR_PUNTOS_DE_RESISTENCIA] ?? ""): \(uni.health)/\(uni.resistancePoints)",
+        video.write("\(GameText.text(.resistancePoints)): \(uni.health)/\(uni.resistancePoints)",
                 Constants.attrsStartX2, posY + Constants.attrsStartY + lineSpacing, [])
-        video.write("\(s[safe: Res.STR_VELOCIDAD] ?? ""): \(uni.defaultSpeed)",
+        video.write("\(GameText.text(.speed)): \(uni.defaultSpeed)",
                 Constants.attrsStartX3, posY + Constants.attrsStartY, [])
-        video.write("\(s[safe: Res.STR_VISIBILIDAD] ?? ""): \(uni.visibility)",
+        video.write("\(GameText.text(.visibility)): \(uni.visibility)",
                 Constants.attrsStartX3, posY + Constants.attrsStartY + lineSpacing, [])
-    }
-}
-
-private extension Array {
-    subscript(safe index: Int) -> Element? {
-        guard index >= 0, index < count else { return nil }
-        return self[index]
     }
 }

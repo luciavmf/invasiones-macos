@@ -41,9 +41,9 @@ final class GameState: State {
                               anchor: .center)
         gameMenu?.font = ResourceManager.shared.fonts[FontConstants.menuFont]
         gameMenu?.addItem(index: MenuItem.continuar.rawValue,
-                          stringId: Res.STR_MENU_CONTINUAR, flag: Menu.Constants.itemVisible)
+                          label: .menuContinue, flag: Menu.Constants.itemVisible)
         gameMenu?.addItem(index: MenuItem.quit.rawValue,
-                          stringId: Res.STR_MENU_SALIR, flag: Menu.Constants.itemVisible)
+                          label: .menuExit, flag: Menu.Constants.itemVisible)
     }
 
     func update() {
@@ -54,12 +54,12 @@ final class GameState: State {
             episode?.start()
             stateValue = .playing
 
-            button = Button(label: Res.STR_BOTON_MENU_DEL_JUEGO, font: nil)
+            button = Button(label: .buttonGameMenu, font: nil)
             button?.setPosition(x: Video.width - Button.Constants.defaultWidth - Button.Constants.screenEdgeOffset,
                                 y: Button.Constants.screenEdgeOffset, anchor: [])
 
-            confirmMenu = ConfirmationMenu(Res.STR_CONFIRMACION_SALIR,
-                                                      Res.STR_NO, Res.STR_SI)
+            confirmMenu = ConfirmationMenu(.exitConfirmation,
+                                                      .no, .yes)
             confirmMenu?.setPosition(x: 0, y: 0, anchor: .center)
 
         case .playing:
@@ -111,7 +111,7 @@ final class GameState: State {
             gameMenu?.draw(video)
             video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
             video.fontColor = GameColor.white
-            video.write(Res.STR_JUEGO_PAUSADO, 0, gamePausedY,
+            video.write(.gamePaused, 0, gamePausedY,
                        .center)
 
         case .confirmation:

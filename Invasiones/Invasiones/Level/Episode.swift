@@ -82,7 +82,7 @@ final class Episode {
 
     // MARK: - Initializer
     init() {
-        gameOverMenu = ConfirmationMenu(Res.STR_CONTINUARJUEGO, Res.STR_NO, Res.STR_SI)
+        gameOverMenu = ConfirmationMenu(.playAgain, .no, .yes)
         gameOverMenu.setPosition(x: 0, y: 0, anchor: .center)
     }
 
@@ -149,7 +149,7 @@ final class Episode {
         video.color = Theme.title
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
-        video.write(Res.STR_CARGANDO, 0, Constants.loadingY, .centerHorizontal)
+        video.write(.loading, 0, Constants.loadingY, .centerHorizontal)
     }
 
     private func loadSprites() {
@@ -211,8 +211,8 @@ final class Episode {
             loadSprites()
 
         } else if count == 3 {
-            button = Button(label: Res.STR_SIGUIENTE, font: nil)
-            acceptButton = Button(label: Res.STR_ACEPTAR, font: nil)
+            button = Button(label: .next, font: nil)
+            acceptButton = Button(label: .accept, font: nil)
             ResourceManager.shared.loadUnitTypes()
 
         } else if count == 4 {
@@ -242,6 +242,12 @@ final class Episode {
     }
 
     // MARK: - SHOW INTRODUCTION state
+
+    /// The intro text for the current battle and page, if there is one.
+    private var currentIntroPage: StringID? {
+        let battle = currentLevel?.currentBattleIndex ?? 0
+        return StringID.introPages[safe: battle * Constants.pagesPerIntro + currentPage]
+    }
 
     private func updateShowIntroState() {
         if count == 0 {
@@ -297,9 +303,9 @@ final class Episode {
             video.fontColor = Theme.text
         }
 
-        let strIdx = Res.STR_PRIMER_BATALLA + currentPage +
-                     ((currentLevel?.currentBattleIndex ?? 0) * Constants.pagesPerIntro)
-        video.write(strIdx, 0, -(hudHeight >> 1), .center)
+        if let page = currentIntroPage {
+            video.write(page, 0, -(hudHeight >> 1), .center)
+        }
         button?.draw(video)
     }
 
@@ -336,16 +342,16 @@ final class Episode {
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.text
         video.write(
-            Res.STR_OBJETIVOS, 0,
+            .objectives, 0,
             -(hudHeight / 2) - Constants.objectivesBoxHeight / 2 + 50,
             .center
         )
 
         video.font = ResourceManager.shared.fonts[FontConstants.objectivesFont]
         video.fontColor = Theme.text
-        let strIdx = Res.STR_PRIMER_BATALLA + currentPage +
-                     ((currentLevel?.currentBattleIndex ?? 0) * Constants.pagesPerIntro)
-        video.write(strIdx, 0, -(hudHeight >> 1) + 30, .center)
+        if let page = currentIntroPage {
+            video.write(page, 0, -(hudHeight >> 1) + 30, .center)
+        }
 
         acceptButton?.draw(video)
     }
@@ -414,13 +420,14 @@ final class Episode {
             let cameraHeight = camera?.height ?? Video.height
             video.font = ResourceManager.shared.fonts[FontConstants.objectivesReminderFont]
             video.fontColor = Theme.title
-            video.write(Res.STR_OBJETIVOS,
+            video.write(.objectives,
                        Layout.objectivesOffset << 1,
                        cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) - 10, [])
-            let strIdx = Res.STR_OBJETIVO_BATALLA_1_1 + (currentLevel?.completedObjectiveCount ?? 0)
-            video.write(strIdx,
-                       Layout.objectivesOffset << 1,
-                       cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) + 5, [])
+            if let reminder = StringID.objectiveReminders[safe: currentLevel?.completedObjectiveCount ?? 0] {
+                video.write(reminder,
+                           Layout.objectivesOffset << 1,
+                           cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) + 5, [])
+            }
             _ = hudHeight  // suppress warning
         }
 
@@ -532,7 +539,7 @@ final class Episode {
         button?.draw(video)
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
-        video.write(Res.STR_GANASTE, 0, 0, .center)
+        video.write(.youWon, 0, 0, .center)
     }
 
     // MARK: - LOST state
@@ -554,7 +561,7 @@ final class Episode {
         drawPlayingState(video)
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
-        video.write(Res.STR_PERDISTE, 0, -100, .center)
+        video.write(.youLost, 0, -100, .center)
         if count > Constants.countdownToRestart {
             gameOverMenu.draw(video)
         }

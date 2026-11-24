@@ -21,7 +21,7 @@ final class CreditsState: State {
 
     func start() {
         background = ResourceManager.shared.getImage(Res.IMG_FONDO)
-        button = Button(label: Res.STR_BOTON_MENU, font: nil)
+        button = Button(label: .buttonBack, font: nil)
         let bw = button?.frame.width  ?? 0
         let bh = button?.frame.height ?? 0
         button?.setPosition(
@@ -42,25 +42,25 @@ final class CreditsState: State {
         // Title
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_MENU_CREDITOS, 0, Layout.titleYPosition, .centerHorizontal)
+        video.write(.menuCredits, 0, Layout.titleYPosition, .centerHorizontal)
 
         // Programming
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_CREDITOS_PROGRAMACION, 0, 260, .centerHorizontal)
+        video.write(.creditsProgramming, 0, 260, .centerHorizontal)
 
         video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_CREDITOS_PROGRAMADOR_1, 0, 310, .centerHorizontal)
+        video.write(.creditsProgrammer1, 0, 310, .centerHorizontal)
 
         // Level design
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_CREDITOS_DISENO_DE_NIVEL, 0, 400, .centerHorizontal)
+        video.write(.creditsLevelDesign, 0, 400, .centerHorizontal)
 
         video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_CREDITOS_DISENADOR_DE_NIVEL_1, 0, 450, .centerHorizontal)
+        video.write(.creditsLevelDesigner1, 0, 450, .centerHorizontal)
 
         button?.draw(video)
     }
