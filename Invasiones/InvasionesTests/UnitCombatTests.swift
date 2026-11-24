@@ -3,7 +3,6 @@
 //  InvasionesTests
 //
 //  Attacking, dying, healing and patrolling, checked against the C# original (Unidad.cs).
-//  Where the port still differs, the test describes the original and is marked as a known issue.
 //  The rules are described in docs/specs/combat.md.
 //
 
@@ -67,20 +66,33 @@ struct UnitCombatTests {
         #expect(enemy.currentState == .moving)
     }
 
-    @Test func eachShotDealsTheAttackPointsOncePerInterval() {
+    @Test func eachShotComesOneFrameAfterTheInterval() {
         let attacker = makeUnit(at: 0)
         let enemy = makeUnit(at: 3, faction: .enemy)
         attacker.attack(enemy: enemy)
         attacker.update()
 
         // Only the attacker is updated, so only it shoots.
-        // The original fires on the frame after the interval, the port on its last frame.
         update(attacker, times: attacker.attackInterval)
-        #expect(enemy.health >= enemy.resistancePoints - attacker.attackPoints)
+        #expect(enemy.health == enemy.resistancePoints)
 
-        update(attacker, times: attacker.attackInterval + 2)
+        update(attacker, times: 1)
+        #expect(enemy.health == enemy.resistancePoints - attacker.attackPoints)
+
+        update(attacker, times: attacker.attackInterval + 1)
         #expect(enemy.health == enemy.resistancePoints - 2 * attacker.attackPoints)
         #expect(sound.played.filter { $0 == .patricioShot }.count == 2)
+    }
+
+    @Test func enemyShotsPlayTheBritishShotSound() {
+        let attacker = makeUnit(at: 0, faction: .enemy)
+        let target = makeUnit(at: 3)
+        attacker.attack(enemy: target)
+
+        update(attacker, times: attacker.attackInterval + 2)
+
+        #expect(sound.played.contains(.britishShot))
+        #expect(!sound.played.contains(.patricioShot))
     }
 
     @Test func killingTheEnemyEndsTheAttack() {
@@ -90,7 +102,8 @@ struct UnitCombatTests {
         attacker.attack(enemy: enemy)
         attacker.update()
 
-        update(attacker, times: attacker.attackInterval + 2)
+        // The first shot kills it, and the attacker goes idle on the same frame.
+        update(attacker, times: attacker.attackInterval + 1)
 
         #expect(enemy.isDead())
         #expect(attacker.currentState == .idle)
@@ -116,10 +129,31 @@ struct UnitCombatTests {
         attacker.attack(enemy: enemy)
         attacker.update()
 
-        withKnownIssue("The port turns the chase into a move to the enemy's tile, then goes idle") {
-            #expect(attacker.currentState == .pursuingUnit)
-        }
+        #expect(attacker.currentState == .pursuingUnit)
         #expect(attacker.pathToFollow != nil)
+    }
+
+    @Test func atExactlyTheRangeTheUnitStillChases() {
+        let attacker = makeUnit(at: 0)
+        let enemy = makeUnit(at: attacker.range, faction: .enemy)
+
+        attacker.attack(enemy: enemy)
+        attacker.update()
+
+        #expect(attacker.currentState == .pursuingUnit)
+    }
+
+    @Test func theChaseFollowsAnEnemyThatMoves() throws {
+        let attacker = makeUnit(at: 0)
+        let enemy = makeUnit(at: 12, faction: .enemy)
+        attacker.attack(enemy: enemy)
+        attacker.update()
+
+        enemy.setTilePosition(i: 25, j: 14)
+        attacker.update()
+
+        let destination = try #require(attacker.pathToFollow?.first)
+        #expect(Point(i: destination.i, j: destination.j) == Point(i: 25, j: 14))
     }
 
     @Test func aChaseEndsInAnAttackOnceInRange() {
@@ -131,9 +165,9 @@ struct UnitCombatTests {
             attacker.update()
         }
 
-        withKnownIssue("The port turns the chase into a move to the enemy's tile, then goes idle") {
-            #expect(attacker.currentState == .attacking)
-        }
+        #expect(attacker.currentState == .attacking)
+        #expect(attacker.calculateDistance(toI: enemy.physicalTilePos.x, toJ: enemy.physicalTilePos.y)
+                < Double(attacker.range))
     }
 
     // MARK: - Dying
@@ -146,6 +180,15 @@ struct UnitCombatTests {
         #expect(unit.health == 0)
         #expect(unit.currentState == .dying)
         #expect(unit.isDead())
+    }
+
+    @Test func everyDyingUnitPlaysThePatricioDeathSound() {
+        let unit = makeUnit(at: 0, faction: .enemy)
+        unit.takeDamage(unit.resistancePoints)
+        #expect(sound.played.isEmpty)
+
+        unit.update()
+
         #expect(sound.played == [.patricioDeath])
     }
 
@@ -153,10 +196,10 @@ struct UnitCombatTests {
         let unit = makeUnit(at: 0)
         unit.takeDamage(unit.resistancePoints)
 
-        update(unit, times: GameUnit.Constants.deathFrameCount - 1)
+        update(unit, times: GameUnit.Constants.deathFrameCount)
         #expect(unit.currentState == .dying)
 
-        update(unit, times: 2)
+        update(unit, times: 1)
         #expect(unit.currentState == .dead)
     }
 
@@ -179,11 +222,11 @@ struct UnitCombatTests {
         unit.recoverHealth()
 
         // The original counts each frame twice, so 50 ticks take 26 frames.
-        update(unit, times: 26)
+        update(unit, times: 25)
+        #expect(unit.health == 50)
 
-        withKnownIssue("The port waits the full 50 frames between recoveries") {
-            #expect(unit.health == 70)
-        }
+        update(unit, times: 1)
+        #expect(unit.health == 70)
     }
 
     // MARK: - Patrolling

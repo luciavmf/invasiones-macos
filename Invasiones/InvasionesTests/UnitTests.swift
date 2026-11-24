@@ -47,16 +47,6 @@ struct UnitTests {
         #expect(unit.pathToFollow == nil)
     }
 
-    @Test func dyingPlaysTheDeathSound() {
-        let unit = makeUnit(at: (0, 0))   // default type is UNIDAD_PATRICIO
-
-        unit.morir()
-
-        #expect(unit.currentState == .dying)
-        #expect(unit.isDead())
-        #expect(sound.played == [.patricioDeath])
-    }
-
     @Test func dragRectangleAroundTheUnitSelectsIt() {
         let unit = makeUnit(at: (0, 0))
         unit.x = 500

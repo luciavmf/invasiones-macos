@@ -66,7 +66,7 @@ Battle lifecycle: `LOADING → SHOW_INTRO → PLAYING → WON/LOST`
 
 `Group` wraps a squad of units. `Command` is a single order. `Objective` is a stack of commands.
 
-**Combat notes** (full rules, and where the port still differs from the C# original, in `docs/specs/combat.md`):
+**Combat notes** (full rules, matching the C# original and its quirks, in `docs/specs/combat.md`):
 - Damage is always `attackPoints` — no accuracy roll. `aim` is loaded from CSV but was never used in the original C# attack logic.
 - Enemy units without a group (`AI`) are set to `PATROLLING` on load and wander randomly between `RANDOM_PATRULLA_MIN=8` and `RANDOM_PATRULLA_MAX=16` tiles from their spawn position.
 - Counter-attack (`contraAtacar` → `Unit.counterAttack`): when a unit enters `attacking`, it notifies the target, which fights back if it is idle and in range.
