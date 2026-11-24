@@ -56,4 +56,26 @@ struct UnitTests {
         #expect(unit.isDead())
         #expect(sound.played == [Res.SFX_MUERTE_PATRICIO])
     }
+
+    @Test func dragRectangleAroundTheUnitSelectsIt() {
+        let unit = makeUnit(at: (0, 0))
+        unit.x = 500
+        unit.y = 400
+
+        let selected = unit.selectIfInRect(x: 0, y: 0, w: 1000, h: 700)
+
+        #expect(selected)
+        #expect(unit.isSelected)
+    }
+
+    @Test func dragRectangleElsewhereLeavesTheUnitUnselected() {
+        let unit = makeUnit(at: (0, 0))
+        unit.x = 500
+        unit.y = 400
+
+        let selected = unit.selectIfInRect(x: 700, y: 0, w: 200, h: 200)
+
+        #expect(!selected)
+        #expect(!unit.isSelected)
+    }
 }
