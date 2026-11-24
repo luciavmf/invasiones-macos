@@ -133,22 +133,12 @@ class Player {
 
     // MARK: - Unit update (shared)
 
-    /// Updates all units: moves them, checks selections, resolves collisions, triggers attacks, and queues dead units.
+    /// Updates all units: moves them, resolves collisions, triggers attacks, and queues dead units.
     func updateUnits() {
         deadUnits = nil
-        let checkSelection = selectedUnit == nil && selectedGroup == nil
 
         for unit in units {
             updateAndMoveUnitInObjectMap(unit)
-
-            if checkSelection, unit.isSelected {
-                if selectedUnits.count < Player.maxSelectedUnits {
-                    hud.selectedUnit = unit
-                    selectedUnits.append(unit)
-                } else {
-                    unit.isSelected = false
-                }
-            }
 
             visibleUnits = getVisibleUnitsAndTiles(unit)
 
@@ -359,6 +349,20 @@ class Player {
     }
 
     /// Deselects the currently selected unit and/or group and clears the HUD selection.
+    /// Collects the units marked as selected into `selectedUnits`, up to `maxSelectedUnits`;
+    /// the rest are unmarked. Does nothing while a unit or group is already selected.
+    func collectSelectedUnits() {
+        guard selectedUnit == nil && selectedGroup == nil else { return }
+        for unit in units where unit.isSelected {
+            if selectedUnits.count < Player.maxSelectedUnits {
+                hud.selectedUnit = unit
+                selectedUnits.append(unit)
+            } else {
+                unit.isSelected = false
+            }
+        }
+    }
+
     func clearSelection() {
         selectedGroup?.isSelected = false
         selectedUnit?.isSelected = false
