@@ -15,9 +15,9 @@ final class AnimObject: MapObject {
     private(set) var animation: Animation
 
     // MARK: - Initializer
-    init(_ anim: Animation, _ i: Int, _ j: Int) {
+    init(_ anim: Animation, _ i: Int, _ j: Int, battlefield: Battlefield) {
         animation = anim
-        super.init()
+        super.init(battlefield: battlefield)
 
         physicalTilePos = (i, j)
         let p = tileToWorld(i: i, j: j)
@@ -44,7 +44,7 @@ final class AnimObject: MapObject {
     }
 
     override func draw(_ video: Video) {
-        guard let map = MapObject.map else { return }
+        guard let map = battlefield?.map else { return }
         if worldPos.x == -1 || worldPos.y == -1 { return }
         animation.draw(video: video, x: x + map.tileWidth / 2, y: y + map.tileHeight / 2, anchor: [])
     }

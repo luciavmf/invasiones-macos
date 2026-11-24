@@ -60,6 +60,9 @@ class Player {
         self.hud = hudArg
     }
 
+    /// The map and camera, given to the units and objects this team places.
+    var battlefield: Battlefield { Battlefield(map: map, camera: camera) }
+
     // MARK: - Abstract methods (must be overridden)
     func update() { fatalError("update() must be overridden") }
 
@@ -79,7 +82,7 @@ class Player {
 
         if let ord = command {
             if ord.id == .takeObject, let img = ord.image {
-                objectToTake = MapObject(sup: img, i: ord.point.x, j: ord.point.y)
+                objectToTake = MapObject(sup: img, i: ord.point.x, j: ord.point.y, battlefield: battlefield)
             }
             ring?.setPosition(i: ord.point.x, j: ord.point.y)
         }
@@ -105,13 +108,15 @@ class Player {
 
                     let anim2 = AnimObject(Animation(copia: anim.animation),
                                           ord.animation!.physicalTilePos.x - 5,
-                                          ord.animation!.physicalTilePos.y - 5)
+                                          ord.animation!.physicalTilePos.y - 5,
+                                          battlefield: battlefield)
                     fireEffects!.append(anim2)
                     map.invalidateTile(x: anim.physicalTilePos.x - 5, y: anim.physicalTilePos.y - 5)
 
                     let anim3 = AnimObject(Animation(copia: anim.animation),
                                           ord.animation!.physicalTilePos.x - 5,
-                                          ord.animation!.physicalTilePos.y)
+                                          ord.animation!.physicalTilePos.y,
+                                          battlefield: battlefield)
                     fireEffects!.append(anim3)
                     map.invalidateTile(x: anim.physicalTilePos.x - 5, y: anim.physicalTilePos.y)
                 }
@@ -340,7 +345,7 @@ class Player {
             Log.shared.debug("Player: cannot place unit — tile not walkable.")
             return nil
         }
-        let unit = Unit(type)
+        let unit = Unit(type, battlefield: battlefield)
         unit.physicalTilePos = (i, j)
         unit.previousTile = (i, j)
         unit.initializeXY()
