@@ -62,7 +62,7 @@ Battle lifecycle: `LOADING → SHOW_INTRO → PLAYING → WON/LOST`
 
 ### Unit System
 
-`Unit` has stats (health, attack, resistance, visibility, aim, range, speed) and states: `idle`, `moving`, `dying`, `attacking`, `pursuingUnit`, `dead`, `patrolling`, `healing`.
+`Unit` has `UnitStats` (health, attack, resistance, visibility, aim, range, speed) and states: `idle`, `moving`, `dying`, `attacking`, `pursuingUnit`, `dead`, `patrolling`, `healing`.
 
 `Group` wraps a squad of units. `Command` is a single order. `Objective` is a stack of commands.
 
@@ -101,7 +101,7 @@ Input from `NSEvent` flows through `GameScene` into `Mouse` and `Keyboard` singl
 
 Unit tests (`InvasionesTests`, Swift Testing) run inside the app (`TEST_HOST`). Test suites touching game types need `@MainActor` (the app target defaults to MainActor isolation).
 
-- `TestSupport.swift` has `TestGrid` (walkability from strings, `.` = walkable), `FakeSound`, `FakeClock`, `FakePointer` (a mouse), `FakeInputMap` (the tile under the pointer), and `GameUnit` (Foundation also declares `Unit`, so use `GameUnit` in tests).
+- `TestSupport.swift` has `TestGrid` (walkability from strings, `.` = walkable), `FakeSound`, `FakeClock`, `FakePointer` (a mouse), `FakeInputMap` (the tile under the pointer), `FakeSprite` (for `UnitView`), and `GameUnit` (Foundation also declares `Unit`, so use `GameUnit` in tests).
 - `Unit` takes its `PathFinder` and `SoundPlayer` as init parameters defaulting to `.shared`; pass fakes in tests. Follow the same pattern when making other classes testable.
 
 ### Resources
