@@ -32,10 +32,10 @@ struct MapObjectTests {
         #expect(object.y == 48 + 50)
     }
 
-    @Test func templatesWithoutABattlefieldStayAtTheOrigin() {
-        let template = GameUnit()
+    @Test func unitsWithoutABattlefieldStayAtTheOrigin() {
+        let unit = GameUnit()
 
-        #expect(template.tileToWorld(i: 4, j: 2) == (0, 0))
+        #expect(unit.tileToWorld(i: 4, j: 2) == (0, 0))
     }
 }
 

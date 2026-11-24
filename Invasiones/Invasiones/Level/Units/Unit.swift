@@ -47,7 +47,7 @@ final class Unit: MapObject {
 
     // MARK: - Attributes
     /// The kind of soldier.
-    private var type: UnitType = .patricio
+    private let type: UnitType
     private var substate: Substep = .incrementStep
     /// The faction this unit belongs to.
     var faction: Episode.Faction = .enemy
@@ -57,19 +57,9 @@ final class Unit: MapObject {
     private var dodgeBlockedTiles: [(i: Int, j: Int)] = []
     /// Current health points.
     private(set) var health: Int = 100
-    /// Maximum health points (loaded from CSV).
-    private(set) var resistancePoints: Int = 100
-    /// Damage dealt per attack (always applied in full — accuracy roll was never implemented).
-    private(set) var attackPoints: Int = 10
-    /// Tile radius within which enemy units are detected.
-    private(set) var visibility: Int = 10
-    /// Accuracy stat loaded from CSV (not used in attack logic).
-    private(set) var aim: Int = 5
-    private var attackRange: Int = 5
-    /// Number of frames between consecutive attacks.
-    private(set) var attackInterval: Int = 30
-    private var currentSpeed: (x: Int, y: Int) = (2, 2)
-    private var defaultSpeedVec: (x: Int, y: Int) = (2, 2)
+    /// The stats of the unit's type, read from its CSV file.
+    let stats: UnitStats
+    private var currentSpeed: (x: Int, y: Int)
     private var enemy: Unit?
     private var stateValue: State = .idle
     private var nextStateValue: State = .idle
@@ -85,10 +75,8 @@ final class Unit: MapObject {
     private var sprite: Sprite?
     private var count: Int = 0
     private var targetPos: (x: Int, y: Int)?
-    /// The unit's display name (loaded from the CSV file).
-    private(set) var name: String = ""
     /// The avatar image shown in the HUD when this unit is selected.
-    private(set) var avatar: Surface?
+    let avatar: Surface?
     private var command: Command?
     /// The objective-level command used to determine whether the unit has fulfilled its mission.
     /// Assigning a new one resets `completedOrder`.
@@ -100,11 +88,6 @@ final class Unit: MapObject {
     /// The base tile position used as the centre of the patrol area.
     private var patrolPosition: (x: Int, y: Int) = (0, 0)
     private var desiredPosition: (x: Int, y: Int) = (0, 0)  // offset en formación
-    private var firstSprite: Int = 0
-    /// Number of ticks between each health recovery tick.
-    private var ticksPerRecovery: Int = 50
-    /// Health points restored per recovery tick.
-    private var recoveryPoints: Int = 20
     private var recoveryTicks: Int = 0
     private var isCommander: Bool = false
     private var group: Group?
@@ -117,12 +100,24 @@ final class Unit: MapObject {
     // MARK: - Public properties
 
     var currentState: State { stateValue }
+    /// Maximum health points.
+    var resistancePoints: Int { stats.resistancePoints }
+    /// Damage dealt by each shot (always in full; there is no accuracy roll).
+    var attackPoints: Int { stats.attackPoints }
+    /// Tile radius within which enemy units are seen.
+    var visibility: Int { stats.visibility }
+    /// Frames between shots.
+    var attackInterval: Int { stats.attackInterval }
+    /// Accuracy. Shown in the HUD but never used in combat, as in the original.
+    var aim: Int { stats.aim }
     /// The attack range of the unit in tiles.
-    var range: Int { attackRange }
+    var range: Int { stats.attackRange }
+    /// The unit's display name.
+    var name: String { stats.name }
     /// The current movement speed vector.
     var speed: (x: Int, y: Int) { currentSpeed }
     /// The base movement speed loaded from the unit CSV.
-    var defaultSpeed: Int { defaultSpeedVec.x }
+    var defaultSpeed: Int { stats.speed }
     /// The offset within the formation used for flocking/grouping calculations.
     var formationOffset: (x: Int, y: Int) {
         get { desiredPosition }
@@ -137,42 +132,30 @@ final class Unit: MapObject {
 
     // MARK: - Initializers
 
-    /// Creates an empty unit. Without a battlefield it can't be placed on the map;
-    /// `ResourceManager` uses that for the unit templates.
-    init(battlefield: Battlefield? = nil, pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
+    /// Creates a unit with the given stats, at full health. Tests leave out the battlefield
+    /// and the stats; the game uses `init(_:battlefield:)`.
+    init(type: UnitType = .patricio, stats: UnitStats = UnitStats(), battlefield: Battlefield? = nil,
+         pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
+        self.type = type
+        self.stats = stats
         self.pathFinder = pathFinder
         self.sound = sound
+        health = stats.resistancePoints
+        currentSpeed = (stats.speed, stats.speed)
+        avatar = stats.avatar.flatMap { ResourceManager.shared.getImage($0) }
+        if let id = stats.sprite, let s = ResourceManager.shared.sprites[id] {
+            sprite = Sprite(copia: s)
+        }
         super.init(battlefield: battlefield)
     }
 
-    /// Creates a unit by copying the loaded template for its type.
-    init(_ type: UnitType, battlefield: Battlefield, pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
-        self.pathFinder = pathFinder
-        self.sound = sound
-        super.init(battlefield: battlefield)
-        guard let copia = ResourceManager.shared.unitTypes[type] else {
-            Log.shared.debug("Unit copy not loaded: \(type)")
-            return
-        }
-        self.type = copia.type
-        currentSpeed = copia.currentSpeed
-        defaultSpeedVec = copia.currentSpeed
-        health = copia.resistancePoints
-        resistancePoints = copia.resistancePoints
-        attackPoints = copia.attackPoints
-        visibility = copia.visibility
-        aim = copia.aim
-        attackRange = copia.attackRange
-        attackInterval = copia.attackInterval
-        avatar = copia.avatar
-        name = copia.name
-        ticksPerRecovery = copia.ticksPerRecovery
-        recoveryPoints = copia.recoveryPoints
-
-        // Clone sprite
-        if let s = copia.sprite {
-            sprite = Sprite(copia: s)
-        }
+    /// Creates a unit of the given type, with the stats `ResourceManager` loaded for it.
+    convenience init(_ type: UnitType, battlefield: Battlefield,
+                     pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
+        let stats = ResourceManager.shared.unitStats[type]
+        if stats == nil { Log.shared.debug("Unit stats not loaded: \(type)") }
+        self.init(type: type, stats: stats ?? UnitStats(), battlefield: battlefield,
+                  pathFinder: pathFinder, sound: sound)
     }
 
     // MARK: - Main update
@@ -555,7 +538,7 @@ final class Unit: MapObject {
         guard stateValue == .idle else { return }
         Log.shared.debug("Unit: under attack, counter-attacking.")
         enemy = attacker
-        if calculateDistance(toI: attacker.physicalTilePos.x, toJ: attacker.physicalTilePos.y) < Double(attackRange) {
+        if calculateDistance(toI: attacker.physicalTilePos.x, toJ: attacker.physicalTilePos.y) < Double(stats.attackRange) {
             aimAtUnit(attacker)
             setState(.attacking)
         }
@@ -651,7 +634,7 @@ final class Unit: MapObject {
     /// coordinate system adjacent tiles have unequal dx/dy (e.g. SE tile: dx=+16, dy=+8),
     /// so applying equal vx/vy per direction overshoots the shorter axis and causes visual jitter.
     private func moveToNextStep() -> Bool {
-        let spd = defaultSpeedVec.x
+        let spd = stats.speed
 
         let dx = nextStep.x - worldPos.x
         let dy = nextStep.y - worldPos.y
@@ -776,7 +759,7 @@ final class Unit: MapObject {
 
         let dist = calculateDistance(toI: enemy.physicalTilePos.x, toJ: enemy.physicalTilePos.y)
 
-        if dist <= Double(attackRange) {
+        if dist <= Double(stats.attackRange) {
             // In range: attack
             aimAtUnit(enemy)
             setState(.attacking)
@@ -823,7 +806,7 @@ final class Unit: MapObject {
 
         // Resume pursuit if it moved away
         let dist = calculateDistance(toI: enemy.physicalTilePos.x, toJ: enemy.physicalTilePos.y)
-        if dist > Double(attackRange) {
+        if dist > Double(stats.attackRange) {
             setState(.pursuingUnit)
         }
     }
@@ -891,71 +874,12 @@ final class Unit: MapObject {
 
     private func updateHealingState() {
         recoveryTicks += 1
-        if recoveryTicks >= ticksPerRecovery {
+        if recoveryTicks >= stats.ticksPerRecovery {
             recoveryTicks = 0
-            health = min(health + recoveryPoints, resistancePoints)
+            health = min(health + stats.recoveryPoints, resistancePoints)
         }
         if health >= resistancePoints {
             setState(.idle)
-        }
-    }
-
-    // MARK: - Loadingr desde CSV
-
-    /// Reads the unit stats (speed, health, attack, etc.) from the CSV data file for the given unit type id.
-    /// - Parameter type: The unit type, whose CSV file is listed in res.json.
-    func readUnit(_ type: UnitType) {
-        let paths = ResourceManager.shared.unitPaths
-        guard let path = paths[safe: type.rawValue] ?? nil,
-              let contenido = try? String(contentsOfFile: path, encoding: .utf8) else {
-            Log.shared.error("Unit: failed to read unit \(type)")
-            return
-        }
-
-        self.type = type
-
-        for line in contenido.components(separatedBy: .newlines) {
-            let partes = line.components(separatedBy: ";")
-            guard partes.count >= 2 else { continue }
-            let clave = partes[0].trimmingCharacters(in: .whitespaces)
-            let value = partes[1].trimmingCharacters(in: .whitespaces)
-
-            switch clave {
-            case "Sprite":
-                let spriteID = SpriteID(csvName: value) ?? .british
-                firstSprite = 0  // animations start at 0 inside the sprite
-                if let spr = ResourceManager.shared.sprites[spriteID] {
-                    sprite = Sprite(copia: spr)
-                }
-            case "Velocidad":
-                let v = Int(value) ?? 2
-                currentSpeed = (v, v)
-                defaultSpeedVec = (v, v)
-            case "Puntos_Resistencia":
-                let pr = Int(value) ?? 100
-                resistancePoints = pr
-                health = pr
-            case "Puntos_Ataque":
-                attackPoints = Int(value) ?? 10
-            case "Visibilidad":
-                visibility = Int(value) ?? 10
-            case "Punteria":
-                aim = Int(value) ?? 5
-            case "Alcance_Tiro":
-                attackRange = Int(value) ?? 5
-            case "Intervalo_Entre_Ataques":
-                attackInterval = Int(value) ?? 30
-            case "Nombre":
-                name = value
-            case "Avatar":
-                avatar = ResourceManager.shared.getImage(value)
-            case "Puntos_De_Recuperacion":
-                recoveryPoints = Int(value) ?? 20
-            case "Ticks_Entre_Recuparacion":
-                ticksPerRecovery = Int(value) ?? 50
-            default:
-                break
-            }
         }
     }
 

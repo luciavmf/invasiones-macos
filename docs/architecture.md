@@ -28,7 +28,7 @@ GameScene (SpriteKit, 20 FPS)
 | `StateMachine/`, `States/` | Top-level screens and the machine that switches between them |
 | `Level/` | `Episode`, `Battlefield`, `Level`, `AI`, `Command`, `Objective`, `MapObject`, `Obstacle`, `ObjectTable` |
 | `Level/Players/` | `Player` and its subclasses `ArgentineTeam`, `EnemyTeam`; `PlayerInput`, `PlayerIntent` |
-| `Level/Units/` | `Unit`, `Group` |
+| `Level/Units/` | `Unit`, `UnitStats`, `Group` |
 | `Map/` | `Map`, `Tileset`, `Tile`, `Camera`, `TilesetID`, line of sight, `PathFinder/` |
 | `Rendering/`, `Sprites/` | `Video`, `Surface`, `GameFont`, `Anchor`, `Sprite`, `Animation`, `AnimObject` |
 | `GUI/` | `Button`, `Menu`, `ConfirmationMenu`, `Hud`, `Tips`, `Frame` |
@@ -69,7 +69,7 @@ loading → showIntro → playing ⇄ showObjectives → won / lost
 - `ArgentineTeam` is the player's side. `handle(_:)` carries out `PlayerIntent`s: selecting units (a drag selects at most `Player.maxSelectedUnits`, 6, and forms a group), deselecting, and move, attack and heal orders. See [Input](#input) and [`specs/selection-and-orders.md`](specs/selection-and-orders.md).
 - `EnemyTeam` places the British units, and `AI` gives their groups orders from the level file. Units without a group patrol around their starting point.
 - `Group` moves several units together behind a commander.
-- `Unit` (a `MapObject`) has stats read from `unidades/*.csv` and a state machine: `idle`, `moving`, `pursuingUnit`, `attacking`, `dying`, `dead`, `patrolling`, `healing`. It also draws itself, its health bar and its selection, and tests whether the mouse is over it.
+- `Unit` (a `MapObject`) has its type's `UnitStats` (read from `unidades/*.csv`) and a state machine: `idle`, `moving`, `pursuingUnit`, `attacking`, `dying`, `dead`, `patrolling`, `healing`. It also draws itself, its health bar and its selection, and tests whether the mouse is over it.
 
 ## Map and pathfinding
 
@@ -80,7 +80,7 @@ loading → showIntro → playing ⇄ showObjectives → won / lost
 
 ## Battlefield
 
-`Battlefield` is a small struct holding the battle's map and camera. `Episode` creates it; `Player.battlefield` hands it to the units and objects a team places, and `Level` to the fire animations it creates. Map objects see the map only through the `BattleMap` protocol (walkability and tile size), so tests can place units on a `TestGrid`. Unit templates in `ResourceManager` have no battlefield, since they're only copied.
+`Battlefield` is a small struct holding the battle's map and camera. `Episode` creates it; `Player.battlefield` hands it to the units and objects a team places, and `Level` to the fire animations it creates. Map objects see the map only through the `BattleMap` protocol (walkability and tile size), so tests can place units on a `TestGrid`.
 
 ## Rendering
 
@@ -102,7 +102,7 @@ Elsewhere, code reads the mouse directly: the menus and buttons, `Map` (edge scr
 
 ## Resources
 
-`ResourceManager.shared` loads what `data/res.json` lists and caches it: images, fonts, sounds, unit templates, soldier sprites and standalone animations. Resources are identified by enums (`ImageID`, `SoundID`, `AnimationID`…) whose raw values are positions in `res.json`; `GameText` loads `strings_<language>.json` by `StringID`.
+`ResourceManager.shared` loads what `data/res.json` lists and caches it: images, fonts, sounds, unit stats (`UnitStats`, parsed from `unidades/*.csv`), soldier sprites and standalone animations. Resources are identified by enums (`ImageID`, `SoundID`, `AnimationID`…) whose raw values are positions in `res.json`; `GameText` loads `strings_<language>.json` by `StringID`.
 
 ## Shared state
 
@@ -116,4 +116,4 @@ Several parts of the game are reached through globals rather than passed in:
 
 ## Tests
 
-`InvasionesTests` (Swift Testing) runs inside the app. It covers the pathfinder, line of sight, map objects and units on a hand-made `Battlefield` (`TestGrid` is a `BattleMap`), selection and orders (`PlayerInput` with `FakePointer` and `FakeInputMap`, `ArgentineTeam.handle(_:)`), infirmary lookup on the first level's map, `StateMachine`, `GameText`, `Command`, `Objective`, `Camera` and that the resource enums match `res.json`. Combat isn't covered yet (see #3).
+`InvasionesTests` (Swift Testing) runs inside the app. It covers the pathfinder, line of sight, map objects and units on a hand-made `Battlefield` (`TestGrid` is a `BattleMap`), selection and orders (`PlayerInput` with `FakePointer` and `FakeInputMap`, `ArgentineTeam.handle(_:)`), combat, dying, healing and patrolling (`UnitCombatTests`), `UnitStats` parsing, infirmary lookup on the first level's map, `StateMachine`, `GameText`, `Command`, `Objective`, `Camera` and that the resource enums match `res.json`. Tests marked as known issues describe where the port still differs from the original (see [`specs/combat.md`](specs/combat.md)).
