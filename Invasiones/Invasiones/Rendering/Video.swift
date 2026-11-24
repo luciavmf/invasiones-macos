@@ -24,14 +24,14 @@ final class Video {
     private let canvasNode: SKNode
 
     // MARK: - Drawing state
-    /// Colour used for filled and outlined shapes, as 0xRRGGBB.
-    var color: Int = GameColor.black {
+    /// Colour used for filled and outlined shapes.
+    var color: GameColor = .black {
         didSet { currentColor = skColor(color) }
     }
     /// Font used to draw text.
     var font: GameFont?
-    /// Colour used to draw text, as 0xRRGGBB.
-    var fontColor: Int = GameColor.white {
+    /// Colour used to draw text.
+    var fontColor: GameColor = .white {
         didSet { currentFontColor = skColor(fontColor) }
     }
     private var currentColor: SKColor = .black
@@ -252,7 +252,7 @@ final class Video {
     }
 
     /// Fills the entire screen with a solid colour (overload without coordinates).
-    func fillRect(_ color: Int) {
+    func fillRect(_ color: GameColor) {
         self.color = color
         fillRect(0, 0, Video.width, Video.height)
     }
@@ -298,7 +298,8 @@ final class Video {
 
     // MARK: - Helpers
 
-    private func skColor(_ rgb: Int) -> SKColor {
+    private func skColor(_ color: GameColor) -> SKColor {
+        let rgb = color.rgb
         let red   = CGFloat((rgb >> 16) & 0xFF) / 255.0
         let green = CGFloat((rgb >>  8) & 0xFF) / 255.0
         let blue  = CGFloat( rgb        & 0xFF) / 255.0

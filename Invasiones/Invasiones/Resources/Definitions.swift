@@ -29,16 +29,24 @@ enum Direction: Int, CaseIterable {
     case north = 0, northEast, east, southEast, south, southWest, west, northWest
 }
 
-/// RGB hex colour constants used by the `Video` drawing API.
-enum GameColor {
-    static let gray        = 0xC8C8C8
-    static let red         = 0xFF0000
-    static let black       = 0x000000
-    static let white       = 0xFFFFFF
-    static let green       = 0x00FF00
-    static let blue        = 0x0000FF
-    static let cyan        = 0x00FFFF
-    static let magenta     = 0xFF00FF
+/// An opaque RGB colour used by the `Video` drawing API, written as 0xRRGGBB
+/// like the original C# constants.
+struct GameColor: Equatable {
+    /// The colour as 0xRRGGBB.
+    let rgb: Int
+
+    init(rgb: Int) {
+        self.rgb = rgb & 0xFFFFFF
+    }
+
+    static let gray        = GameColor(rgb: 0xC8C8C8)
+    static let red         = GameColor(rgb: 0xFF0000)
+    static let black       = GameColor(rgb: 0x000000)
+    static let white       = GameColor(rgb: 0xFFFFFF)
+    static let green       = GameColor(rgb: 0x00FF00)
+    static let blue        = GameColor(rgb: 0x0000FF)
+    static let cyan        = GameColor(rgb: 0x00FFFF)
+    static let magenta     = GameColor(rgb: 0xFF00FF)
     static let transparent = magenta
 }
 
