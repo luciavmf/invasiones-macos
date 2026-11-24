@@ -40,7 +40,7 @@ final class LogoState: State {
 
     func update() {
         if count == 0 {
-            logo = ResourceManager.shared.getAlphaImage(Res.IMG_LOGO)
+            logo = ResourceManager.shared.getAlphaImage(.logo)
             alpha = 10
         } else if count > logoStartTick + logoEndTick {
             stateMachine.setNextState(.mainMenu)

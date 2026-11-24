@@ -48,8 +48,8 @@ final class OptionsState: State {
     // MARK: - Lifecycle
 
     func start() {
-        background = ResourceManager.shared.getImage(Res.IMG_FONDO)
-        button = Button(label: Res.STR_BOTON_MENU, font: nil)
+        background = ResourceManager.shared.getImage(.background)
+        button = Button(label: .buttonBack, font: nil)
         let bw = button?.frame.width  ?? 0
         let bh = button?.frame.height ?? 0
         button?.setPosition(
@@ -103,12 +103,12 @@ final class OptionsState: State {
         // Title
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_MENU_OPCIONES, 0, Layout.titleYPosition, .centerHorizontal)
+        video.write(.menuOptions, 0, Layout.titleYPosition, .centerHorizontal)
 
         // Sound section
         video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_SOUND_LABEL, 0, SoundLayout.labelY, .centerHorizontal)
+        video.write(.soundLabel, 0, SoundLayout.labelY, .centerHorizontal)
 
         let indSoundY = SoundLayout.startY + (SoundLayout.rowHeight - SoundLayout.indSize) / 2
         if soundRowHovered {
@@ -131,7 +131,7 @@ final class OptionsState: State {
         // Language section
         video.font = ResourceManager.shared.fonts[FontConstants.buttonFont]
         video.fontColor = Theme.text
-        video.write(Res.STR_LANGUAGE_LABEL, 0, RadioLayout.startY - 28, .centerHorizontal)
+        video.write(.languageLabel, 0, RadioLayout.startY - 28, .centerHorizontal)
 
         for (i, lang) in Language.allCases.enumerated() {
             let rowY = RadioLayout.startY + i * RadioLayout.rowHeight

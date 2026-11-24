@@ -20,12 +20,12 @@ struct Button {
     var frame = Frame(width: Constants.defaultWidth, height: Constants.defaultHeight)
     var font:  GameFont?
     var image: Surface? = nil
-    var label: Int = 0
+    var label: StringID
 
     private(set) var isUnderCursor = false
 
     // MARK: - Initializer
-    init(label: Int, font: GameFont? = nil) {
+    init(label: StringID, font: GameFont? = nil) {
         self.label = label
         self.font  = font ?? ResourceManager.shared.fonts[FontConstants.buttonFont]
     }

@@ -31,7 +31,7 @@ final class EnemyTeam: Player {
 
     override func loadUnits(_ levelIndex: Int) throws {
         guard let unitsTileset = map.tilesets.first(where: {
-            $0?.id == Res.TLS_UNIDADES
+            $0?.id == .units
         }) else { return }
         guard let ts = unitsTileset else { return }
 
@@ -45,9 +45,9 @@ final class EnemyTeam: Player {
                 let localId = tileId - ts.firstGid
                 guard localId >= 0, localId < ts.tiles.count,
                       let tile = ts.tiles[localId],
-                      tile.id == Res.TILE_UNIDADES_ID_INGLES else { continue }
+                      tile.kind == .british else { continue }
 
-                let list = placeUnits(type: Res.UNIDAD_INGLES, count: tile.count, x: i << 1, y: j << 1)
+                let list = placeUnits(type: .british, count: tile.count, x: i << 1, y: j << 1)
 
                 if list.count > 1 {
                     if groups == nil { groups = [] }

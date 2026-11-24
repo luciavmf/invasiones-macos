@@ -32,16 +32,7 @@ final class Animation {
     private(set) var animDone = false
     private(set) var offsets: (x: Int, y: Int) = (0, 0)
 
-    // MARK: - Initializer principal (sin height de frame explícito; se infiere al load)
-    init(id: Int, path: String, frameWidth: Int, ticks: Int, offsetX: Int = 0, offsetY: Int = 0) {
-        self.currentAnimation = id
-        self.imagePath = path
-        self.frameWidth = frameWidth
-        self.frameHeight = 0
-        self.ticks = ticks
-        self.offsets = (offsetX, offsetY)
-        self.animRead = (id >= 0 && id <= Res.ANIM_COUNT)
-    }
+    // MARK: - Initializers
 
     /// Initializer with explicit frame height.
     init(idx: Int, path: String, ticks: Int, frameWidth: Int, frameHeight: Int,

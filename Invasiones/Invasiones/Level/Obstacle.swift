@@ -38,13 +38,13 @@ final class Obstacle: MapObject {
         let p = tileToWorld(i: i, j: j)
         worldPos = p
 
-        if tileset.id == Res.TLS_EDIFICIOS ||
-           tileset.id == Res.TLS_ENFERMERIA ||
-           tileset.id == Res.TLS_FUERTE {
+        if tileset.id == .buildings ||
+           tileset.id == .infirmary ||
+           tileset.id == .fort {
             isBuilding = true
         }
 
-        if tileset.id == Res.TLS_DEBUG {
+        if tileset.id == .debug {
             image = nil
         }
 

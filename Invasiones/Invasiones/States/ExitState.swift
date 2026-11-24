@@ -21,8 +21,8 @@ final class ExitState: State {
     private var confirmMenu: ConfirmationMenu?
 
     func start() {
-        background = ResourceManager.shared.getImage(Res.IMG_SPLASH)
-        confirmMenu = ConfirmationMenu(Res.STR_CONFIRMACION_SALIR, Res.STR_NO, Res.STR_SI)
+        background = ResourceManager.shared.getImage(.splash)
+        confirmMenu = ConfirmationMenu(.exitConfirmation, .no, .yes)
         confirmMenu?.setPosition(x: 0, y: 0, anchor: .center)
     }
 

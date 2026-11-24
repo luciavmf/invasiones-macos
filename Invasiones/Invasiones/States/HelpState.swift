@@ -39,11 +39,11 @@ final class HelpState: State {
     // MARK: - Methods
 
     func start() {
-        background = ResourceManager.shared.getImage(Res.IMG_FONDO)
+        background = ResourceManager.shared.getImage(.background)
 
         let fnt = ResourceManager.shared.fonts[.sans18]
 
-        button = Button(label: Res.STR_BOTON_MENU, font: fnt)
+        button = Button(label: .buttonBack, font: fnt)
         let bw = button?.frame.width  ?? 0
         let bh = button?.frame.height ?? 0
         button?.setPosition(
@@ -52,7 +52,7 @@ final class HelpState: State {
             anchor: []
         )
 
-        nextButton = Button(label: Res.STR_SIGUIENTE, font: fnt)
+        nextButton = Button(label: .next, font: fnt)
         let nw = nextButton?.frame.width  ?? 0
         let nh = nextButton?.frame.height ?? 0
         nextButton?.setPosition(
@@ -61,7 +61,7 @@ final class HelpState: State {
             anchor: []
         )
 
-        backButton = Button(label: Res.STR_ATRAS, font: fnt)
+        backButton = Button(label: .back, font: fnt)
         backButton?.setPosition(
             x: Video.width  - nw * 2 - Button.Constants.screenEdgeOffset,
             y: Video.height - nh     - Button.Constants.screenEdgeOffset,
@@ -99,18 +99,16 @@ final class HelpState: State {
 
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
-        video.write(Res.STR_MENU_AYUDA, 0, Layout.titleYPosition, .centerHorizontal)
+        video.write(.menuHelp, 0, Layout.titleYPosition, .centerHorizontal)
 
-        if substate.rawValue < Substate.total {
+        if let page = StringID.helpPages[safe: substate.rawValue] {
             video.font = ResourceManager.shared.fonts[FontConstants.helpTitleFont]
             video.fontColor = Theme.text
-            video.write(Res.STR_MENU_AYUDA_TEXTO_SELECCIONAR_01 + substate.rawValue * 2,
-                       0, Constants.helpItemY, .centerHorizontal)
+            video.write(page.title, 0, Constants.helpItemY, .centerHorizontal)
 
             video.font = ResourceManager.shared.fonts[FontConstants.helpFont]
             video.fontColor = Theme.text
-            video.write(Res.STR_MENU_AYUDA_TEXTO_SELECCIONAR_02 + substate.rawValue * 2,
-                       0, Constants.helpTextY, .centerHorizontal)
+            video.write(page.text, 0, Constants.helpTextY, .centerHorizontal)
         }
 
         currentScreenshot?.draw(video: video, x: 0, y: 150, anchor: .center)
@@ -128,9 +126,8 @@ final class HelpState: State {
     // MARK: - Private
 
     private func loadScreenshot(_ sub: Substate) {
-        let animIdx = Res.ANIM_AYUDA_SELECCION + sub.rawValue
-        let anims = ResourceManager.shared.animations
-        guard animIdx < anims.count, let anim = anims[animIdx] else {
+        guard let id = AnimationID.helpScreens[safe: sub.rawValue],
+              let anim = ResourceManager.shared.animations[id] else {
             currentScreenshot = nil
             return
         }

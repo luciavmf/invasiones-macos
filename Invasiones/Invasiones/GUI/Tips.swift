@@ -32,7 +32,7 @@ final class Tips {
 
     // MARK: - Initializer
     init() {
-        tipButton = Button(label: Res.STR_TIP_00, font: nil)
+        tipButton = Button(label: .tipButton, font: nil)
         tipButton.setPosition(
             x: Video.width  - tipButton.frame.width  - 20,
             y: Video.height - 90 - tipButton.frame.height,

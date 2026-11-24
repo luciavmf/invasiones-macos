@@ -45,7 +45,7 @@ final class Map {
     private(set) var physicalTileWidth: Int = 0
     private(set) var physicalTileHeight: Int = 0
 
-    private(set) var tilesets: [Tileset?] = Array(repeating: nil, count: Res.TLS_COUNT)
+    private(set) var tilesets: [Tileset?] = Array(repeating: nil, count: TilesetID.allCases.count)
     private var tilesetCount: Int = 0
 
     private static var tilesetDebug: Tileset?
@@ -55,7 +55,7 @@ final class Map {
     private(set) var smallTileUnderMouse: (x: Int, y: Int) = (0, 0)
 
     // MARK: - Physical map (small tiles, ×2 resolution)
-    private(set) var physicalTilesLayer: [[Int]] = []  // [col * 2][row * 2]
+    private(set) var physicalTilesLayer: [[TilesetID]] = []  // [col * 2][row * 2]
     var visibleTilesLayer: [[Int]] = []
 
     // MARK: - Grey tile image (debug / semi-transparent selection)
@@ -92,13 +92,16 @@ final class Map {
 
     // MARK: - Loading
 
-    func load(_ mapId: Int) throws {
-        guard mapId >= Res.TLS_COUNT, mapId < Res.TLS_COUNT + Res.MAP_COUNT else {
-            throw GameError.invalidResource("Map ID \(mapId) inválido.")
-        }
+    /// Loads the map of the given level (its position in res.json's `escenarios.mapas` list).
+    func load(level: Int) throws {
+        // scenarioPaths lists every tileset first, then the maps.
+        let mapIndex = TilesetID.allCases.count + level
         let paths = ResourceManager.shared.scenarioPaths
-        guard mapId < paths.count, let mapPath = paths[mapId] else {
-            throw GameError.fileNotFound("No hay path para el mapa \(mapId).")
+        guard level >= 0, mapIndex < paths.count else {
+            throw GameError.invalidResource("Map for level \(level) inválido.")
+        }
+        guard let mapPath = paths[mapIndex] else {
+            throw GameError.fileNotFound("No hay path para el mapa del nivel \(level).")
         }
 
         tilesetCount = 0
@@ -181,7 +184,7 @@ final class Map {
 
         if semiTransparent {
             if greyTileImage == nil {
-                greyTileImage = ResourceManager.shared.getImage(Res.IMG_TILE_GRIS)
+                greyTileImage = ResourceManager.shared.getImage(.greyTile)
             }
             video.draw(greyTileImage, posX, posY, 128, [])
         }
@@ -281,7 +284,7 @@ final class Map {
               x < physicalTilesLayer.count,
               y < physicalTilesLayer[x].count else { return false }
         let id = physicalTilesLayer[x][y]
-        return id == Res.TLS_PASTO || id == Res.TLS_TIERRA
+        return id == .grass || id == .dirt
     }
 
     /// Walks from (x1,y1) toward (x2,y2) along the Bresenham-style parametric line and
@@ -336,7 +339,7 @@ final class Map {
         guard x >= 0, y >= 0,
               x + 1 < width * 2,
               y + 1 < height * 2 else { return }
-        let v = Res.TLS_ARBOLES
+        let v = TilesetID.trees
         physicalTilesLayer[x][y]         = v
         physicalTilesLayer[x + 1][y]     = v
         physicalTilesLayer[x + 1][y + 1] = v
@@ -443,7 +446,7 @@ final class Map {
     private func loadLayerInfo(paths: [String?]) {
         if Map.tilesetDebug == nil {
             let ts = Tileset()
-            if let p = paths[Res.TLS_DEBUG] { try? ts.load(p) }
+            if let p = paths[safe: TilesetID.debug.rawValue] ?? nil { try? ts.load(p) }
             Map.tilesetDebug = ts
         }
 
@@ -453,7 +456,7 @@ final class Map {
         }
 
         // Initialize the physical map and visibility map (double resolution)
-        physicalTilesLayer  = Array(repeating: Array(repeating: 0, count: height * 2),
+        physicalTilesLayer  = Array(repeating: Array(repeating: TilesetID.debug, count: height * 2),
                                   count: width * 2)
         visibleTilesLayer = Array(repeating: Array(repeating: 0, count: height * 2),
                                   count: width * 2)
@@ -462,9 +465,9 @@ final class Map {
             for i in 0..<width {
                 for j in 0..<height {
                     if let ts = getTileset(mapData[layer][i][j]),
-                       ts.id != Res.TLS_UNIDADES {
+                       ts.id != .units {
                         let tsId = ts.id
-                        mapData[Constants.infoLayer][i][j] = tsId
+                        mapData[Constants.infoLayer][i][j] = tsId.rawValue
                         let ci = i * 2, cj = j * 2
                         if ci + 1 < physicalTilesLayer.count && cj + 1 < physicalTilesLayer[ci].count {
                             physicalTilesLayer[ci][cj]     = tsId

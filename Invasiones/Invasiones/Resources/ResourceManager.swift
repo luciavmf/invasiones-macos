@@ -17,7 +17,7 @@ final class ResourceManager {
 
     // MARK: - Declarations
     /// Image cache indexed by id (Int) or name (String).
-    private var imageById: [Int: Surface] = [:]
+    private var imageById: [ImageID: Surface] = [:]
     private var imageByName: [String: Surface] = [:]
 
     /// Resolved (absolute) paths read from res.json.
@@ -30,14 +30,14 @@ final class ResourceManager {
     /// Loaded fonts (one per Definitions.FNT variant).
     private(set) var fonts: [FontIndex: GameFont] = [:]
 
-    /// Loaded sprites (Res.SPR_COUNT = 2).
-    private(set) var sprites: [Sprite?] = []
+    /// Loaded soldier sprites.
+    private(set) var sprites: [SpriteID: Sprite] = [:]
 
-    /// Loaded animations (Res.ANIM_COUNT = 13).
-    private(set) var animations: [Animation?] = []
+    /// Loaded standalone animations.
+    private(set) var animations: [AnimationID: Animation] = [:]
 
-    /// Unit type templates (Res.UNIDAD_COUNT = 2).
-    private(set) var unitTypes: [Unit?] = []
+    /// Unit type templates, copied when units are placed.
+    private(set) var unitTypes: [UnitType: Unit] = [:]
 
     // MARK: - Initializer (private)
     private init() {}
@@ -85,10 +85,10 @@ final class ResourceManager {
         return sup
     }
 
-    /// Gets (and caches) the image by ID (index into imagePaths).
-    func getImage(_ id: Int) -> Surface? {
+    /// Gets (and caches) the image listed in res.json.
+    func getImage(_ id: ImageID) -> Surface? {
         if let cached = imageById[id] { return cached }
-        guard id < imagePaths.count, let path = imagePaths[id] else { return nil }
+        guard let path = imagePaths[safe: id.rawValue] ?? nil else { return nil }
         let sup = Surface(path: path)
         imageById[id] = sup
         return sup
@@ -96,7 +96,7 @@ final class ResourceManager {
 
     /// Same as getImage(id) — in the original it loaded with an explicit alpha channel;
     /// in SpriteKit all PNG textures support alpha automatically.
-    func getAlphaImage(_ id: Int) -> Surface? {
+    func getAlphaImage(_ id: ImageID) -> Surface? {
         return getImage(id)
     }
 
@@ -110,17 +110,17 @@ final class ResourceManager {
     func loadFonts() throws {
         guard fonts.isEmpty else { return }
 
-        fonts[.sans12] = GameFont(fontId: Res.FNT_SANS, size: 12)
-        fonts[.sans14] = GameFont(fontId: Res.FNT_SANS, size: 14)
-        fonts[.sans18] = GameFont(fontId: Res.FNT_SANS, size: 18)
-        fonts[.sans20] = GameFont(fontId: Res.FNT_SANS, size: 20)
-        fonts[.sans24] = GameFont(fontId: Res.FNT_SANS, size: 24)
-        fonts[.sans28] = GameFont(fontId: Res.FNT_SANS, size: 28)
-        fonts[.lblack12] = GameFont(fontId: Res.FNT_LBLACK, size: 12)
-        fonts[.lblack14] = GameFont(fontId: Res.FNT_LBLACK, size: 14)
-        fonts[.lblack18] = GameFont(fontId: Res.FNT_LBLACK, size: 18)
-        fonts[.lblack20] = GameFont(fontId: Res.FNT_LBLACK, size: 20)
-        fonts[.lblack28] = GameFont(fontId: Res.FNT_LBLACK, size: 28)
+        fonts[.sans12] = GameFont(family: .sans, size: 12)
+        fonts[.sans14] = GameFont(family: .sans, size: 14)
+        fonts[.sans18] = GameFont(family: .sans, size: 18)
+        fonts[.sans20] = GameFont(family: .sans, size: 20)
+        fonts[.sans24] = GameFont(family: .sans, size: 24)
+        fonts[.sans28] = GameFont(family: .sans, size: 28)
+        fonts[.lblack12] = GameFont(family: .lblack, size: 12)
+        fonts[.lblack14] = GameFont(family: .lblack, size: 14)
+        fonts[.lblack18] = GameFont(family: .lblack, size: 18)
+        fonts[.lblack20] = GameFont(family: .lblack, size: 20)
+        fonts[.lblack28] = GameFont(family: .lblack, size: 28)
 
         if fonts[.sans12] == nil {
             throw GameError.invalidResource("No se pudo cargar la fuente SANS12.")
@@ -130,11 +130,11 @@ final class ResourceManager {
     // MARK: - Unit types
 
     func loadUnitTypes() {
-        unitTypes = Array(repeating: nil, count: Res.UNIDAD_COUNT)
-        for i in 0..<Res.UNIDAD_COUNT {
+        unitTypes = [:]
+        for type in UnitType.allCases {
             let u = Unit()
-            u.readUnit(i)
-            unitTypes[i] = u
+            u.readUnit(type)
+            unitTypes[type] = u
         }
     }
 
@@ -143,8 +143,9 @@ final class ResourceManager {
     func readSpriteInfo() throws {
         let res = try decodeResJSON()
 
-        sprites = Array(repeating: nil, count: Res.SPR_COUNT)
-        for (i, sprJSON) in res.sprites.prefix(Res.SPR_COUNT).enumerated() {
+        sprites = [:]
+        for (i, sprJSON) in res.sprites.enumerated() {
+            guard let id = SpriteID(rawValue: i) else { break }
             let anims = sprJSON.animpaks.map { pak -> Animation in
                 let img = pak.image
                 let path = Utils.getPath(img.path) ?? ""
@@ -158,7 +159,7 @@ final class ResourceManager {
                 spr.addAnimation(i: j, anim: anim)
             }
             try? spr.load()
-            sprites[i] = spr
+            sprites[id] = spr
         }
     }
 
@@ -167,10 +168,11 @@ final class ResourceManager {
     func readAnimationInfo() throws {
         let res = try decodeResJSON()
 
-        animations = Array(repeating: nil, count: Res.ANIM_COUNT)
-        for (i, animJSON) in res.anims.prefix(Res.ANIM_COUNT).enumerated() {
+        animations = [:]
+        for (i, animJSON) in res.anims.enumerated() {
+            guard let id = AnimationID(rawValue: i) else { break }
             let path = Utils.getPath(animJSON.imagepath) ?? ""
-            animations[i] = Animation(idx: 0, path: path, ticks: animJSON.frameticks,
+            animations[id] = Animation(idx: 0, path: path, ticks: animJSON.frameticks,
                                       frameWidth: animJSON.framewidth, frameHeight: animJSON.frameheight,
                                       offsetX: animJSON.offsetX, offsetY: animJSON.offsetY)
         }

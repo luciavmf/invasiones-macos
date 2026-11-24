@@ -33,11 +33,11 @@ final class ArgentineTeam: Player {
         Group.map = map
 
         let anims = ResourceManager.shared.animations
-        if Res.ANIM_AROS < anims.count, let animAros = anims[Res.ANIM_AROS] {
+        if let animAros = anims[.rings] {
             ring = AnimObject(Animation(copia: animAros), 0, 0)
         }
 
-        if Res.ANIM_FLECHA_GUIA < anims.count, let animFlecha = anims[Res.ANIM_FLECHA_GUIA] {
+        if let animFlecha = anims[.guideArrow] {
             orientationArrow = Animation(copia: animFlecha)
             try? orientationArrow?.load()
         }
@@ -54,12 +54,12 @@ final class ArgentineTeam: Player {
     }
 
     override func loadUnits(_ levelIndex: Int) throws {
-        arrowObj = MapObject(sup: ResourceManager.shared.getImage(Res.IMG_FLECHA),
+        arrowObj = MapObject(sup: ResourceManager.shared.getImage(.arrow),
                                i: 0, j: 0)
         count = 99999
 
         guard let unitsTileset = map.tilesets.compactMap({ $0 }).first(where: {
-            $0.id == Res.TLS_UNIDADES
+            $0.id == .units
         }) else { return }
 
         units = []
@@ -72,9 +72,9 @@ final class ArgentineTeam: Player {
                 let localId = tileId - unitsTileset.firstGid
                 guard localId >= 0, localId < unitsTileset.tiles.count,
                       let tile = unitsTileset.tiles[localId],
-                      tile.id == Res.TILE_UNIDADES_ID_PATRICIO else { continue }
+                      tile.kind == .patricio else { continue }
 
-                let list = placeUnits(type: Res.UNIDAD_PATRICIO, count: tile.count, x: i << 1, y: j << 1)
+                let list = placeUnits(type: .patricio, count: tile.count, x: i << 1, y: j << 1)
 
                 if list.count > 1 {
                     if groups == nil { groups = [] }
@@ -339,8 +339,8 @@ final class ArgentineTeam: Player {
                 let localId = buildingTileId - ts.firstGid
                 guard localId >= 0, localId < ts.tiles.count,
                       let tileProp = ts.tiles[localId],
-                      ts.id == Res.TLS_INVALIDADO,
-                      tileProp.id == Res.TILE_INVALIDADOS_ID_ENFERMERIA else { return }
+                      ts.id == .invalidated,
+                      tileProp.kind == .infirmary else { return }
 
                 Log.shared.debug("Unit ordered to heal.")
                 if let group = selectedGroup,
@@ -420,12 +420,12 @@ final class ArgentineTeam: Player {
     // MARK: - Cursor
 
     private func updateCursor() {
-        Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR)
+        Mouse.shared.cursor = ResourceManager.shared.getImage(.cursor)
 
         guard selectedUnit != nil || selectedGroup != nil else { return }
 
         if let unitUnderMouse = unitUnderMouse, unitUnderMouse.faction == .enemy {
-            Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR_ESPADA)
+            Mouse.shared.cursor = ResourceManager.shared.getImage(.swordCursor)
         }
 
         if let u = selectedUnit, u.isDead() {
@@ -442,13 +442,13 @@ final class ArgentineTeam: Player {
         let localId = buildingTileId - ts.firstGid
         guard localId >= 0, localId < ts.tiles.count,
               let tileProp = ts.tiles[localId],
-              ts.id == Res.TLS_INVALIDADO,
-              tileProp.id == Res.TILE_INVALIDADOS_ID_ENFERMERIA else { return }
+              ts.id == .invalidated,
+              tileProp.kind == .infirmary else { return }
 
         let needsHeal = (selectedUnit.map { $0.health < $0.resistancePoints } ?? false)
                      || (selectedGroup.map  { $0.health < $0.resistancePoints } ?? false)
         if needsHeal {
-            Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR_ENFERMERIA)
+            Mouse.shared.cursor = ResourceManager.shared.getImage(.infirmaryCursor)
         }
     }
 
@@ -494,12 +494,5 @@ final class ArgentineTeam: Player {
         var b =  x / tw
         if x > 0 { b += 1 }
         return (a - b - 4, a + b - 2)
-    }
-}
-
-private extension Array {
-    subscript(safe index: Int) -> Element? {
-        guard index >= 0, index < count else { return nil }
-        return self[index]
     }
 }

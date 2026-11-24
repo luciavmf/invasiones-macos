@@ -55,9 +55,9 @@ final class MainMenuState: State {
     // MARK: - Methods
 
     func start() {
-        background = ResourceManager.shared.getImage(Res.IMG_SPLASH)
+        background = ResourceManager.shared.getImage(.splash)
 
-        Mouse.shared.cursor = ResourceManager.shared.getImage(Res.IMG_CURSOR)
+        Mouse.shared.cursor = ResourceManager.shared.getImage(.cursor)
         Mouse.shared.showCursor()
 
         let newMenu = Menu(
@@ -68,11 +68,11 @@ final class MainMenuState: State {
             anchor: .centerHorizontal
         )
 
-        newMenu.addItem(index: Item.newGame.rawValue,  stringId: Res.STR_MENU_NUEVO_JUEGO, flag: Menu.Constants.itemVisible)
-        newMenu.addItem(index: Item.help.rawValue,     stringId: Res.STR_MENU_AYUDA,       flag: Menu.Constants.itemVisible)
-        newMenu.addItem(index: Item.options.rawValue,  stringId: Res.STR_MENU_OPCIONES,    flag: Menu.Constants.itemVisible)
-        newMenu.addItem(index: Item.credits.rawValue,  stringId: Res.STR_MENU_CREDITOS,    flag: Menu.Constants.itemVisible)
-        newMenu.addItem(index: Item.quit.rawValue,     stringId: Res.STR_MENU_SALIR,       flag: Menu.Constants.itemVisible)
+        newMenu.addItem(index: Item.newGame.rawValue,  label: .menuNewGame, flag: Menu.Constants.itemVisible)
+        newMenu.addItem(index: Item.help.rawValue,     label: .menuHelp,       flag: Menu.Constants.itemVisible)
+        newMenu.addItem(index: Item.options.rawValue,  label: .menuOptions,    flag: Menu.Constants.itemVisible)
+        newMenu.addItem(index: Item.credits.rawValue,  label: .menuCredits,    flag: Menu.Constants.itemVisible)
+        newMenu.addItem(index: Item.quit.rawValue,     label: .menuExit,       flag: Menu.Constants.itemVisible)
 
         if firstBuild {
             firstBuild = false
@@ -84,8 +84,8 @@ final class MainMenuState: State {
         newMenu.font = ResourceManager.shared.fonts[FontConstants.menuFont]
         menu = newMenu
 
-        Sound.shared.stop(Res.SFX_BATALLA)
-        Sound.shared.play(id: Res.SFX_SPLASH, loop: -1)
+        Sound.shared.stop(.battle)
+        Sound.shared.play(id: .splash, loop: -1)
     }
 
     func update() {

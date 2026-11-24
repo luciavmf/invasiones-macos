@@ -169,11 +169,9 @@ final class Video {
 
     // MARK: - Write text
 
-    /// Writes the string identified by its ID (index in GameText.Strings) with an anchor.
-    func write(_ stringId: Int, _ x: Int, _ y: Int, _ anchor: Anchor) {
-        let strings = GameText.Strings
-        guard stringId >= 0, stringId < strings.count else { return }
-        writeText(strings[stringId], x, y, anchor)
+    /// Writes the given localised string with an anchor.
+    func write(_ id: StringID, _ x: Int, _ y: Int, _ anchor: Anchor) {
+        writeText(GameText.text(id), x, y, anchor)
     }
 
     /// Writes a string literal (for debug output and dynamic text).

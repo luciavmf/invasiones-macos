@@ -105,7 +105,7 @@ Unit tests (`InvasionesTests`, Swift Testing) run inside the app (`TEST_HOST`). 
 - Animation metadata → `Animation` (sprite sheet controller)
 - Unit type templates → `Unit`
 
-`Res` contains integer constants for all resource indices (images, sounds, strings, animations, tiles).
+Resources are identified by typed enums (`StringID`, `SoundID`, `ImageID`, `FontFamily`, `UnitType`, `SpriteID`, `AnimationID`, `TilesetID`, `TileKind`). Except `StringID` (raw value = JSON key) and `TileKind`, their raw values are positions in the lists of `data/res.json`, so reordering that file means reordering the enum; `ResourceIDTests` checks they match.
 
 `GameText` loads localised strings from `data/strings.xml`.
 

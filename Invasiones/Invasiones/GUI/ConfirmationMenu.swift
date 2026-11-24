@@ -25,17 +25,17 @@ final class ConfirmationMenu {
 
     // MARK: - Declarations
     var frame = Frame(width: Constants.defaultWidth, height: Constants.defaultHeight)
-    var label: Int
+    var label: StringID
 
     private var leftButton:  Button
     private var rightButton: Button
 
     // MARK: - Initializer
-    init(_ lbl: Int, _ boton1: Int, _ boton2: Int) {
-        label = lbl
-        leftButton  = Button(label: boton1, font: nil)
+    init(_ message: StringID, _ leftLabel: StringID, _ rightLabel: StringID) {
+        label = message
+        leftButton  = Button(label: leftLabel, font: nil)
         leftButton.setPosition(x: 0, y: 0, anchor: [])
-        rightButton = Button(label: boton2, font: nil)
+        rightButton = Button(label: rightLabel, font: nil)
         rightButton.setPosition(x: 200, y: 200, anchor: [])
     }
 

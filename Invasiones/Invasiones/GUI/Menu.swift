@@ -25,7 +25,10 @@ final class Menu {
     var font:  GameFont?
     var image: Surface?
 
-    private var items: [Int]
+    /// Per-item state flags (`Constants.item*`).
+    private var itemFlags: [Int]
+    /// Per-item label.
+    private var itemLabels: [StringID?]
     private var itemCount: Int = 0
     private var buttonWidth: Int = 160
     private var buttonHeight: Int = 26
@@ -36,7 +39,8 @@ final class Menu {
 
     // MARK: - Initializer
     init(image img: Surface?, itemCount: Int, x: Int, y: Int, anchor anch: Anchor) {
-        items = Array(repeating: 0, count: Constants.maxItemCount)
+        itemFlags = Array(repeating: 0, count: Constants.maxItemCount)
+        itemLabels = Array(repeating: nil, count: Constants.maxItemCount)
         originalX = x
         originalY = y
         anchor = anch
@@ -63,7 +67,7 @@ final class Menu {
 
         var y = frame.posY
         for i in 0..<itemCount {
-            let flags = (items[i] & 0xFF00) >> 8
+            let flags = itemFlags[i]
             if flags != Constants.itemHidden {
                 if (flags & Constants.itemHover) != 0 {
                     video.color = GameColor.black
@@ -71,12 +75,14 @@ final class Menu {
                 }
                 video.font = font
                 video.fontColor = Theme.text
-                video.write(
-                    items[i] & 0xFF,
-                    frame.posX - (Video.width >> 1) + (buttonWidth >> 1),
-                    y          - (Video.height >> 1) + (buttonHeight >> 1),
-                    .center
-                )
+                if let label = itemLabels[i] {
+                    video.write(
+                        label,
+                        frame.posX - (Video.width >> 1) + (buttonWidth >> 1),
+                        y          - (Video.height >> 1) + (buttonHeight >> 1),
+                        .center
+                    )
+                }
                 y += lineSpacing + buttonHeight
             }
         }
@@ -88,18 +94,18 @@ final class Menu {
         var y = frame.posY
 
         for i in 0..<itemCount {
-            let flags = (items[i] & 0xFF00) >> 8
+            let flags = itemFlags[i]
             if flags != Constants.itemHidden {
                 let mx = Int(Mouse.shared.x)
                 let my = Int(Mouse.shared.y)
                 if mx > frame.posX && mx < frame.posX + buttonWidth && my > y && my < y + buttonHeight {
-                    items[i] |= (Constants.itemHover << 8)
+                    itemFlags[i] |= Constants.itemHover
                     if Mouse.shared.pressedButtons.contains(Mouse.Constants.leftButton) {
-                        items[i] |= (Constants.itemSelected << 8)
+                        itemFlags[i] |= Constants.itemSelected
                         selectedItem = i
                     }
                 } else {
-                    items[i] &= ~(Constants.itemHover << 8)
+                    itemFlags[i] &= ~Constants.itemHover
                 }
                 y += lineSpacing + buttonHeight
             }
@@ -126,13 +132,14 @@ final class Menu {
     }
 
     @discardableResult
-    func addItem(index: Int, stringId: Int, flag: Int) -> Bool {
+    func addItem(index: Int, label: StringID, flag: Int) -> Bool {
         guard index <= Constants.maxItemCount - 1 else { return false }
 
         if itemCount == index {
             itemCount += 1
         }
-        items[index] = (flag << 8) | (stringId & 0xFF)
+        itemFlags[index] = flag
+        itemLabels[index] = label
 
         if anchor.contains(.centerHorizontal) {
             frame.posX = (Video.width >> 1) - (buttonWidth >> 1) + originalX
