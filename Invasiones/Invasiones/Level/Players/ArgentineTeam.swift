@@ -59,7 +59,7 @@ final class ArgentineTeam: Player {
         count = 99999
 
         guard let unitsTileset = map.tilesets.compactMap({ $0 }).first(where: {
-            $0.id == Res.TLS_UNIDADES
+            $0.id == .units
         }) else { return }
 
         units = []
@@ -72,7 +72,7 @@ final class ArgentineTeam: Player {
                 let localId = tileId - unitsTileset.firstGid
                 guard localId >= 0, localId < unitsTileset.tiles.count,
                       let tile = unitsTileset.tiles[localId],
-                      tile.id == Res.TILE_UNIDADES_ID_PATRICIO else { continue }
+                      tile.kind == .patricio else { continue }
 
                 let list = placeUnits(type: .patricio, count: tile.count, x: i << 1, y: j << 1)
 
@@ -339,8 +339,8 @@ final class ArgentineTeam: Player {
                 let localId = buildingTileId - ts.firstGid
                 guard localId >= 0, localId < ts.tiles.count,
                       let tileProp = ts.tiles[localId],
-                      ts.id == Res.TLS_INVALIDADO,
-                      tileProp.id == Res.TILE_INVALIDADOS_ID_ENFERMERIA else { return }
+                      ts.id == .invalidated,
+                      tileProp.kind == .infirmary else { return }
 
                 Log.shared.debug("Unit ordered to heal.")
                 if let group = selectedGroup,
@@ -442,8 +442,8 @@ final class ArgentineTeam: Player {
         let localId = buildingTileId - ts.firstGid
         guard localId >= 0, localId < ts.tiles.count,
               let tileProp = ts.tiles[localId],
-              ts.id == Res.TLS_INVALIDADO,
-              tileProp.id == Res.TILE_INVALIDADOS_ID_ENFERMERIA else { return }
+              ts.id == .invalidated,
+              tileProp.kind == .infirmary else { return }
 
         let needsHeal = (selectedUnit.map { $0.health < $0.resistancePoints } ?? false)
                      || (selectedGroup.map  { $0.health < $0.resistancePoints } ?? false)

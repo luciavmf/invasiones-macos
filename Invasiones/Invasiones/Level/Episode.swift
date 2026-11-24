@@ -198,7 +198,7 @@ final class Episode {
                 count += 1
                 return false
             }
-            try map.load(Res.MAP_NIVEL1 + levelIndex)
+            try map.load(level: levelIndex)
 
             MapObject.map = map
             MapObject.camera = camera

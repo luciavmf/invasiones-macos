@@ -14,27 +14,11 @@ final class Tileset {
 
     // MARK: - Declarations
     var firstGid: Int = 0
-    private(set) var id: Int = 0
+    private(set) var id: TilesetID = .debug
     fileprivate(set) var tileWidth: Int = 0
     fileprivate(set) var tileHeight: Int = 0
     fileprivate(set) var name: String = "" {
-        didSet {
-            switch name.lowercased() {
-            case "tierra": id = Res.TLS_TIERRA
-            case "agua": id = Res.TLS_AGUA
-            case "pasto": id = Res.TLS_PASTO
-            case "arboles": id = Res.TLS_ARBOLES
-            case "unidades": id = Res.TLS_UNIDADES
-            case "piedras": id = Res.TLS_PIEDRAS
-            case "texturas": id = Res.TLS_TEXTURAS
-            case "piedras2": id = Res.TLS_PIEDRAS2
-            case "enfermeria": id = Res.TLS_ENFERMERIA
-            case "edificios": id = Res.TLS_EDIFICIOS
-            case "invalidados": id = Res.TLS_INVALIDADO
-            case "fuerte": id = Res.TLS_FUERTE
-            default: break
-            }
-        }
+        didSet { id = TilesetID(tsxName: name) }
     }
     fileprivate(set) var image: Surface? {
         didSet {
@@ -150,14 +134,8 @@ private final class TilesetXMLDelegate: NSObject, XMLParserDelegate {
             let propName = (attributes["name"] ?? "").lowercased()
             let propValue = attributes["value"] ?? ""
             if propName == "id" || propName == "unidad" {
-                switch propValue {
-                case "TILES_VECINOS": ts.tiles[tileId]?.id = Res.TILE_DEBUG_ID_TILES_VECINOS
-                case "CAMINO_A_SEGUIR": ts.tiles[tileId]?.id = Res.TILE_DEBUG_ID_CAMINO_A_SEGUIR
-                case "PATRICIO": ts.tiles[tileId]?.id = Res.TILE_UNIDADES_ID_PATRICIO
-                case "ENFERMERIA": ts.tiles[tileId]?.id = Res.TILE_INVALIDADOS_ID_ENFERMERIA
-                case "CASA": ts.tiles[tileId]?.id = Res.TILE_INVALIDADOS_ID_CASA
-                case "INGLES": ts.tiles[tileId]?.id = Res.TILE_UNIDADES_ID_INGLES
-                default: break
+                if let kind = TileKind(propertyValue: propValue) {
+                    ts.tiles[tileId]?.kind = kind
                 }
             } else if propName == "cantidad" {
                 ts.tiles[tileId]?.count = Int(propValue) ?? 0

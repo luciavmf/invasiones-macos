@@ -10,7 +10,8 @@
 import Foundation
 
 struct Tile {
-    var id: Int = 0
+    /// What the tile stands for, if it is tagged in its tileset.
+    var kind: TileKind?
     var count: Int = 0
     var cost: Int = 0
 }
