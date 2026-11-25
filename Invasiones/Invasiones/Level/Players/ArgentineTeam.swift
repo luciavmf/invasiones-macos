@@ -85,23 +85,27 @@ final class ArgentineTeam: Player {
         }
     }
 
-    // MARK: - Draw (called from Episode)
+    // MARK: - Draw (called from BattleView)
 
-    /// Draws the objective ring, the collectible object, fire effects, the destination arrow, and the orientation arrow.
-    func drawOrientationArrow(_ video: Video) {
+    /// Draws the destination arrow of the last move order (for 100 frames), the objective
+    /// ring, the object to take and the fires. As in the original, they're drawn with the
+    /// units, so the fog and the HUD cover them, and the arrow's frames are counted here.
+    func drawMarkers(_ video: Video) {
         guard stateValue == .game else { return }
 
-        // Draw objective ring, object to grab, and fire effects
-        ring?.draw(video)
-        objectToTake?.draw(video)
-        fireEffects?.forEach { $0.draw(video) }
-
-        // Draw static destination arrow if there's a recent order
         if count < arrowMaxCount {
             arrowObj?.draw(video)
         }
+        count += 1
 
-        // Draw orientation arrow only if objective is off-screen
+        ring?.draw(video)
+        objectToTake?.draw(video)
+        fireEffects?.forEach { $0.draw(video) }
+    }
+
+    /// Draws the arrow at the edge of the screen pointing at the objective, when it's off-screen.
+    func drawOrientationArrow(_ video: Video) {
+        guard stateValue == .game else { return }
         guard command != nil, orientationArrow != nil else { return }
         guard !isObjectiveVisible() else { return }
         orientationArrow?.draw(video: video, x: arrowPos.x, y: arrowPos.y, anchor: [])
@@ -170,7 +174,6 @@ final class ArgentineTeam: Player {
         removeDeadUnits()
 
         arrowObj?.update()
-        count += 1
     }
 
     // MARK: - Orientation arrow

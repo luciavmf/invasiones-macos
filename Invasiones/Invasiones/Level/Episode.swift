@@ -4,16 +4,16 @@
 //
 //  Created by Lucia Medina Fretes on 06.04.26.
 //
-//  Port of Episodio.cs + Episode.EstadoCargando.cs + Episode.EstadoJugando.cs
-//  + Episode.EstadoMostrarIntroduccion.cs — active game session.
+//  Port of Episodio.cs + Episodio.EstadoCargando.cs + Episodio.EstadoJugando.cs
+//  + Episodio.EstadoMostrarIntroduccion.cs — active game session.
 //
 
 import Foundation
-internal import CoreGraphics
 
-/// The active battle session. Owns the map, both factions, the HUD and the obstacles, and
-/// draws the battle. Its states and transitions (loading → intro → playing ⇄ objectives →
-/// won / lost) are in `BattleFlow`.
+/// The active battle session. Loads the map, both teams, the HUD and the obstacles, and
+/// updates them while playing. `BattleFlow` decides which state the battle is in
+/// (loading → intro → playing ⇄ objectives → won / lost), and each state's screen draws
+/// it over the `BattleView`.
 final class Episode {
 
     // MARK: - Enums
@@ -23,21 +23,7 @@ final class Episode {
     /// The states the battle can be in.
     typealias State = BattleFlow.State
 
-    // MARK: - Constants
-    enum Constants {
-        static let objectivesBoxWidth = 600
-        static let objectivesBoxHeight = 270
-        static let objectivesBoxButtonY = 70
-        static let objectivesButtonY = 510
-        static let objectivesBorder = 100
-        static let loadingY = 200
-    }
-
     // MARK: - Declarations
-    /// "Next" button used in the introduction/objectives screens.
-    private var button: Button?
-    /// "Accept" button used in the objectives popup.
-    private var acceptButton: Button?
     /// All static obstacles loaded from the map (trees, buildings, rocks).
     private var obstacles: [Obstacle] = []
     /// The index of the level being played.
@@ -51,18 +37,22 @@ final class Episode {
     /// The map and camera, given to everything placed on the map.
     private var battlefield: Battlefield?
     private var hud: Hud?
-    private var gameOverMenu: ConfirmationMenu
     /// The battle's states and objectives.
     private let flow = BattleFlow()
     private let cheatsEnabled = true
+
+    // MARK: - Screens
+    private var battleView: BattleView?
+    private var introScreen: IntroScreen?
+    private var objectivesScreen: ObjectivesScreen?
+    private var wonScreen: WonScreen?
+    private var lostScreen: LostScreen?
 
     // MARK: - Properties
     var state: State { flow.state }
 
     // MARK: - Initializer
     init() {
-        gameOverMenu = ConfirmationMenu(.playAgain, .no, .yes)
-        gameOverMenu.setPosition(x: 0, y: 0, anchor: .center)
         flow.onNewObjective = { [weak self] objective in
             self?.player?.setObjective(objective)
         }
@@ -75,7 +65,6 @@ final class Episode {
         flow.start()
     }
 
-
     /// Called when leaving the battle state (no-op).
     func exit() {}
 
@@ -84,13 +73,23 @@ final class Episode {
     @discardableResult
     func update() -> Bool {
         switch flow.state {
-        case .loading: updateLoadingState()
-        case .showIntro: updateShowIntroState()
-        case .showObjectives: updateShowObjectiveState()
-        case .playing: updatePlayingState()
-        case .won: updateWonState()
-        case .lost: updateLostState()
-        case .end: break
+        case .loading:
+            updateLoadingState()
+        case .showIntro:
+            if let introScreen { flow.updateIntro(nextPressed: introScreen.update()) }
+        case .showObjectives:
+            if let objectivesScreen { flow.updateObjectives(accepted: objectivesScreen.update()) }
+        case .playing:
+            updatePlayingState()
+        case .won:
+            if wonScreen?.update() == true { flow.confirmWon() }
+        case .lost:
+            flow.updateLost()
+            if flow.showsPlayAgainMenu, let answer = lostScreen?.update() {
+                flow.answerPlayAgain(answer)
+            }
+        case .end:
+            break
         }
         return false
     }
@@ -99,18 +98,44 @@ final class Episode {
 
     func draw(_ video: Video) {
         switch flow.state {
-        case .loading: drawLoadingState(video)
-        case .showObjectives: drawShowObjectiveState(video)
-        case .playing: drawPlayingState(video)
-        case .showIntro: drawShowIntroState(video)
-        case .won: drawWonState(video)
-        case .lost: drawLostState(video)
-        case .end: break
+        case .loading:
+            LoadingScreen.draw(video)
+        case .showIntro:
+            drawBattle(video)
+            introScreen?.draw(video, page: flow.page, text: currentTextPage)
+        case .showObjectives:
+            drawBattle(video)
+            objectivesScreen?.draw(video, text: currentTextPage)
+        case .playing:
+            drawBattle(video)
+        case .won:
+            drawBattle(video)
+            wonScreen?.draw(video)
+        case .lost:
+            drawBattle(video)
+            lostScreen?.draw(video, showsMenu: flow.showsPlayAgainMenu)
+        case .end:
+            break
         }
         video.color = GameColor.white
     }
 
-    // MARK: - LOADING state
+    /// The intro or objectives text for the current battle and page, if there is one.
+    private var currentTextPage: StringID? {
+        StringID.introPages[safe: flow.textPage]
+    }
+
+    /// Draws the battle behind the current screen.
+    private func drawBattle(_ video: Video) {
+        // The original opens the objectives popup while drawing the battle.
+        flow.showObjectivesIfDue()
+        let reminder: BattleView.Reminder = flow.showsReminder
+            ? .shown(StringID.objectiveReminders[safe: flow.level?.completedObjectiveCount ?? 0])
+            : .hidden
+        battleView?.draw(video, reminder: reminder)
+    }
+
+    // MARK: - Loading
 
     private func updateLoadingState() {
         do {
@@ -123,14 +148,6 @@ final class Episode {
         } catch {
             Log.shared.error(error.localizedDescription)
         }
-    }
-
-    private func drawLoadingState(_ video: Video) {
-        video.fillRect(.black)
-        video.color = Theme.title
-        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
-        video.fontColor = Theme.title
-        video.write(.loading, 0, Constants.loadingY, .centerHorizontal)
     }
 
     private func loadSprites() {
@@ -191,8 +208,11 @@ final class Episode {
             loadSprites()
 
         } else if flow.count == 3 {
-            button = Button(label: .next, font: nil)
-            acceptButton = Button(label: .accept, font: nil)
+            let hudHeight = hud?.height ?? 0
+            introScreen = IntroScreen(hudHeight: hudHeight)
+            objectivesScreen = ObjectivesScreen(hudHeight: hudHeight)
+            wonScreen = WonScreen()
+            lostScreen = LostScreen()
             ResourceManager.shared.loadUnitTypes()
 
         } else if flow.count == 4 {
@@ -207,6 +227,10 @@ final class Episode {
                                        objectsToDraw: objectsToDraw, hud: hud)
             enemy = EnemyTeam(map: map, camera: camera,
                                      objectsToDraw: objectsToDraw, hud: hud)
+            if let player {
+                battleView = BattleView(map: map, camera: camera, player: player,
+                                        objectsToDraw: objectsToDraw, hud: hud)
+            }
 
         } else if flow.count == 6 {
             try player?.loadUnits(levelIndex)
@@ -221,87 +245,7 @@ final class Episode {
         return false
     }
 
-    // MARK: - SHOW INTRODUCTION state
-
-    /// The intro or objectives text for the current battle and page, if there is one.
-    private var currentIntroPage: StringID? {
-        StringID.introPages[safe: flow.textPage]
-    }
-
-    private func updateShowIntroState() {
-        if flow.count == 0 {
-            button?.setPosition(x: 0, y: Constants.objectivesButtonY, anchor: .centerHorizontal)
-        }
-        flow.updateIntro(nextPressed: button?.update() != 0)
-    }
-
-    private func drawShowIntroState(_ video: Video) {
-        drawPlayingState(video)
-
-        video.color = Theme.objectivesText
-        let hudHeight = hud?.height ?? 0
-        video.fillRect(
-            0, -(hudHeight >> 1),
-            Video.width - (Constants.objectivesBorder << 1),
-            Video.height  - (Constants.objectivesBorder << 1) - hudHeight,
-            Theme.alpha,
-            .center
-        )
-
-        if flow.page == 0 {
-            video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
-            video.fontColor = Theme.text
-        } else {
-            video.font = ResourceManager.shared.fonts[FontConstants.objectivesFont]
-            video.fontColor = Theme.text
-        }
-
-        if let page = currentIntroPage {
-            video.write(page, 0, -(hudHeight >> 1), .center)
-        }
-        button?.draw(video)
-    }
-
-    // MARK: - SHOW OBJECTIVES state
-
-    private func updateShowObjectiveState() {
-        if flow.count == 0 {
-            acceptButton?.setPosition(x: 0, y: Constants.objectivesBoxButtonY,
-                                      anchor: .center)
-        }
-        flow.updateObjectives(accepted: acceptButton?.update() != 0)
-    }
-
-    private func drawShowObjectiveState(_ video: Video) {
-        drawPlayingState(video)
-
-        let hudHeight = hud?.height ?? 0
-        video.color = Theme.objectivesText
-        video.fillRect(
-            0, -(hudHeight / 2),
-            Constants.objectivesBoxWidth, Constants.objectivesBoxHeight,
-            Theme.alpha,
-            .center
-        )
-
-        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
-        video.fontColor = Theme.text
-        video.write(
-            .objectives, 0,
-            -(hudHeight / 2) - Constants.objectivesBoxHeight / 2 + 50,
-            .center
-        )
-
-        video.font = ResourceManager.shared.fonts[FontConstants.objectivesFont]
-        video.fontColor = Theme.text
-        if let page = currentIntroPage {
-            video.write(page, 0, -(hudHeight >> 1) + 30, .center)
-        }
-
-        acceptButton?.draw(video)
-    }
-
-    // MARK: - PLAYING state
+    // MARK: - Playing
 
     private func updatePlayingState() {
         flow.beginPlayingFrame()
@@ -332,167 +276,5 @@ final class Episode {
         }
 
         obstacles.forEach { $0.update() }
-    }
-
-    private func drawPlayingState(_ video: Video) {
-        video.fillRect(GameColor.black)
-
-        if let map = map { map.drawLayer(video: video, layer: map.layers.terrain) }
-
-        drawObjects(video)
-
-        drawSemiTransparentLayer(video)
-
-        hud?.draw(video)
-
-        player?.drawOrientationArrow(video)
-
-        // The original opens the objectives popup while drawing the battle.
-        flow.showObjectivesIfDue()
-        if flow.showsReminder {
-            let cameraHeight = camera?.height ?? Video.height
-            video.font = ResourceManager.shared.fonts[FontConstants.objectivesReminderFont]
-            video.fontColor = Theme.title
-            video.write(.objectives,
-                       Layout.objectivesOffset << 1,
-                       cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) - 10, [])
-            if let reminder = StringID.objectiveReminders[safe: flow.level?.completedObjectiveCount ?? 0] {
-                video.write(reminder,
-                           Layout.objectivesOffset << 1,
-                           cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) + 5, [])
-            }
-        }
-
-        if Mouse.shared.isDragging() {
-            video.color = GameColor.green
-            let r = Mouse.shared.dragRect
-            video.drawRect(Int(r.minX), Int(r.minY), Int(r.width), Int(r.height), [])
-        }
-    }
-
-    private func drawSemiTransparentLayer(_ video: Video) {
-        guard let map = map, let camera = camera, let player = player else { return }
-
-        let oldClip = video.getClip()
-        video.setClip(x: camera.startX, y: camera.startY, w: camera.width, h: camera.height)
-
-        let rect = player.getPaintCoordinates()
-        var startCol = rect.x
-        var startRow = rect.y
-        let endI = rect.w
-        let endJ = rect.h
-
-        var tileY = 0
-        var toggle = true
-
-        while tileY <= endJ {
-            var tileX = 0
-            var i = startCol, j = startRow
-            while tileX <= endI && j >= 0 {
-                if i >= 0 && i < map.physicalMapHeight && j < map.physicalMapWidth {
-                    if map.visibleTilesLayer[i][j] == 0 {
-                        map.drawSmallTile(video: video, i: i, j: j, semiTransparent: true)
-                    }
-                }
-                tileX += 1
-                i += 1
-                j -= 1
-            }
-            tileY += 1
-                        if toggle {
-                startCol += 1
-                toggle = false
-            }
-                        else {
-                startRow += 1
-                toggle = true
-            }
-        }
-
-        video.setClip(x: oldClip.x, y: oldClip.y, w: oldClip.w, h: oldClip.h)
-    }
-
-    private func drawObjects(_ video: Video) {
-        guard let map = map, let camera = camera, let player = player else { return }
-
-        let oldClip = video.getClip()
-        video.setClip(x: camera.startX, y: camera.startY, w: camera.width, h: camera.height)
-
-        let rect = player.getPaintCoordinates()
-        var startCol = rect.x
-        var startRow = rect.y
-        let endI = rect.w
-        let endJ = rect.h
-
-        var tileY = 0
-        var toggle = true
-
-        while tileY <= endJ {
-            var tileX = 0
-            var i = startCol, j = startRow
-            while tileX <= endI && j >= 0 {
-                if i >= 0 && i < map.physicalMapHeight && j < map.physicalMapWidth {
-                    if let obj = objectsToDraw.table[i][j] {
-                        if let unit = obj as? Unit  { unit.draw(video) }
-                        if let obs = obj as? Obstacle { obs.draw(video) }
-                    }
-                }
-                tileX += 1
-                i += 1
-                j -= 1
-            }
-            tileY += 1
-                        if toggle {
-                startCol += 1
-                toggle = false
-            }
-                        else {
-                startRow += 1
-                toggle = true
-            }
-        }
-
-        video.setClip(x: oldClip.x, y: oldClip.y, w: oldClip.w, h: oldClip.h)
-    }
-
-    // MARK: - WON state
-
-    private func updateWonState() {
-        if button?.update() != 0 {
-            flow.confirmWon()
-        }
-    }
-
-    private func drawWonState(_ video: Video) {
-        drawPlayingState(video)
-        button?.draw(video)
-        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
-        video.fontColor = Theme.title
-        video.write(.youWon, 0, 0, .center)
-    }
-
-    // MARK: - LOST state
-
-    private func updateLostState() {
-        flow.updateLost()
-        guard flow.showsPlayAgainMenu else { return }
-
-        let result = gameOverMenu.update()
-        if result == .left {
-            flow.answerPlayAgain(false)
-        }
-        if result == .right {
-            flow.answerPlayAgain(true)
-        }
-    }
-
-    private func drawLostState(_ video: Video) {
-        drawPlayingState(video)
-        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
-        video.fontColor = Theme.title
-        video.write(.youLost, 0, -100, .center)
-        if flow.showsPlayAgainMenu {
-            gameOverMenu.draw(video)
-        }
     }
 }
