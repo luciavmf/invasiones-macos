@@ -175,8 +175,8 @@ private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
                 } else {
                     ord = Command(type, iVal, jVal)
                 }
-            } else if type == .kill, let anchoStr = a["ancho"] {
-                ord = Command(type, iVal, jVal, (Int(anchoStr) ?? 0) << 1)
+            } else if type == .kill, let widthStr = a["ancho"] {
+                ord = Command(type, iVal, jVal, (Int(widthStr) ?? 0) << 1)
             } else {
                 ord = Command(type, iVal, jVal)
             }

@@ -163,7 +163,7 @@ final class Episode {
     private func loadPaintObjects() -> Bool {
         guard let map = map, let battlefield = battlefield else { return false }
 
-        objectsToDraw.tabla = Array(repeating: Array(repeating: nil, count: map.physicalMapWidth),
+        objectsToDraw.table = Array(repeating: Array(repeating: nil, count: map.physicalMapWidth),
                                        count: map.physicalMapHeight)
         obstacles = []
 
@@ -178,8 +178,8 @@ final class Episode {
                 obstacles.append(obs)
 
                 let fi = i * 2, fj = j * 2
-                if fi < objectsToDraw.tabla.count, fj < objectsToDraw.tabla[fi].count {
-                    objectsToDraw.tabla[fi][fj] = obs
+                if fi < objectsToDraw.table.count, fj < objectsToDraw.table[fi].count {
+                    objectsToDraw.table[fi][fj] = obs
                 }
             }
         }
@@ -404,7 +404,7 @@ final class Episode {
 
         if let map = map { map.drawLayer(video: video, layer: map.layers.terrain) }
 
-        dibujarObjetos(video)
+        drawObjects(video)
 
         drawSemiTransparentLayer(video)
 
@@ -481,7 +481,7 @@ final class Episode {
         video.setClip(x: oldClip.x, y: oldClip.y, w: oldClip.w, h: oldClip.h)
     }
 
-    private func dibujarObjetos(_ video: Video) {
+    private func drawObjects(_ video: Video) {
         guard let map = map, let camera = camera, let player = player else { return }
 
         let oldClip = video.getClip()
@@ -501,8 +501,8 @@ final class Episode {
             var i = startCol, j = startRow
             while tileX <= endI && j >= 0 {
                 if i >= 0 && i < map.physicalMapHeight && j < map.physicalMapWidth {
-                    if let obj = objectsToDraw.tabla[i][j] {
-                        if let uni = obj as? Unit  { uni.draw(video) }
+                    if let obj = objectsToDraw.table[i][j] {
+                        if let unit = obj as? Unit  { unit.draw(video) }
                         if let obs = obj as? Obstacle { obs.draw(video) }
                     }
                 }
@@ -520,9 +520,6 @@ final class Episode {
                 toggle = true
             }
         }
-
-        // Fueguitos del jugador se dibujan encima (delegado a ArgentineFaction via Player)
-        // player.Dibujar(g) — in the original it drew fire effects; delegated if needed
 
         video.setClip(x: oldClip.x, y: oldClip.y, w: oldClip.w, h: oldClip.h)
     }

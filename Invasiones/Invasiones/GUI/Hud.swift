@@ -80,26 +80,26 @@ final class Hud {
         video.font = ResourceManager.shared.fonts[.sans12]
         video.fontColor = GameColor.white
 
-        guard let uni = unitToShow else { return }
+        guard let unit = unitToShow else { return }
 
-        if let av = uni.avatar {
+        if let av = unit.avatar {
             video.draw(av, Constants.avatarX, posY + Constants.avatarY, [])
         }
-        video.write(uni.name, Constants.avatarNameX, posY + Constants.avatarNameY, [])
+        video.write(unit.name, Constants.avatarNameX, posY + Constants.avatarNameY, [])
 
         video.color = GameColor.black
 
-        video.write("\(GameText.text(.range)): \(uni.range)",
+        video.write("\(GameText.text(.range)): \(unit.range)",
                 Constants.attrsStartX1, posY + Constants.attrsStartY, [])
-        video.write("\(GameText.text(.aim)): \(uni.aim)",
+        video.write("\(GameText.text(.aim)): \(unit.aim)",
                 Constants.attrsStartX1, posY + Constants.attrsStartY + lineSpacing, [])
-        video.write("\(GameText.text(.attackPoints)): \(uni.attackPoints)",
+        video.write("\(GameText.text(.attackPoints)): \(unit.attackPoints)",
                 Constants.attrsStartX2, posY + Constants.attrsStartY, [])
-        video.write("\(GameText.text(.resistancePoints)): \(uni.health)/\(uni.resistancePoints)",
+        video.write("\(GameText.text(.resistancePoints)): \(unit.health)/\(unit.resistancePoints)",
                 Constants.attrsStartX2, posY + Constants.attrsStartY + lineSpacing, [])
-        video.write("\(GameText.text(.speed)): \(uni.defaultSpeed)",
+        video.write("\(GameText.text(.speed)): \(unit.defaultSpeed)",
                 Constants.attrsStartX3, posY + Constants.attrsStartY, [])
-        video.write("\(GameText.text(.visibility)): \(uni.visibility)",
+        video.write("\(GameText.text(.visibility)): \(unit.visibility)",
                 Constants.attrsStartX3, posY + Constants.attrsStartY + lineSpacing, [])
     }
 }

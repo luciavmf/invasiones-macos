@@ -168,9 +168,9 @@ class Player {
 
             for i in iStart..<iEnd {
                 for j in jStart..<jEnd {
-                    guard i >= 0, j >= 0, i < objectsToDraw.tabla.count,
-                          j < objectsToDraw.tabla[i].count else { continue }
-                    if let u = objectsToDraw.tabla[i][j] as? Unit, u.faction == .enemy {
+                    guard i >= 0, j >= 0, i < objectsToDraw.table.count,
+                          j < objectsToDraw.table[i].count else { continue }
+                    if let u = objectsToDraw.table[i][j] as? Unit, u.faction == .enemy {
                         someoneCompletedOrder = false
                     }
                 }
@@ -184,8 +184,8 @@ class Player {
         for dead in muertas {
             let ti = dead.physicalTilePos.x
             let tj = dead.physicalTilePos.y
-            if ti < objectsToDraw.tabla.count, tj < objectsToDraw.tabla[ti].count {
-                objectsToDraw.tabla[ti][tj] = nil
+            if ti < objectsToDraw.table.count, tj < objectsToDraw.table[ti].count {
+                objectsToDraw.table[ti][tj] = nil
             }
             units.removeAll { $0 === dead }
         }
@@ -198,15 +198,15 @@ class Player {
         if moved {
             let prevI = unit.previousTile.x
             let prevJ = unit.previousTile.y
-            if prevI < objectsToDraw.tabla.count, prevJ < objectsToDraw.tabla[prevI].count {
-                if objectsToDraw.tabla[prevI][prevJ] === unit {
-                    objectsToDraw.tabla[prevI][prevJ] = nil
+            if prevI < objectsToDraw.table.count, prevJ < objectsToDraw.table[prevI].count {
+                if objectsToDraw.table[prevI][prevJ] === unit {
+                    objectsToDraw.table[prevI][prevJ] = nil
                 }
             }
             let ni = unit.physicalTilePos.x
             let nj = unit.physicalTilePos.y
-            if ni < objectsToDraw.tabla.count, nj < objectsToDraw.tabla[ni].count {
-                objectsToDraw.tabla[ni][nj] = unit
+            if ni < objectsToDraw.table.count, nj < objectsToDraw.table[ni].count {
+                objectsToDraw.table[ni][nj] = unit
             }
         }
     }
@@ -236,8 +236,8 @@ class Player {
                 let dist = unit.calculateDistance(toI: i, toJ: j)
                 guard dist <= Double(unit.visibility) else { continue }
 
-                if i < objectsToDraw.tabla.count, j < objectsToDraw.tabla[i].count,
-                   let other = objectsToDraw.tabla[i][j] as? Unit, other !== unit {
+                if i < objectsToDraw.table.count, j < objectsToDraw.table[i].count,
+                   let other = objectsToDraw.table[i][j] as? Unit, other !== unit {
                     if visible == nil { visible = [] }
                     visible!.append(other)
                 }
@@ -260,8 +260,8 @@ class Player {
 
         for i in iStart..<iFin {
             for j in jStart..<jFin {
-                guard i < objectsToDraw.tabla.count, j < objectsToDraw.tabla[i].count,
-                      let other = objectsToDraw.tabla[i][j] as? Unit, other !== unit else { continue }
+                guard i < objectsToDraw.table.count, j < objectsToDraw.table[i].count,
+                      let other = objectsToDraw.table[i][j] as? Unit, other !== unit else { continue }
                 let dist = other.calculateDistance(toI: unit.physicalTilePos.x,
                                                    toJ: unit.physicalTilePos.y)
                 if dist <= Double(range) {
@@ -342,8 +342,8 @@ class Player {
         unit.faction = faction
 
         units.append(unit)
-        if i < objectsToDraw.tabla.count, j < objectsToDraw.tabla[i].count {
-            objectsToDraw.tabla[i][j] = unit
+        if i < objectsToDraw.table.count, j < objectsToDraw.table[i].count {
+            objectsToDraw.table[i][j] = unit
         }
         return unit
     }

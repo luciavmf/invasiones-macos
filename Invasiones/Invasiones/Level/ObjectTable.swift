@@ -11,6 +11,6 @@
 //
 
 final class ObjectTable {
-    var tabla: [[MapObject?]]
-    init(_ tabla: [[MapObject?]]) { self.tabla = tabla }
+    var table: [[MapObject?]]
+    init(_ table: [[MapObject?]]) { self.table = table }
 }

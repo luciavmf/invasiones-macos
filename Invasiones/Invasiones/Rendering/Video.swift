@@ -132,9 +132,9 @@ final class Video {
     }
 
     /// Draws a sub-region of a surface at a destination position (tile blit).
-    func draw(_ superficie: Surface?, _ srcX: Int, _ srcY: Int, _ srcW: Int, _ srcH: Int,
+    func draw(_ surface: Surface?, _ srcX: Int, _ srcY: Int, _ srcW: Int, _ srcH: Int,
                  _ destX: Int, _ destY: Int) {
-        guard let sup = superficie, let tex = sup.texture else { return }
+        guard let surface, let tex = surface.texture else { return }
         let texW = tex.size().width
         let texH = tex.size().height
         guard texW > 0, texH > 0, srcW > 0, srcH > 0 else { return }
@@ -151,7 +151,7 @@ final class Video {
         node.texture   = subTex
         node.size      = subTex.size()
         node.position  = CGPoint(x: destX, y: Video.height - destY)
-        node.alpha     = sup.alpha
+        node.alpha     = surface.alpha
         node.zPosition = zPos
         zPos += 1
     }

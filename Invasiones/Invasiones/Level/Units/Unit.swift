@@ -84,7 +84,7 @@ final class Unit: MapObject {
     private(set) var completedOrder: Bool = false
     /// The base tile position used as the centre of the patrol area.
     private var patrolPosition: (x: Int, y: Int) = (0, 0)
-    private var desiredPosition: (x: Int, y: Int) = (0, 0)  // offset en formación
+    private var desiredPosition: (x: Int, y: Int) = (0, 0)  // formation offset
     private var isCommander: Bool = false
     private var group: Group?
     private var completedObjectiveOrder: Bool = false
@@ -215,7 +215,7 @@ final class Unit: MapObject {
 
         if let c = path, !c.isEmpty {
             // First element is destination, last is origin. Used as a stack (popLast = next step).
-            pathToFollow = Array(c.dropLast())   // quita el nodo start (último = origen)
+            pathToFollow = Array(c.dropLast())   // drop the origin (the last element)
         } else {
             setState(.idle)
             pathToFollow = nil
@@ -760,7 +760,7 @@ final class Unit: MapObject {
         self.enemy = enemy
         let di = enemy.physicalTilePos.x - physicalTilePos.x
         let dj = enemy.physicalTilePos.y - physicalTilePos.y
-        // Convertir di/dj a dirección de sprite (8 dirs)
+        // Turn di/dj into one of the sprite's 8 directions
         let angle = atan2(Double(dj), Double(di)) * 180.0 / Double.pi
         let normalized = angle < 0 ? angle + 360 : angle
         let index = Int((normalized + 22.5) / 45.0) % 8

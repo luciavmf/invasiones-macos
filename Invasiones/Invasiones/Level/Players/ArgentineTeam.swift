@@ -256,9 +256,9 @@ final class ArgentineTeam: Player {
             var i = startCol, j = startRow
             while tileX <= endI && j >= 0 {
                 if i >= 0 && i < map.physicalMapHeight && j < map.physicalMapWidth {
-                    if let uni = objectsToDraw.tabla[i][j] as? Unit,
-                       uni.isUnder(x: x, y: y) {
-                        return uni
+                    if let unit = objectsToDraw.table[i][j] as? Unit,
+                       unit.isUnder(x: x, y: y) {
+                        return unit
                     }
                 }
                 tileX += 1
@@ -368,11 +368,11 @@ final class ArgentineTeam: Player {
     }
 
     private func updateGroups() {
-        guard let grupos = groups, !grupos.isEmpty else { return }
+        guard let current = groups, !current.isEmpty else { return }
 
         var toRemove: [Group] = []
 
-        for group in grupos {
+        for group in current {
             group.update()
             if group.currentState == .waitingCommand && !group.isSelected {
                 toRemove.append(group)

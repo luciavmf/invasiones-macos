@@ -63,7 +63,7 @@ final class ResourceManager {
         let hasErrors = fontPaths.contains(where: { $0 == nil })
                       || imagePaths.contains(where: { $0 == nil })
         if hasErrors {
-            throw GameError.invalidResource("Uno o más archivos no pudieron ser cargados.")
+            throw GameError.invalidResource("One or more files could not be loaded.")
         }
     }
 
@@ -123,7 +123,7 @@ final class ResourceManager {
         fonts[.lblack28] = GameFont(family: .lblack, size: 28)
 
         if fonts[.sans12] == nil {
-            throw GameError.invalidResource("No se pudo cargar la fuente SANS12.")
+            throw GameError.invalidResource("Could not load the SANS12 font.")
         }
     }
 
@@ -185,7 +185,7 @@ final class ResourceManager {
 
     private func decodeResJSON() throws -> ResJSON {
         guard let path = Utils.getPath(ResourcePath.resourcesPath) else {
-            throw GameError.fileNotFound("No existe el archivo \(ResourcePath.resourcesPath).")
+            throw GameError.fileNotFound("File \(ResourcePath.resourcesPath) not found.")
         }
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         do {
@@ -200,21 +200,21 @@ final class ResourceManager {
 
 private struct ResJSON: Decodable {
 
-    struct Escenarios: Decodable {
+    struct Scenarios: Decodable {
         let tilesets: [String]
         let mapas: [String]
     }
 
-    struct Sonidos: Decodable {
+    struct Sounds: Decodable {
         let sfx: [String]
     }
 
-    struct Unidad: Decodable {
+    struct UnitFile: Decodable {
         let name: String
         let file: String
     }
 
-    struct ImagenAnim: Decodable {
+    struct AnimationImage: Decodable {
         let path: String
         let framewidth: Int
         let frameheight: Int
@@ -225,7 +225,7 @@ private struct ResJSON: Decodable {
 
     struct Animpak: Decodable {
         let name: String
-        let image: ImagenAnim
+        let image: AnimationImage
     }
 
     struct SpriteJSON: Decodable {
@@ -244,10 +244,10 @@ private struct ResJSON: Decodable {
     }
 
     let fuentes: [String]
-    let escenarios: Escenarios
-    let sonidos: Sonidos
+    let escenarios: Scenarios
+    let sonidos: Sounds
     let imagenes: [String]
-    let unidades: [Unidad]
+    let unidades: [UnitFile]
     let sprites: [SpriteJSON]
     let anims: [AnimJSON]
 }
