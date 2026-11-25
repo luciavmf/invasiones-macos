@@ -85,7 +85,7 @@ final class ArgentineTeam: Player {
         }
     }
 
-    // MARK: - Draw (llamado desde Episode)
+    // MARK: - Draw (called from Episode)
 
     /// Draws the objective ring, the collectible object, fire effects, the destination arrow, and the orientation arrow.
     func drawOrientationArrow(_ video: Video) {
@@ -394,7 +394,7 @@ final class ArgentineTeam: Player {
         }
     }
 
-    // MARK: - Objetivos
+    // MARK: - Objectives
 
     private func updateObjectives() {
         guard someoneCompletedOrder else { return }

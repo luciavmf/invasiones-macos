@@ -32,10 +32,10 @@ final class Keyboard {
     /// The keys currently pressed (NSEvent key codes).
     private(set) var pressedKeys: [Int] = []
 
-    // MARK: - Initializer (privado — singleton)
+    // MARK: - Initializer (private — singleton)
     private init() {}
 
-    // MARK: - Methods (llamados desde GameScene)
+    // MARK: - Methods (called from GameScene)
     func pressKey(_ keyCode: Int) {
         if !pressedKeys.contains(keyCode) {
             pressedKeys.append(keyCode)
