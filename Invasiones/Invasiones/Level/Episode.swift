@@ -40,6 +40,8 @@ final class Episode {
     /// The battle's states and objectives.
     private let flow = BattleFlow()
     private let cheatsEnabled = true
+    /// Where the battle's files, images, fonts, sprites and unit stats come from.
+    private let resources: ResourceManager
 
     // MARK: - Screens
     private var battleView: BattleView?
@@ -52,7 +54,8 @@ final class Episode {
     var state: State { flow.state }
 
     // MARK: - Initializer
-    init() {
+    init(resources: ResourceManager = .shared) {
+        self.resources = resources
         flow.onNewObjective = { [weak self] objective in
             self?.player?.setObjective(objective)
         }
@@ -99,7 +102,7 @@ final class Episode {
     func draw(_ video: Video) {
         switch flow.state {
         case .loading:
-            LoadingScreen.draw(video)
+            LoadingScreen.draw(video, resources: resources)
         case .showIntro:
             drawBattle(video)
             introScreen?.draw(video, page: flow.page, text: currentTextPage)
@@ -151,7 +154,7 @@ final class Episode {
     }
 
     private func loadSprites() {
-        for sprite in ResourceManager.shared.sprites.values {
+        for sprite in resources.sprites.values {
             try? sprite.load()
         }
     }
@@ -189,7 +192,7 @@ final class Episode {
             let hudHeight = hud?.height ?? 0
             let camera = Camera(x: 0, y: 0, height: Video.height - hudHeight)
             self.camera = camera
-            let map = Map(camera: camera)
+            let map = Map(camera: camera, resources: resources)
             self.map = map
             battlefield = Battlefield(map: map, camera: camera)
 
@@ -201,7 +204,7 @@ final class Episode {
             try map.load(level: levelIndex)
 
             let level = Level()
-            level.load(levelIndex, battlefield: battlefield)
+            level.load(levelIndex, battlefield: battlefield, resources: resources)
             flow.level = level
 
         } else if flow.count == 2 {
@@ -209,11 +212,11 @@ final class Episode {
 
         } else if flow.count == 3 {
             let hudHeight = hud?.height ?? 0
-            introScreen = IntroScreen(hudHeight: hudHeight)
-            objectivesScreen = ObjectivesScreen(hudHeight: hudHeight)
-            wonScreen = WonScreen()
-            lostScreen = LostScreen()
-            ResourceManager.shared.loadUnitTypes()
+            introScreen = IntroScreen(hudHeight: hudHeight, resources: resources)
+            objectivesScreen = ObjectivesScreen(hudHeight: hudHeight, resources: resources)
+            wonScreen = WonScreen(resources: resources)
+            lostScreen = LostScreen(resources: resources)
+            resources.loadUnitTypes()
 
         } else if flow.count == 4 {
             if !loadPaintObjects() { return false }
@@ -223,13 +226,13 @@ final class Episode {
                 flow.advanceLoading()
                 return false
             }
-            player = ArgentineTeam(map: map, camera: camera,
-                                       objectsToDraw: objectsToDraw, hud: hud)
-            enemy = EnemyTeam(map: map, camera: camera,
-                                     objectsToDraw: objectsToDraw, hud: hud)
+            player = ArgentineTeam(map: map, camera: camera, objectsToDraw: objectsToDraw, hud: hud,
+                                   resources: resources)
+            enemy = EnemyTeam(map: map, camera: camera, objectsToDraw: objectsToDraw, hud: hud,
+                              resources: resources)
             if let player {
                 battleView = BattleView(map: map, camera: camera, player: player,
-                                        objectsToDraw: objectsToDraw, hud: hud)
+                                        objectsToDraw: objectsToDraw, hud: hud, resources: resources)
             }
 
         } else if flow.count == 6 {

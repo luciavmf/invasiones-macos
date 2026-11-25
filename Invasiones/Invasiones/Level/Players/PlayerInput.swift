@@ -36,10 +36,14 @@ final class PlayerInput {
 
     private let map: any InputMap
     private let pointer: any PointerDevice
+    /// Where the cursor images come from.
+    private let resources: ResourceManager
 
-    init(map: any InputMap, pointer: any PointerDevice = Mouse.shared) {
+    init(map: any InputMap, pointer: any PointerDevice = Mouse.shared,
+         resources: ResourceManager = .shared) {
         self.map = map
         self.pointer = pointer
+        self.resources = resources
     }
 
     /// The pointer's position in screen coordinates.
@@ -104,7 +108,7 @@ final class PlayerInput {
         case .attack: image = .swordCursor
         case .heal: image = .infirmaryCursor
         }
-        pointer.cursor = ResourceManager.shared.getImage(image)
+        pointer.cursor = resources.getImage(image)
     }
 
     // MARK: - Private

@@ -28,12 +28,12 @@ final class ArgentineTeam: Player {
 
     // MARK: - Initializer
     init(map: Map, camera: Camera, objectsToDraw: ObjectTable, hud: Hud,
-         pointer: any PointerDevice = Mouse.shared) {
-        input = PlayerInput(map: map, pointer: pointer)
-        super.init(map: map, camera: camera, objectsToDraw: objectsToDraw, hud: hud)
+         pointer: any PointerDevice = Mouse.shared, resources: ResourceManager = .shared) {
+        input = PlayerInput(map: map, pointer: pointer, resources: resources)
+        super.init(map: map, camera: camera, objectsToDraw: objectsToDraw, hud: hud, resources: resources)
         faction = .argentine
 
-        let anims = ResourceManager.shared.animations
+        let anims = resources.animations
         if let rings = anims[.rings] {
             ring = AnimObject(Animation(copying: rings), 0, 0, battlefield: battlefield)
         }
@@ -55,7 +55,7 @@ final class ArgentineTeam: Player {
     }
 
     override func loadUnits(_ levelIndex: Int) throws {
-        arrowObj = MapObject(surface: ResourceManager.shared.getImage(.arrow),
+        arrowObj = MapObject(surface: resources.getImage(.arrow),
                                i: 0, j: 0, battlefield: battlefield)
         count = 99999
 

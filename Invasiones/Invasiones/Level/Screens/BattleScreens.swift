@@ -11,10 +11,10 @@
 enum LoadingScreen {
     static let titleY = 200
 
-    static func draw(_ video: Video) {
+    static func draw(_ video: Video, resources: ResourceManager = .shared) {
         video.fillRect(.black)
         video.color = Theme.title
-        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.font = resources.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
         video.write(.loading, 0, titleY, .centerHorizontal)
     }
@@ -30,9 +30,11 @@ final class IntroScreen {
 
     private var button = Button(label: .next, font: nil)
     private let hudHeight: Int
+    private let resources: ResourceManager
 
-    init(hudHeight: Int) {
+    init(hudHeight: Int, resources: ResourceManager = .shared) {
         self.hudHeight = hudHeight
+        self.resources = resources
         button.setPosition(x: 0, y: Constants.buttonY, anchor: .centerHorizontal)
     }
 
@@ -53,7 +55,7 @@ final class IntroScreen {
         )
 
         let font = page == 0 ? FontConstants.titleFont : FontConstants.objectivesFont
-        video.font = ResourceManager.shared.fonts[font]
+        video.font = resources.fonts[font]
         video.fontColor = Theme.text
         if let text {
             video.write(text, 0, -(hudHeight >> 1), .center)
@@ -72,9 +74,11 @@ final class ObjectivesScreen {
 
     private var button = Button(label: .accept, font: nil)
     private let hudHeight: Int
+    private let resources: ResourceManager
 
-    init(hudHeight: Int) {
+    init(hudHeight: Int, resources: ResourceManager = .shared) {
         self.hudHeight = hudHeight
+        self.resources = resources
         button.setPosition(x: 0, y: Constants.buttonY, anchor: .center)
     }
 
@@ -87,11 +91,11 @@ final class ObjectivesScreen {
         video.color = Theme.objectivesText
         video.fillRect(0, -(hudHeight / 2), Constants.boxWidth, Constants.boxHeight, Theme.alpha, .center)
 
-        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.font = resources.fonts[FontConstants.titleFont]
         video.fontColor = Theme.text
         video.write(.objectives, 0, -(hudHeight / 2) - Constants.boxHeight / 2 + 50, .center)
 
-        video.font = ResourceManager.shared.fonts[FontConstants.objectivesFont]
+        video.font = resources.fonts[FontConstants.objectivesFont]
         video.fontColor = Theme.text
         if let text {
             video.write(text, 0, -(hudHeight >> 1) + 30, .center)
@@ -104,8 +108,10 @@ final class ObjectivesScreen {
 /// "You won", with a "Next" button where the intro has it.
 final class WonScreen {
     private var button = Button(label: .next, font: nil)
+    private let resources: ResourceManager
 
-    init() {
+    init(resources: ResourceManager = .shared) {
+        self.resources = resources
         button.setPosition(x: 0, y: IntroScreen.Constants.buttonY, anchor: .centerHorizontal)
     }
 
@@ -116,7 +122,7 @@ final class WonScreen {
 
     func draw(_ video: Video) {
         button.draw(video)
-        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.font = resources.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
         video.write(.youWon, 0, 0, .center)
     }
@@ -125,8 +131,10 @@ final class WonScreen {
 /// "You lost", then the menu asking whether to play again.
 final class LostScreen {
     private let menu = ConfirmationMenu(.playAgain, .no, .yes)
+    private let resources: ResourceManager
 
-    init() {
+    init(resources: ResourceManager = .shared) {
+        self.resources = resources
         menu.setPosition(x: 0, y: 0, anchor: .center)
     }
 
@@ -140,7 +148,7 @@ final class LostScreen {
     }
 
     func draw(_ video: Video, showsMenu: Bool) {
-        video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
+        video.font = resources.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
         video.write(.youLost, 0, -100, .center)
         if showsMenu {

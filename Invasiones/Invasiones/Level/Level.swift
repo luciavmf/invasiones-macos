@@ -61,7 +61,8 @@ final class Level {
     /// - Parameters:
     ///   - levelIndex: The level number to load.
     ///   - battlefield: The map and camera, for the fire animations that trigger commands place.
-    func load(_ levelIndex: Int, battlefield: Battlefield) {
+    ///   - resources: Where those fire animations come from.
+    func load(_ levelIndex: Int, battlefield: Battlefield, resources: ResourceManager = .shared) {
         let pathStr = ResourcePath.levelPath + "/nivel_\(levelIndex).xml"
         guard let path = Utils.getPath(pathStr) else {
             Log.shared.debug("Level: objectives file not found: \(pathStr)")
@@ -72,7 +73,7 @@ final class Level {
         battleCount = 0
 
         guard let parser = XMLParser(contentsOf: URL(fileURLWithPath: path)) else { return }
-        let d = LevelXMLDelegate(battlefield: battlefield)
+        let d = LevelXMLDelegate(battlefield: battlefield, resources: resources)
         parser.delegate = d
         parser.parse()
         withExtendedLifetime(d) {}
@@ -124,9 +125,11 @@ private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
     var battles: [BattleData] = []
 
     private let battlefield: Battlefield
+    private let resources: ResourceManager
 
-    init(battlefield: Battlefield) {
+    init(battlefield: Battlefield, resources: ResourceManager) {
         self.battlefield = battlefield
+        self.resources = resources
         super.init()
     }
 
@@ -160,7 +163,7 @@ private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
             }
             let ord: Command
             if type == .takeObject, let img = a["imagen"] {
-                ord = Command(type, iVal, jVal, img)
+                ord = Command(type, iVal, jVal, img, resources: resources)
             } else if type == .trigger, let t = a["tipo"] {
                 let animID: AnimationID?
                 switch t {
@@ -169,7 +172,7 @@ private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
                 default: animID = nil
                 }
                 if let animID,
-                   let anim = ResourceManager.shared.animations[animID] {
+                   let anim = resources.animations[animID] {
                     let animObj = AnimObject(Animation(copying: anim), iVal, jVal, battlefield: battlefield)
                     ord = Command(type, iVal, jVal, animObj)
                 } else {
