@@ -36,12 +36,12 @@ final class Tileset {
 
     // MARK: - Loading
 
-    /// Loads the tileset from the given TSX path.
-    func load(_ tilesetPath: String) throws {
+    /// Loads the tileset from the given TSX path, and its image through `resources`.
+    func load(_ tilesetPath: String, resources: ResourceManager = .shared) throws {
         guard let parser = XMLParser(contentsOf: URL(fileURLWithPath: tilesetPath)) else {
             throw GameError.fileNotFound("Tileset: cannot open \(tilesetPath)")
         }
-        let delegate = TilesetXMLDelegate(tileset: self, basePath: tilesetPath)
+        let delegate = TilesetXMLDelegate(tileset: self, basePath: tilesetPath, resources: resources)
         parser.delegate = delegate
         let ok = parser.parse()
         withExtendedLifetime(delegate) {}
@@ -90,10 +90,12 @@ private final class TilesetXMLDelegate: NSObject, XMLParserDelegate {
 
     private weak var tileset: Tileset?
     private let basePath: String
+    private let resources: ResourceManager
     private var currentTileId: Int?
 
-    init(tileset: Tileset, basePath: String) {
+    init(tileset: Tileset, basePath: String, resources: ResourceManager) {
         self.tileset = tileset
+        self.resources = resources
         self.basePath = (basePath as NSString).deletingLastPathComponent
     }
 
@@ -115,7 +117,7 @@ private final class TilesetXMLDelegate: NSObject, XMLParserDelegate {
                     ?? Utils.getPath(
                         (ResourcePath.scenariosPath as NSString).appendingPathComponent(src))
                 if let path = fullPath {
-                    ts.image = ResourceManager.shared.getImage(path)
+                    ts.image = resources.getImage(path)
                 } else {
                     Log.shared.error("Tileset: image not found \(src)")
                 }

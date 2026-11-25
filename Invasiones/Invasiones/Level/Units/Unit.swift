@@ -129,29 +129,32 @@ final class Unit: MapObject {
     // MARK: - Initializers
 
     /// Creates a unit with the given stats, at full health. Tests leave out the battlefield
-    /// and the stats; the game uses `init(_:battlefield:)`.
+    /// and the stats; the game uses `init(_:battlefield:)`. The sprite and the avatar come
+    /// from `resources`.
     init(type: UnitType = .patricio, stats: UnitStats = UnitStats(), battlefield: Battlefield? = nil,
-         pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
+         pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared,
+         resources: ResourceManager = .shared) {
         self.type = type
         self.stats = stats
         self.pathFinder = pathFinder
         self.sound = sound
         health = stats.resistancePoints
         currentSpeed = (stats.speed, stats.speed)
-        avatar = stats.avatar.flatMap { ResourceManager.shared.getImage($0) }
+        avatar = stats.avatar.flatMap { resources.getImage($0) }
         view = UnitView(sprite: stats.sprite
-            .flatMap { ResourceManager.shared.sprites[$0] }
+            .flatMap { resources.sprites[$0] }
             .map { Sprite(copying: $0) })
         super.init(battlefield: battlefield)
     }
 
-    /// Creates a unit of the given type, with the stats `ResourceManager` loaded for it.
+    /// Creates a unit of the given type, with the stats `resources` loaded for it.
     convenience init(_ type: UnitType, battlefield: Battlefield,
-                     pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared) {
-        let stats = ResourceManager.shared.unitStats[type]
+                     pathFinder: PathFinder = .shared, sound: any SoundPlayer = Sound.shared,
+                     resources: ResourceManager = .shared) {
+        let stats = resources.unitStats[type]
         if stats == nil { Log.shared.debug("Unit stats not loaded: \(type)") }
         self.init(type: type, stats: stats ?? UnitStats(), battlefield: battlefield,
-                  pathFinder: pathFinder, sound: sound)
+                  pathFinder: pathFinder, sound: sound, resources: resources)
     }
 
     // MARK: - Main update

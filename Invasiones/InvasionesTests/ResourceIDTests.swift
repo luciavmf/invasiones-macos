@@ -13,8 +13,10 @@ import Testing
 @MainActor
 struct ResourceIDTests {
 
+    private let resources = ResourceManager()
+
     init() throws {
-        try ResourceManager.shared.loadResourcePaths()
+        try resources.loadResourcePaths()
     }
 
     /// The file name at the given position of a path list from res.json.
@@ -23,7 +25,7 @@ struct ResourceIDTests {
     }
 
     @Test func soundIDsMatchResJSON() {
-        let paths = ResourceManager.shared.soundPaths
+        let paths = resources.soundPaths
         #expect(paths.count == SoundID.allCases.count)
         #expect(fileName(paths, SoundID.splash.rawValue) == "otheme.ogg")
         #expect(fileName(paths, SoundID.patricioDeath.rawValue) == "patricio_muerto.wav")
@@ -31,7 +33,7 @@ struct ResourceIDTests {
     }
 
     @Test func imageIDsMatchResJSON() {
-        let paths = ResourceManager.shared.imagePaths
+        let paths = resources.imagePaths
         #expect(paths.count == ImageID.allCases.count)
         #expect(fileName(paths, ImageID.swordCursor.rawValue) == "cursor_espada.png")
         #expect(fileName(paths, ImageID.logo.rawValue) == "logo.png")
@@ -40,14 +42,14 @@ struct ResourceIDTests {
     }
 
     @Test func fontFamiliesMatchResJSON() {
-        let paths = ResourceManager.shared.fontPaths
+        let paths = resources.fontPaths
         #expect(paths.count == FontFamily.allCases.count)
         #expect(fileName(paths, FontFamily.sans.rawValue) == "FreeSans.ttf")
         #expect(fileName(paths, FontFamily.lblack.rawValue) == "LBLACK.TTF")
     }
 
     @Test func unitTypesMatchResJSON() {
-        let paths = ResourceManager.shared.unitPaths
+        let paths = resources.unitPaths
         #expect(paths.count == UnitType.allCases.count)
         #expect(fileName(paths, UnitType.patricio.rawValue) == "patricio.csv")
         #expect(fileName(paths, UnitType.british.rawValue) == "ingles.csv")
@@ -55,7 +57,7 @@ struct ResourceIDTests {
 
     @Test func tilesetIDsMatchResJSON() {
         // scenarioPaths lists every tileset first, then the level maps.
-        let paths = ResourceManager.shared.scenarioPaths
+        let paths = resources.scenarioPaths
         #expect(fileName(paths, TilesetID.debug.rawValue) == "debug.tsx")
         #expect(fileName(paths, TilesetID.grass.rawValue) == "pasto.tsx")
         #expect(fileName(paths, TilesetID.units.rawValue) == "unidades.tsx")
