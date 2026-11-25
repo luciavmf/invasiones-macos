@@ -11,8 +11,9 @@
 import Foundation
 internal import CoreGraphics
 
-/// The active battle session. Owns the map, both factions, the HUD, obstacles, and the current objective.
-/// Manages the full battle lifecycle: LOADING → SHOW_INTRO → PLAYING → WON / LOST.
+/// The active battle session. Owns the map, both factions, the HUD and the obstacles, and
+/// draws the battle. Its states and transitions (loading → intro → playing ⇄ objectives →
+/// won / lost) are in `BattleFlow`.
 final class Episode {
 
     // MARK: - Enums
@@ -20,21 +21,15 @@ final class Episode {
     enum Faction { case enemy, argentine }
 
     /// The states the battle can be in.
-    enum State: Int {
-        case end = -1, loading, playing, showIntro, showObjectives, won, lost
-    }
+    typealias State = BattleFlow.State
 
     // MARK: - Constants
-    /// Number of frames to wait before showing the restart prompt after losing.
     enum Constants {
-        static let countdownToRestart = 50
         static let objectivesBoxWidth = 600
         static let objectivesBoxHeight = 270
         static let objectivesBoxButtonY = 70
-        static let objectiveShowStartCount = 50
         static let objectivesButtonY = 510
         static let objectivesBorder = 100
-        static let pagesPerIntro = 3
         static let loadingY = 200
     }
 
@@ -45,54 +40,39 @@ final class Episode {
     private var acceptButton: Button?
     /// All static obstacles loaded from the map (trees, buildings, rocks).
     private var obstacles: [Obstacle] = []
-    /// The level definition (battles and objectives).
-    private var currentLevel: Level?
     /// The index of the level being played.
     private var levelIndex: Int = 0
     /// The shared object table indexed by physical tile position.
     private var objectsToDraw = ObjectTable([[]])
     private var camera: Camera?
-    /// The current objective the player must fulfill.
-    private var objective: Objective?
     private var enemy: EnemyTeam?
     private var player: ArgentineTeam?
     private var map: Map?
     /// The map and camera, given to everything placed on the map.
     private var battlefield: Battlefield?
-    private var stateValue: State = .loading
     private var hud: Hud?
-    /// General-purpose frame counter used by multiple states.
-    private var count: Int = 0
-    /// Whether to show the full objective popup (new objective acquired).
-    private var showObjectivePopup: Bool = false
-    /// Whether to show the small objective reminder overlay during gameplay.
-    private var showObjectiveReminder: Bool = false
-    private var objectiveShowCount: Int = 0
-    /// The current intro/objective page being displayed.
-    private var currentPage: Int = 0
     private var gameOverMenu: ConfirmationMenu
-    // MARK: - Cheats
+    /// The battle's states and objectives.
+    private let flow = BattleFlow()
     private let cheatsEnabled = true
 
-    // Cheats
-    private var cheatWinIndex: Int = 0
-    private var cheatLoseIndex: Int = 0
-    private var cheatObjectiveIndex: Int = 0
-
     // MARK: - Properties
-    var state: State { stateValue }
+    var state: State { flow.state }
 
     // MARK: - Initializer
     init() {
         gameOverMenu = ConfirmationMenu(.playAgain, .no, .yes)
         gameOverMenu.setPosition(x: 0, y: 0, anchor: .center)
+        flow.onNewObjective = { [weak self] objective in
+            self?.player?.setObjective(objective)
+        }
     }
 
     // MARK: - Public control
 
     /// Starts the battle by entering the loading state.
     func start() {
-        setState(.loading)
+        flow.start()
     }
 
 
@@ -103,7 +83,7 @@ final class Episode {
 
     @discardableResult
     func update() -> Bool {
-        switch stateValue {
+        switch flow.state {
         case .loading: updateLoadingState()
         case .showIntro: updateShowIntroState()
         case .showObjectives: updateShowObjectiveState()
@@ -118,7 +98,7 @@ final class Episode {
     // MARK: - Draw
 
     func draw(_ video: Video) {
-        switch stateValue {
+        switch flow.state {
         case .loading: drawLoadingState(video)
         case .showObjectives: drawShowObjectiveState(video)
         case .playing: drawPlayingState(video)
@@ -136,10 +116,9 @@ final class Episode {
         do {
             if try loadLevel(0) {
                 updatePlayingState()
-                setNewObjective()
+                flow.finishLoading()
                 Sound.shared.stop(.splash)
                 Sound.shared.play(id: .battle, loop: -1)
-                setState(.showIntro)
             }
         } catch {
             Log.shared.error(error.localizedDescription)
@@ -187,7 +166,7 @@ final class Episode {
     }
 
     private func loadLevel(_ levelIndex: Int) throws -> Bool {
-        if count == 0 {
+        if flow.count == 0 {
             self.levelIndex = levelIndex
             hud = Hud()
             let hudHeight = hud?.height ?? 0
@@ -197,31 +176,31 @@ final class Episode {
             self.map = map
             battlefield = Battlefield(map: map, camera: camera)
 
-        } else if count == 1 {
+        } else if flow.count == 1 {
             guard let map = map, let battlefield = battlefield else {
-                count += 1
+                flow.advanceLoading()
                 return false
             }
             try map.load(level: levelIndex)
 
             let level = Level()
             level.load(levelIndex, battlefield: battlefield)
-            currentLevel = level
+            flow.level = level
 
-        } else if count == 2 {
+        } else if flow.count == 2 {
             loadSprites()
 
-        } else if count == 3 {
+        } else if flow.count == 3 {
             button = Button(label: .next, font: nil)
             acceptButton = Button(label: .accept, font: nil)
             ResourceManager.shared.loadUnitTypes()
 
-        } else if count == 4 {
+        } else if flow.count == 4 {
             if !loadPaintObjects() { return false }
 
-        } else if count == 5 {
+        } else if flow.count == 5 {
             guard let map = map, let camera = camera, let hud = hud else {
-                count += 1
+                flow.advanceLoading()
                 return false
             }
             player = ArgentineTeam(map: map, camera: camera,
@@ -229,58 +208,31 @@ final class Episode {
             enemy = EnemyTeam(map: map, camera: camera,
                                      objectsToDraw: objectsToDraw, hud: hud)
 
-        } else if count == 6 {
+        } else if flow.count == 6 {
             try player?.loadUnits(levelIndex)
 
-        } else if count == 10 {
+        } else if flow.count == 10 {
             try enemy?.loadUnits(levelIndex)
-            count += 1
+            flow.advanceLoading()
             return true
         }
 
-        count += 1
+        flow.advanceLoading()
         return false
     }
 
     // MARK: - SHOW INTRODUCTION state
 
-    /// The intro text for the current battle and page, if there is one.
+    /// The intro or objectives text for the current battle and page, if there is one.
     private var currentIntroPage: StringID? {
-        let battle = currentLevel?.currentBattleIndex ?? 0
-        return StringID.introPages[safe: battle * Constants.pagesPerIntro + currentPage]
+        StringID.introPages[safe: flow.textPage]
     }
 
     private func updateShowIntroState() {
-        if count == 0 {
+        if flow.count == 0 {
             button?.setPosition(x: 0, y: Constants.objectivesButtonY, anchor: .centerHorizontal)
         }
-        count += 1
-        if button?.update() != 0 {
-            currentPage += 1
-            if currentPage == Constants.pagesPerIntro - 1 {
-                setState(.playing)
-            }
-        }
-    }
-
-    private func setNewObjective() {
-        Log.shared.debug("Setting new objective.")
-        showObjectivePopup = true
-        let currentBattle = currentLevel?.currentBattleIndex ?? 0
-        objective = currentLevel?.nextObjective()
-
-        if (currentLevel?.currentBattleIndex ?? 0) != currentBattle {
-            Log.shared.debug("Level completed.")
-            setState(.showIntro)
-        }
-        showObjectivePopup = true
-        objectiveShowCount = 0
-
-        player?.setObjective(objective)
-
-        if objective == nil {
-            setState(.won)
-        }
+        flow.updateIntro(nextPressed: button?.update() != 0)
     }
 
     private func drawShowIntroState(_ video: Video) {
@@ -296,7 +248,7 @@ final class Episode {
             .center
         )
 
-        if currentPage == 0 {
+        if flow.page == 0 {
             video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
             video.fontColor = Theme.text
         } else {
@@ -313,19 +265,11 @@ final class Episode {
     // MARK: - SHOW OBJECTIVES state
 
     private func updateShowObjectiveState() {
-        if count == 0 {
+        if flow.count == 0 {
             acceptButton?.setPosition(x: 0, y: Constants.objectivesBoxButtonY,
                                       anchor: .center)
         }
-        count += 1
-        if acceptButton?.update() != 0 {
-            currentPage += 1
-            if currentPage == Constants.pagesPerIntro {
-                setState(.playing)
-                showObjectivePopup = false
-                showObjectiveReminder = true
-            }
-        }
+        flow.updateObjectives(accepted: acceptButton?.update() != 0)
     }
 
     private func drawShowObjectiveState(_ video: Video) {
@@ -360,9 +304,11 @@ final class Episode {
     // MARK: - PLAYING state
 
     private func updatePlayingState() {
-        if showObjectivePopup { objectiveShowCount += 1 }
+        flow.beginPlayingFrame()
 
-        if cheatsEnabled { checkCheats() }
+        if cheatsEnabled, flow.checkCheats(Keyboard.shared) {
+            player?.selectNextUnit()
+        }
 
         map?.update()
 
@@ -378,25 +324,14 @@ final class Episode {
         hud?.argentineCount = player?.unitCount ?? 0
         hud?.enemyCount = enemy?.unitCount ?? 0
 
-        checkGameOver()
+        flow.checkGameOver(argentineUnitCount: player?.unitCount ?? 1)
 
         hud?.update()
-        updateOrders()
+        if player?.completedObjective() == true {
+            flow.objectiveCompleted()
+        }
 
         obstacles.forEach { $0.update() }
-    }
-
-    private func checkGameOver() {
-        if (player?.unitCount ?? 1) == 0 {
-            setState(.lost)
-        }
-    }
-
-    private func updateOrders() {
-        if player?.completedObjective() == true {
-            Log.shared.debug("Objective fulfilled.")
-            setNewObjective()
-        }
     }
 
     private func drawPlayingState(_ video: Video) {
@@ -412,24 +347,20 @@ final class Episode {
 
         player?.drawOrientationArrow(video)
 
-        if showObjectivePopup &&
-           objectiveShowCount > Constants.objectiveShowStartCount {
-            setState(.showObjectives)
-        } else if showObjectiveReminder &&
-                  objectiveShowCount > Constants.objectiveShowStartCount {
-            let hudHeight = hud?.height ?? 0
+        // The original opens the objectives popup while drawing the battle.
+        flow.showObjectivesIfDue()
+        if flow.showsReminder {
             let cameraHeight = camera?.height ?? Video.height
             video.font = ResourceManager.shared.fonts[FontConstants.objectivesReminderFont]
             video.fontColor = Theme.title
             video.write(.objectives,
                        Layout.objectivesOffset << 1,
                        cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) - 10, [])
-            if let reminder = StringID.objectiveReminders[safe: currentLevel?.completedObjectiveCount ?? 0] {
+            if let reminder = StringID.objectiveReminders[safe: flow.level?.completedObjectiveCount ?? 0] {
                 video.write(reminder,
                            Layout.objectivesOffset << 1,
                            cameraHeight - (Layout.objectivesHeight + Layout.objectivesOffset * 2) + 5, [])
             }
-            _ = hudHeight  // suppress warning
         }
 
         if Mouse.shared.isDragging() {
@@ -528,7 +459,7 @@ final class Episode {
 
     private func updateWonState() {
         if button?.update() != 0 {
-            setState(.end)
+            flow.confirmWon()
         }
     }
 
@@ -543,15 +474,15 @@ final class Episode {
     // MARK: - LOST state
 
     private func updateLostState() {
-        count += 1
-        guard count > Constants.countdownToRestart else { return }
+        flow.updateLost()
+        guard flow.showsPlayAgainMenu else { return }
 
         let result = gameOverMenu.update()
         if result == .left {
-            setState(.end)
+            flow.answerPlayAgain(false)
         }
         if result == .right {
-            setState(.loading)
+            flow.answerPlayAgain(true)
         }
     }
 
@@ -560,65 +491,8 @@ final class Episode {
         video.font = ResourceManager.shared.fonts[FontConstants.titleFont]
         video.fontColor = Theme.title
         video.write(.youLost, 0, -100, .center)
-        if count > Constants.countdownToRestart {
+        if flow.showsPlayAgainMenu {
             gameOverMenu.draw(video)
         }
-    }
-
-    // MARK: - Cheats
-
-    private func checkCheats() {
-        let keyboard = Keyboard.shared
-
-        if keyboard.isPressed(.g) && cheatWinIndex == 0 {
-            cheatWinIndex += 1
-        } else if keyboard.isPressed(.a) && cheatWinIndex == 1 {
-            cheatWinIndex += 1
-        } else if keyboard.isPressed(.n) && cheatWinIndex == 2 {
-            cheatWinIndex += 1
-        } else if keyboard.isPressed(.x) && cheatWinIndex == 3 {
-            cheatWinIndex += 1
-        } else if keyboard.isPressed(.w) && cheatWinIndex == 4 {
-            setState(.won)
-            cheatWinIndex = 0
-        } else if keyboard.isPressed(.p) && cheatLoseIndex == 0 {
-            cheatLoseIndex += 1
-        } else if keyboard.isPressed(.e) && cheatLoseIndex == 1 {
-            cheatLoseIndex += 1
-        } else if keyboard.isPressed(.r) && cheatLoseIndex == 2 {
-            cheatLoseIndex += 1
-        } else if keyboard.isPressed(.x) && cheatLoseIndex == 3 {
-            cheatLoseIndex += 1
-        } else if keyboard.isPressed(.w) && cheatLoseIndex == 4 {
-            setState(.lost)
-            cheatLoseIndex = 0
-        } else if keyboard.isPressed(.o) && cheatObjectiveIndex == 0 {
-            cheatObjectiveIndex += 1
-        } else if keyboard.isPressed(.b) && cheatObjectiveIndex == 1 {
-            cheatObjectiveIndex += 1
-        } else if keyboard.isPressed(.j) && cheatObjectiveIndex == 2 {
-            cheatObjectiveIndex += 1
-        } else if keyboard.isPressed(.x) && cheatObjectiveIndex == 3 {
-            cheatObjectiveIndex += 1
-        } else if keyboard.isPressed(.w) && cheatObjectiveIndex == 4 {
-            setNewObjective()
-            cheatObjectiveIndex = 0
-        } else if !keyboard.pressedKeys.isEmpty {
-            if keyboard.isPressed(.u) { player?.selectNextUnit() }
-            Log.shared.debug("Resetting all cheat indices.")
-            cheatObjectiveIndex = 0
-            cheatWinIndex = 0
-            cheatLoseIndex = 0
-        }
-        Keyboard.shared.clearKeys()
-    }
-
-    // MARK: - Private
-
-    private func setState(_ state: State) {
-        count = 0
-        stateValue = state
-        currentPage = 0
-        if state == .showObjectives { currentPage = 2 }
     }
 }

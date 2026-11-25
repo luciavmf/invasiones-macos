@@ -12,6 +12,7 @@ GameScene (SpriteKit, 20 FPS)
                   ├── LogoState, MainMenuState, HelpState, CreditsState, OptionsState, ExitState
                   └── GameState
                       └── Episode                  one battle session
+                          ├── BattleFlow           its states and objectives, without drawing
                           ├── Level                objectives per battle (nivel/nivel_N.xml)
                           ├── Map + Camera         isometric TMX map, scrolling viewport
                           ├── ObjectTable          map objects indexed by physical tile, for drawing and hit-tests
@@ -26,13 +27,13 @@ GameScene (SpriteKit, 20 FPS)
 | Folder | Contents |
 |---|---|
 | `StateMachine/`, `States/` | Top-level screens and the machine that switches between them |
-| `Level/` | `Episode`, `Battlefield`, `Level`, `AI`, `Command`, `Objective`, `MapObject`, `Obstacle`, `ObjectTable` |
+| `Level/` | `Episode`, `BattleFlow`, `Battlefield`, `Level`, `AI`, `Command`, `Objective`, `MapObject`, `Obstacle`, `ObjectTable` |
 | `Level/Players/` | `Player` and its subclasses `ArgentineTeam`, `EnemyTeam`; `PlayerInput`, `PlayerIntent` |
 | `Level/Units/` | `Unit`, `UnitStats`, `UnitView`, `Group` |
 | `Map/` | `Map`, `Tileset`, `Tile`, `Camera`, `TilesetID`, line of sight, `PathFinder/` |
 | `Rendering/`, `Sprites/` | `Video`, `Surface`, `GameFont`, `Anchor`, `Sprite`, `Animation`, `AnimObject` |
 | `GUI/` | `Button`, `Menu`, `ConfirmationMenu`, `Hud`, `Tips`, `Frame` |
-| `Events/` | `Mouse`, `Keyboard`, `PointerDevice` |
+| `Events/` | `Mouse`, `Keyboard`, `PointerDevice` (`KeyboardDevice` is in `BattleFlow.swift`) |
 | `Audio/` | `Sound`, `SoundID` |
 | `Resources/` | `ResourceManager`, `GameText`, resource ID enums, `Utils` |
 
@@ -49,7 +50,7 @@ The first state is set with `setState`, which skips `start()`, so start-up code 
 
 ## A battle: `Episode`
 
-`Episode` runs one battle session through these states:
+`Episode` runs one battle session. Its `BattleFlow` decides which state the battle is in:
 
 ```
 loading → showIntro → playing ⇄ showObjectives → won / lost
@@ -61,7 +62,7 @@ loading → showIntro → playing ⇄ showObjectives → won / lost
 - **showObjectives** shows the current objective over the paused game.
 - **won / lost** show the result and a confirmation menu.
 
-`Episode` both runs this flow and draws every state's screen.
+`BattleFlow` holds the states, the intro and objectives pages, the objectives popup and reminder, game over and the cheats. It reads the level's objectives through the `ObjectiveSource` protocol (`Level` conforms) and the keys through `KeyboardDevice`, so tests use fakes. `Episode` loads the battle, updates the map, the teams and the HUD, tells the flow what happened (a button pressed, an objective completed, no units left) and draws every state's screen. The rules are in [`specs/battle-flow.md`](specs/battle-flow.md).
 
 ## Teams, groups and units
 
@@ -116,4 +117,4 @@ Several parts of the game are reached through globals rather than passed in:
 
 ## Tests
 
-`InvasionesTests` (Swift Testing) runs inside the app. It covers the pathfinder, line of sight, map objects and units on a hand-made `Battlefield` (`TestGrid` is a `BattleMap`), selection and orders (`PlayerInput` with `FakePointer` and `FakeInputMap`, `ArgentineTeam.handle(_:)`), combat, dying, healing and patrolling (`UnitCombatTests`), `UnitStats` parsing, unit animations and hit-tests (`UnitView` with `FakeSprite`), infirmary lookup on the first level's map, `StateMachine`, `GameText`, `Command`, `Objective`, `Camera` and that the resource enums match `res.json`.
+`InvasionesTests` (Swift Testing) runs inside the app. It covers the pathfinder, line of sight, map objects and units on a hand-made `Battlefield` (`TestGrid` is a `BattleMap`), selection and orders (`PlayerInput` with `FakePointer` and `FakeInputMap`, `ArgentineTeam.handle(_:)`), combat, dying, healing and patrolling (`UnitCombatTests`), `UnitStats` parsing, the battle flow (`BattleFlow` with `FakeLevel` and `FakeKeyboard`), unit animations and hit-tests (`UnitView` with `FakeSprite`), infirmary lookup on the first level's map, `StateMachine`, `GameText`, `Command`, `Objective`, `Camera` and that the resource enums match `res.json`.
