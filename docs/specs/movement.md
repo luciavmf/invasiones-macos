@@ -35,12 +35,11 @@ The group has arrived when every unit is idle. With a move order, it also counts
 
 ## Move objectives
 
-A level's *move* (and *take object*) objective is met when a unit is close enough to the objective's tile. For a group, one unit is enough. Objectives are described in the level files (`nivel/nivel_N.xml`).
+A level's *move* (and *take object*) objective is met when a unit is fewer than 3 tiles from the objective's tile on each axis (at most 2 rows and 2 columns away). For a group, one unit is enough. Objectives are described in the level files (`nivel/nivel_N.xml`).
 
 ## Differences from the original
 
 | | Original | Port |
 |---|---|---|
-| Close enough for a move objective | Fewer than 3 tiles away on each axis (at most 2 rows and 2 columns) | A straight-line distance of up to 3 tiles, so a unit 3 tiles away in a straight line already counts |
 | Steps | A fixed speed on each axis, by direction | Moves straight toward the tile's centre. This change was made on purpose: on isometric tiles the original's equal per-axis speed overshoots the shorter axis and makes units jitter. |
 | Evading | Steps back by one frame's movement and re-plans in the same frame | Snaps back to the centre of its tile and re-plans on the next frame |
