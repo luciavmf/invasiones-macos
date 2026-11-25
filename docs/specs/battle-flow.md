@@ -2,7 +2,7 @@
 
 The screens a battle goes through, and when it switches between them. The reference is the C# original (`Episodio.cs`, `Episodio.EstadoCargando.cs`, `Episodio.EstadoMostrarIntroduccion.cs`, `Episodio.EstadoJugando.cs`), including its quirks.
 
-`BattleFlow` holds these rules; `Episode` loads the battle, updates it and draws each screen.
+`BattleFlow` holds these rules. `Episode` loads and updates the battle, and the screens in `Level/Screens/` draw it.
 
 Tests: `BattleFlowTests`.
 

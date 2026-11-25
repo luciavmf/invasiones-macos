@@ -13,6 +13,7 @@ GameScene (SpriteKit, 20 FPS)
                   └── GameState
                       └── Episode                  one battle session
                           ├── BattleFlow           its states and objectives, without drawing
+                          ├── BattleView           draws the battle; the intro, objectives, won and lost screens draw over it
                           ├── Level                objectives per battle (nivel/nivel_N.xml)
                           ├── Map + Camera         isometric TMX map, scrolling viewport
                           ├── ObjectTable          map objects indexed by physical tile, for drawing and hit-tests
@@ -28,6 +29,7 @@ GameScene (SpriteKit, 20 FPS)
 |---|---|
 | `StateMachine/`, `States/` | Top-level screens and the machine that switches between them |
 | `Level/` | `Episode`, `BattleFlow`, `Battlefield`, `Level`, `AI`, `Command`, `Objective`, `MapObject`, `Obstacle`, `ObjectTable` |
+| `Level/Screens/` | `BattleView`; `LoadingScreen`, `IntroScreen`, `ObjectivesScreen`, `WonScreen`, `LostScreen` |
 | `Level/Players/` | `Player` and its subclasses `ArgentineTeam`, `EnemyTeam`; `PlayerInput`, `PlayerIntent` |
 | `Level/Units/` | `Unit`, `UnitStats`, `UnitView`, `Group` |
 | `Map/` | `Map`, `Tileset`, `Tile`, `Camera`, `TilesetID`, line of sight, `PathFinder/` |
@@ -62,7 +64,9 @@ loading → showIntro → playing ⇄ showObjectives → won / lost
 - **showObjectives** shows the current objective over the paused game.
 - **won / lost** show the result and a confirmation menu.
 
-`BattleFlow` holds the states, the intro and objectives pages, the objectives popup and reminder, game over and the cheats. It reads the level's objectives through the `ObjectiveSource` protocol (`Level` conforms) and the keys through `KeyboardDevice`, so tests use fakes. `Episode` loads the battle, updates the map, the teams and the HUD, tells the flow what happened (a button pressed, an objective completed, no units left) and draws every state's screen. The rules are in [`specs/battle-flow.md`](specs/battle-flow.md).
+`BattleFlow` holds the states, the intro and objectives pages, the objectives popup and reminder, game over and the cheats. It reads the level's objectives through the `ObjectiveSource` protocol (`Level` conforms) and the keys through `KeyboardDevice`, so tests use fakes. `Episode` loads the battle, updates the map, the teams and the HUD, and tells the flow what happened (a button pressed, an objective completed, no units left).
+
+Each state has its screen in `Level/Screens/`. `BattleView` draws the battle: the terrain, the units and obstacles back to front with the player's markers (move arrow, objective ring, object to take, fires), the fog over what no unit sees, the HUD, the arrow pointing at an off-screen objective, the objective reminder and the drag rectangle. Every screen but loading draws over it, and `IntroScreen`, `ObjectivesScreen`, `WonScreen` and `LostScreen` own their buttons or menu. `Episode` draws the screen for the current state. The rules are in [`specs/battle-flow.md`](specs/battle-flow.md).
 
 ## Teams, groups and units
 
@@ -99,7 +103,7 @@ In battle, `PlayerInput` reads the mouse for the player's team, each frame:
 
 `PlayerInput` reads a `PointerDevice` (`Mouse` conforms) and asks the map through `InputMap` (`Map` conforms), so tests use fakes for both.
 
-Elsewhere, code reads the mouse directly: the menus and buttons, `Map` (edge scrolling) and `Episode` (the drag rectangle it draws).
+Elsewhere, code reads the mouse directly: the menus and buttons, `Map` (edge scrolling) and `BattleView` (the drag rectangle it draws, through `PointerDevice`).
 
 ## Resources
 
@@ -111,7 +115,7 @@ Several parts of the game are reached through globals rather than passed in:
 
 | Global | Used by |
 |---|---|
-| `Mouse.shared`, `Keyboard.shared` | GUI, `Map`, `Episode`; default parameter of `ArgentineTeam` (passed to `PlayerInput`) |
+| `Mouse.shared`, `Keyboard.shared` | GUI, `Map`, `Episode` (keyboard, for the cheats); default parameter of `ArgentineTeam` (passed to `PlayerInput`) and `BattleView` |
 | `ResourceManager.shared` | about 60 call sites |
 | `Sound.shared`, `PathFinder.shared` | default parameters of `Unit` (tests pass fakes) |
 

@@ -50,6 +50,7 @@ GameScene.update(_:)       [SpriteKit callback, 20 FPS]
 ```
 Episode
 ├── BattleFlow      [states, intro/objectives pages, game over, cheats]
+├── BattleView      [draws the battle; IntroScreen, ObjectivesScreen, WonScreen, LostScreen draw over it]
 ├── Level           [objective tracker, loads nivel_N.xml]
 ├── Map             [isometric TMX tile map, multi-layer]
 ├── ArgentineTeam   [player forces]
@@ -59,7 +60,7 @@ Episode
 └── AI              [enemy decision-making]
 ```
 
-Battle lifecycle: `loading → showIntro → playing ⇄ showObjectives → won/lost`. `BattleFlow` holds these states and transitions without drawing (rules in `docs/specs/battle-flow.md`); `Episode` loads, updates and draws the battle.
+Battle lifecycle: `loading → showIntro → playing ⇄ showObjectives → won/lost`. `BattleFlow` holds these states and transitions without drawing (rules in `docs/specs/battle-flow.md`); `Episode` loads and updates the battle; the types in `Level/Screens/` draw it.
 
 ### Unit System
 
