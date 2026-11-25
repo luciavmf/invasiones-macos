@@ -20,7 +20,7 @@ final class Video {
     static let width: Int = ScreenSize.width
     static let height: Int = ScreenSize.height
 
-    // MARK: - Nodo canvas
+    // MARK: - Canvas node
     private let canvasNode: SKNode
 
     // MARK: - Drawing state

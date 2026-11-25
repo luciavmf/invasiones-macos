@@ -36,7 +36,7 @@ struct Command {
     /// Width of the kill zone in tiles (only for KILL commands).
     private(set) var width: Int = 0
 
-    // MARK: - Initializeres
+    // MARK: - Initializers
 
     /// Creates a command at the given tile position.
     /// - Parameters:

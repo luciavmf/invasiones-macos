@@ -49,6 +49,7 @@ GameScene.update(_:)       [SpriteKit callback, 20 FPS]
 
 ```
 Episode
+├── BattleFlow      [states, intro/objectives pages, game over, cheats]
 ├── Level           [objective tracker, loads nivel_N.xml]
 ├── Map             [isometric TMX tile map, multi-layer]
 ├── ArgentineTeam   [player forces]
@@ -58,7 +59,7 @@ Episode
 └── AI              [enemy decision-making]
 ```
 
-Battle lifecycle: `LOADING → SHOW_INTRO → PLAYING → WON/LOST`
+Battle lifecycle: `loading → showIntro → playing ⇄ showObjectives → won/lost`. `BattleFlow` holds these states and transitions without drawing (rules in `docs/specs/battle-flow.md`); `Episode` loads, updates and draws the battle.
 
 ### Unit System
 
@@ -101,7 +102,7 @@ Input from `NSEvent` flows through `GameScene` into `Mouse` and `Keyboard` singl
 
 Unit tests (`InvasionesTests`, Swift Testing) run inside the app (`TEST_HOST`). Test suites touching game types need `@MainActor` (the app target defaults to MainActor isolation).
 
-- `TestSupport.swift` has `TestGrid` (walkability from strings, `.` = walkable), `FakeSound`, `FakeClock`, `FakePointer` (a mouse), `FakeInputMap` (the tile under the pointer), `FakeSprite` (for `UnitView`), and `GameUnit` (Foundation also declares `Unit`, so use `GameUnit` in tests).
+- `TestSupport.swift` has `TestGrid` (walkability from strings, `.` = walkable), `FakeSound`, `FakeClock`, `FakePointer` (a mouse), `FakeInputMap` (the tile under the pointer), `FakeSprite` (for `UnitView`), `FakeLevel` and `FakeKeyboard` (for `BattleFlow`), and `GameUnit` (Foundation also declares `Unit`, so use `GameUnit` in tests).
 - `Unit` takes its `PathFinder` and `SoundPlayer` as init parameters defaulting to `.shared`; pass fakes in tests. Follow the same pattern when making other classes testable.
 
 ### Resources

@@ -40,7 +40,7 @@ class MapObject {
     /// The flat world position (alias for worldPos).
     var worldPosFlat: (x: Int, y: Int) { worldPos }
 
-    // MARK: - Initializeres
+    // MARK: - Initializers
 
     init(battlefield: Battlefield?) {
         self.battlefield = battlefield

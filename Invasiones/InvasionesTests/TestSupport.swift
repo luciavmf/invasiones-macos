@@ -120,6 +120,39 @@ final class FakeSprite: UnitSprite {
     func draw(video: Video, x: Int, y: Int) {}
 }
 
+/// A level with a given number of objectives in each battle, handed out like `Level` does.
+final class FakeLevel: ObjectiveSource {
+    private let objectivesPerBattle: [Int]
+    private var given = 0
+    private(set) var currentBattleIndex = 0
+    private(set) var completedObjectiveCount = -1
+
+    init(objectivesPerBattle: [Int]) {
+        self.objectivesPerBattle = objectivesPerBattle
+    }
+
+    func nextObjective() -> Objective? {
+        completedObjectiveCount += 1
+        guard currentBattleIndex < objectivesPerBattle.count else { return nil }
+        if given == objectivesPerBattle[currentBattleIndex] {
+            currentBattleIndex += 1
+            given = 0
+            guard currentBattleIndex < objectivesPerBattle.count else { return nil }
+        }
+        given += 1
+        return Objective()
+    }
+}
+
+/// A keyboard whose keys the test presses by hand.
+final class FakeKeyboard: KeyboardDevice {
+    private(set) var pressedKeys: [Int] = []
+
+    func press(_ key: Keyboard.Key) { pressedKeys.append(key.rawValue) }
+    func isPressed(_ key: Keyboard.Key) -> Bool { pressedKeys.contains(key.rawValue) }
+    func clearKeys() { pressedKeys.removeAll() }
+}
+
 /// A clock the test advances by hand.
 final class FakeClock {
     var current = Date(timeIntervalSinceReferenceDate: 0)

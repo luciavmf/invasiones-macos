@@ -17,7 +17,7 @@ final class Sprite {
     private var currentAnim: Animation?
     private var currentAnimId: Int?
 
-    // MARK: - Initializeres
+    // MARK: - Initializers
     init() {}
 
     /// Copy initializer: clones all animations from the original sprite.

@@ -169,7 +169,7 @@ final class Map {
         return true
     }
 
-    // MARK: - Tile Chico (fog-of-war)
+    // MARK: - Small tiles (fog of war)
 
     /// Draws a small tile (physical map) at the corresponding isometric position.
     /// If `semiTransparent` is true, draws the semi-transparent grey tile (fog-of-war).
