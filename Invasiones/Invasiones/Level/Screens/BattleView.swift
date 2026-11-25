@@ -81,20 +81,30 @@ final class BattleView {
         }
     }
 
-    /// Draws the units and obstacles, back to front.
+    /// Draws the units and obstacles back to front, then the player's markers.
     private func drawObjects(_ video: Video) {
         forEachVisibleTile(video) { i, j in
             if let unit = objectsToDraw.table[i][j] as? Unit { unit.draw(video) }
             if let obstacle = objectsToDraw.table[i][j] as? Obstacle { obstacle.draw(video) }
         }
+        clippedToCamera(video) { player.drawMarkers(video) }
+    }
+
+    /// Runs `body` with drawing clipped to the camera.
+    private func clippedToCamera(_ video: Video, _ body: () -> Void) {
+        let oldClip = video.getClip()
+        video.setClip(x: camera.startX, y: camera.startY, w: camera.width, h: camera.height)
+        body()
+        video.setClip(x: oldClip.x, y: oldClip.y, w: oldClip.w, h: oldClip.h)
     }
 
     /// Calls `body` for every physical tile in the camera's view, row by row from the back,
     /// with drawing clipped to the camera.
     private func forEachVisibleTile(_ video: Video, _ body: (_ i: Int, _ j: Int) -> Void) {
-        let oldClip = video.getClip()
-        video.setClip(x: camera.startX, y: camera.startY, w: camera.width, h: camera.height)
+        clippedToCamera(video) { forEachTile(body) }
+    }
 
+    private func forEachTile(_ body: (_ i: Int, _ j: Int) -> Void) {
         let rect = player.getPaintCoordinates()
         var startCol = rect.x
         var startRow = rect.y
@@ -120,7 +130,5 @@ final class BattleView {
             }
             toggle.toggle()
         }
-
-        video.setClip(x: oldClip.x, y: oldClip.y, w: oldClip.w, h: oldClip.h)
     }
 }
