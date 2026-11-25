@@ -116,7 +116,7 @@ Several parts of the game are reached through globals rather than passed in:
 | Global | Used by |
 |---|---|
 | `Mouse.shared`, `Keyboard.shared` | GUI, `Map`, `Episode` (keyboard, for the cheats); default parameter of `ArgentineTeam` (passed to `PlayerInput`) and `BattleView` |
-| `ResourceManager.shared` | about 60 call sites |
+| `ResourceManager.shared` | the screens outside battle, the GUI, `Hud`, `Sound`, `GameFont`, `Animation` and `GameFrame` (37 call sites). The battle gets it as `Episode`'s `resources` parameter and passes it on, so its code doesn't read the global. |
 | `Sound.shared`, `PathFinder.shared` | default parameters of `Unit` (tests pass fakes) |
 
 ## Tests

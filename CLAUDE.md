@@ -104,11 +104,11 @@ Input from `NSEvent` flows through `GameScene` into `Mouse` and `Keyboard` singl
 Unit tests (`InvasionesTests`, Swift Testing) run inside the app (`TEST_HOST`). Test suites touching game types need `@MainActor` (the app target defaults to MainActor isolation).
 
 - `TestSupport.swift` has `TestGrid` (walkability from strings, `.` = walkable), `FakeSound`, `FakeClock`, `FakePointer` (a mouse), `FakeInputMap` (the tile under the pointer), `FakeSprite` (for `UnitView`), `FakeLevel` and `FakeKeyboard` (for `BattleFlow`), and `GameUnit` (Foundation also declares `Unit`, so use `GameUnit` in tests).
-- `Unit` takes its `PathFinder` and `SoundPlayer` as init parameters defaulting to `.shared`; pass fakes in tests. Follow the same pattern when making other classes testable.
+- `Unit` takes its `PathFinder`, `SoundPlayer` and `ResourceManager` as init parameters defaulting to `.shared`; pass fakes (or a fresh `ResourceManager()`) in tests. Follow the same pattern when making other classes testable.
 
 ### Resources
 
-`ResourceManager` (singleton, `static let shared`) loads and caches all assets listed in `data/res.json`:
+`ResourceManager` (`static let shared`) loads and caches all assets listed in `data/res.json`. The battle receives it as a `resources` parameter defaulting to `.shared` (`Episode`, `Map`, `Level`, `Command`, the teams, `PlayerInput`, `Unit`, `BattleView` and the screens); tests create their own `ResourceManager()` instead of loading into the shared one. It provides:
 - Images → `Surface` (wraps `SKTexture`)
 - Fonts → `GameFont`
 - Sprites → `Sprite` (collection of `Animation` objects)
