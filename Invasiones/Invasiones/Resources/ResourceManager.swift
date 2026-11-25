@@ -39,8 +39,9 @@ final class ResourceManager {
     /// The stats of each unit type, read from its CSV file.
     private(set) var unitStats: [UnitType: UnitStats] = [:]
 
-    // MARK: - Initializer (private)
-    private init() {}
+    // MARK: - Initializer
+    /// The game uses `shared`; tests create their own so they don't load resources into it.
+    init() {}
 
     func dispose() {
         fonts.values.forEach { $0.dispose() }
@@ -102,7 +103,7 @@ final class ResourceManager {
 
     func getCopyOfImage(_ name: String) -> Surface? {
         guard let orig = getImage(name) else { return nil }
-        return Surface(copia: orig)
+        return Surface(copying: orig)
     }
 
     // MARK: - Fonts

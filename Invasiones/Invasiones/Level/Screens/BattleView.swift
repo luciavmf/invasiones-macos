@@ -25,9 +25,11 @@ final class BattleView {
     private let objectsToDraw: ObjectTable
     private let hud: Hud
     private let pointer: any PointerDevice
+    private let resources: ResourceManager
 
     init(map: Map, camera: Camera, player: ArgentineTeam, objectsToDraw: ObjectTable, hud: Hud,
-         pointer: any PointerDevice = Mouse.shared) {
+         pointer: any PointerDevice = Mouse.shared, resources: ResourceManager = .shared) {
+        self.resources = resources
         self.map = map
         self.camera = camera
         self.player = player
@@ -64,7 +66,7 @@ final class BattleView {
 
     private func drawReminder(_ video: Video, text: StringID?) {
         let y = camera.height - (Layout.objectivesHeight + Layout.objectivesOffset * 2)
-        video.font = ResourceManager.shared.fonts[FontConstants.objectivesReminderFont]
+        video.font = resources.fonts[FontConstants.objectivesReminderFont]
         video.fontColor = Theme.title
         video.write(.objectives, Layout.objectivesOffset << 1, y - 10, [])
         if let text {

@@ -53,12 +53,18 @@ class Player {
     var unitCount: Int { units.count }
 
     // MARK: - Initializer
-    init(map mapArg: Map, camera cameraArg: Camera, objectsToDraw tableArg: ObjectTable, hud hudArg: Hud) {
+    /// - Parameter resources: Where the team's units and markers get their stats and images.
+    init(map mapArg: Map, camera cameraArg: Camera, objectsToDraw tableArg: ObjectTable, hud hudArg: Hud,
+         resources: ResourceManager = .shared) {
         self.map = mapArg
         self.camera = cameraArg
         self.objectsToDraw = tableArg
         self.hud = hudArg
+        self.resources = resources
     }
+
+    /// Where the team's units and markers get their stats and images.
+    let resources: ResourceManager
 
     /// The map and camera, given to the units and objects this team places.
     var battlefield: Battlefield { Battlefield(map: map, camera: camera) }
@@ -82,7 +88,7 @@ class Player {
 
         if let ord = command {
             if ord.id == .takeObject, let img = ord.image {
-                objectToTake = MapObject(sup: img, i: ord.point.x, j: ord.point.y, battlefield: battlefield)
+                objectToTake = MapObject(surface: img, i: ord.point.x, j: ord.point.y, battlefield: battlefield)
             }
             ring?.setPosition(i: ord.point.x, j: ord.point.y)
         }
@@ -106,14 +112,14 @@ class Player {
                     fireEffects!.append(anim)
                     map.invalidateTile(x: ord.point.x, y: ord.point.y)
 
-                    let anim2 = AnimObject(Animation(copia: anim.animation),
+                    let anim2 = AnimObject(Animation(copying: anim.animation),
                                           ord.animation!.physicalTilePos.x - 5,
                                           ord.animation!.physicalTilePos.y - 5,
                                           battlefield: battlefield)
                     fireEffects!.append(anim2)
                     map.invalidateTile(x: anim.physicalTilePos.x - 5, y: anim.physicalTilePos.y - 5)
 
-                    let anim3 = AnimObject(Animation(copia: anim.animation),
+                    let anim3 = AnimObject(Animation(copying: anim.animation),
                                           ord.animation!.physicalTilePos.x - 5,
                                           ord.animation!.physicalTilePos.y,
                                           battlefield: battlefield)
@@ -335,7 +341,7 @@ class Player {
             Log.shared.debug("Player: cannot place unit — tile not walkable.")
             return nil
         }
-        let unit = Unit(type, battlefield: battlefield)
+        let unit = Unit(type, battlefield: battlefield, resources: resources)
         unit.physicalTilePos = (i, j)
         unit.previousTile = (i, j)
         unit.initializeXY()

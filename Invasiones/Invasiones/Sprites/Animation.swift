@@ -47,18 +47,18 @@ final class Animation {
     }
 
     /// Copy initializer — shares the base sprite sheet but has its own clip state.
-    init(copia: Animation) {
-        self.imagePath = copia.imagePath
-        self.ticks = copia.ticks
-        self.frameHeight = copia.frameHeight
-        self.frameWidth = copia.frameWidth
-        self.frameCount = copia.frameCount
-        self.animationCount = copia.animationCount
-        self.loop = copia.loop
-        self.offsets = copia.offsets
+    init(copying other: Animation) {
+        self.imagePath = other.imagePath
+        self.ticks = other.ticks
+        self.frameHeight = other.frameHeight
+        self.frameWidth = other.frameWidth
+        self.frameCount = other.frameCount
+        self.animationCount = other.animationCount
+        self.loop = other.loop
+        self.offsets = other.offsets
         self.currentAnimation = -1
-        self.animRead = copia.animRead
-        self.animLoaded = copia.animLoaded
+        self.animRead = other.animRead
+        self.animLoaded = other.animLoaded
 
         // Each copy needs its own Surface to have its own current texture.
         self.image = ResourceManager.shared.getCopyOfImage(imagePath)

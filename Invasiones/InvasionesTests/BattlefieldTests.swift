@@ -16,7 +16,7 @@ struct MapObjectTests {
     @Test func tileToWorldUsesTheBattlefieldTileSize() {
         let battlefield = Battlefield(map: grid, camera: Camera(x: 0, y: 0, height: 600))
 
-        let object = MapObject(sup: nil, i: 4, j: 2, battlefield: battlefield)
+        let object = MapObject(surface: nil, i: 4, j: 2, battlefield: battlefield)
 
         // x = ((i - j) * 64 / 2) >> 1, y = ((i + j) * 32 / 2) >> 1
         #expect(object.worldPos == (32, 48))
@@ -24,7 +24,7 @@ struct MapObjectTests {
 
     @Test func screenPositionFollowsTheCamera() {
         let battlefield = Battlefield(map: grid, camera: Camera(x: 100, y: 50, height: 600))
-        let object = MapObject(sup: nil, i: 0, j: 0, battlefield: battlefield)
+        let object = MapObject(surface: nil, i: 0, j: 0, battlefield: battlefield)
 
         object.setTilePosition(i: 4, j: 2)
 

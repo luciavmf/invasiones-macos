@@ -55,16 +55,23 @@ struct UnitStatsTests {
         #expect(UnitStats(csv: "Sprite;gaucho").sprite == .british)
     }
 
-    @Test func theBundledFilesLoadForEveryType() throws {
-        try ResourceManager.shared.loadResourcePaths()
-        ResourceManager.shared.loadUnitTypes()
+    /// A resource manager with the bundled unit files loaded.
+    private func loadedResources() throws -> ResourceManager {
+        let resources = ResourceManager()
+        try resources.loadResourcePaths()
+        resources.loadUnitTypes()
+        return resources
+    }
 
-        let patricio = try #require(ResourceManager.shared.unitStats[.patricio])
+    @Test func theBundledFilesLoadForEveryType() throws {
+        let resources = try loadedResources()
+
+        let patricio = try #require(resources.unitStats[.patricio])
         #expect(patricio.sprite == .patricio)
         #expect(patricio.resistancePoints == 100)
         #expect(patricio.attackRange == 8)
 
-        let british = try #require(ResourceManager.shared.unitStats[.british])
+        let british = try #require(resources.unitStats[.british])
         #expect(british.sprite == .british)
         #expect(british.resistancePoints == 50)
         #expect(british.attackInterval == 20)
@@ -82,5 +89,16 @@ struct UnitStatsTests {
         #expect(unit.resistancePoints == 50)
         #expect(unit.range == 8)
         #expect(unit.speed == (3, 3))
+    }
+
+    @Test func aUnitOfATypeTakesItsStatsFromTheResourcesItIsGiven() throws {
+        let resources = try loadedResources()
+        let grid = TestGrid(["....", "....", "....", "...."])
+        let battlefield = Battlefield(map: grid, camera: Camera(x: 0, y: 0, height: 600))
+
+        let unit = GameUnit(.british, battlefield: battlefield, sound: FakeSound(), resources: resources)
+
+        #expect(unit.stats == resources.unitStats[.british])
+        #expect(unit.resistancePoints == 50)
     }
 }

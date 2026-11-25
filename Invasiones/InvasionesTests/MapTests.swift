@@ -14,8 +14,9 @@ struct MapTests {
     private let map: Map
 
     init() throws {
-        try ResourceManager.shared.loadResourcePaths()
-        map = Map(camera: Camera(x: 0, y: 0, height: 600))
+        let resources = ResourceManager()
+        try resources.loadResourcePaths()
+        map = Map(camera: Camera(x: 0, y: 0, height: 600), resources: resources)
         try map.load(level: 0)
     }
 

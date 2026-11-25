@@ -55,12 +55,12 @@ struct Command {
         width = widthParam
     }
 
-    /// Creates a TAKE_OBJECT command that loads the image to collect from a path.
-    init(_ kind: Kind, _ x: Int, _ y: Int, _ path: String) {
+    /// Creates a TAKE_OBJECT command that loads the image to collect from a path, through `resources`.
+    init(_ kind: Kind, _ x: Int, _ y: Int, _ path: String, resources: ResourceManager = .shared) {
         id = kind
         point = (x, y)
         if let p = Utils.getPath(path) {
-            image = ResourceManager.shared.getImage(p)
+            image = resources.getImage(p)
         }
         if image == nil {
             Log.shared.debug("Command: image not found in level: \(path)")

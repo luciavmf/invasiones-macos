@@ -60,6 +60,7 @@ final class Map {
 
     // MARK: - Camera
     private let camera: Camera
+    private let resources: ResourceManager
 
     // MARK: - Computed helpers
     var physicalMapHeight: Int { physicalHeight }
@@ -83,8 +84,12 @@ final class Map {
     }
 
     // MARK: - Initializer
-    init(camera: Camera) {
+    /// - Parameters:
+    ///   - camera: The visible part of the map.
+    ///   - resources: Where the map's file paths and images come from. Tests pass their own.
+    init(camera: Camera, resources: ResourceManager = .shared) {
         self.camera = camera
+        self.resources = resources
     }
 
     // MARK: - Loading
@@ -93,7 +98,7 @@ final class Map {
     func load(level: Int) throws {
         // scenarioPaths lists every tileset first, then the maps.
         let mapIndex = TilesetID.allCases.count + level
-        let paths = ResourceManager.shared.scenarioPaths
+        let paths = resources.scenarioPaths
         guard level >= 0, mapIndex < paths.count else {
             throw GameError.invalidResource("No map for level \(level).")
         }
@@ -181,7 +186,7 @@ final class Map {
 
         if semiTransparent {
             if greyTileImage == nil {
-                greyTileImage = ResourceManager.shared.getImage(.greyTile)
+                greyTileImage = resources.getImage(.greyTile)
             }
             video.draw(greyTileImage, posX, posY, 128, [])
         }
@@ -378,7 +383,7 @@ final class Map {
         for entry in d.collected {
             let ts = Tileset()
             ts.firstGid = entry.gid
-            try ts.load(entry.path)
+            try ts.load(entry.path, resources: resources)
             addTileset(ts)
         }
     }
@@ -399,7 +404,7 @@ final class Map {
     private func loadLayerInfo(paths: [String?]) {
         if Map.tilesetDebug == nil {
             let ts = Tileset()
-            if let p = paths[safe: TilesetID.debug.rawValue] ?? nil { try? ts.load(p) }
+            if let p = paths[safe: TilesetID.debug.rawValue] ?? nil { try? ts.load(p, resources: resources) }
             Map.tilesetDebug = ts
         }
 

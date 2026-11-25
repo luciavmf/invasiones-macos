@@ -14,8 +14,9 @@ import Foundation
 final class EnemyTeam: Player {
 
     // MARK: - Initializer
-    override init(map: Map, camera: Camera, objectsToDraw: ObjectTable, hud: Hud) {
-        super.init(map: map, camera: camera, objectsToDraw: objectsToDraw, hud: hud)
+    override init(map: Map, camera: Camera, objectsToDraw: ObjectTable, hud: Hud,
+                  resources: ResourceManager = .shared) {
+        super.init(map: map, camera: camera, objectsToDraw: objectsToDraw, hud: hud, resources: resources)
         faction = .enemy
     }
 
