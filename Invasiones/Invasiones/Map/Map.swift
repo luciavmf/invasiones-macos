@@ -29,7 +29,7 @@ final class Map {
 
     private(set) var layers = LayerIndices()
 
-    // MARK: - Datos del mapa
+    // MARK: - Map data
     private var mapData: [[[Int]]] = []           // [layer][col][row]
     private var layerNames: [String: Int] = [:]
     private var mapLoaded = false
@@ -95,10 +95,10 @@ final class Map {
         let mapIndex = TilesetID.allCases.count + level
         let paths = ResourceManager.shared.scenarioPaths
         guard level >= 0, mapIndex < paths.count else {
-            throw GameError.invalidResource("Map for level \(level) inválido.")
+            throw GameError.invalidResource("No map for level \(level).")
         }
         guard let mapPath = paths[mapIndex] else {
-            throw GameError.fileNotFound("No hay path para el mapa del nivel \(level).")
+            throw GameError.fileNotFound("No path for the map of level \(level).")
         }
 
         tilesetCount = 0
@@ -340,15 +340,15 @@ final class Map {
 
     private func readMapInfo(_ path: String) throws {
         guard let parser = XMLParser(contentsOf: URL(fileURLWithPath: path)) else {
-            throw GameError.fileNotFound("Map: no se puede abrir \(path)")
+            throw GameError.fileNotFound("Map: cannot open \(path)")
         }
         let d = MapInfoDelegate()
         parser.delegate = d
         guard parser.parse() else {
-            throw GameError.parsingFailed("Map: error al parsear \(path)")
+            throw GameError.parsingFailed("Map: failed to parse \(path)")
         }
         guard d.orientation == "isometric" else {
-            throw GameError.invalidResource("Map: orientación no isométrica.")
+            throw GameError.invalidResource("Map: orientation is not isometric.")
         }
         width = d.width
         physicalWidth = d.width * 2
@@ -358,13 +358,13 @@ final class Map {
         physicalTileWidth = d.tileWidth / 2
         tileHeight = d.tileHeight
         physicalTileHeight = d.tileHeight / 2
-        camera.x = ((d.tileCamaraJ - d.tileCamaraI) * tileWidth) >> 1
-        camera.y = -((d.tileCamaraJ + d.tileCamaraI) * tileHeight) >> 1
+        camera.x = ((d.cameraTileJ - d.cameraTileI) * tileWidth) >> 1
+        camera.y = -((d.cameraTileJ + d.cameraTileI) * tileHeight) >> 1
     }
 
     private func readTilesets(_ mapPath: String, paths: [String?]) throws {
         guard let parser = XMLParser(contentsOf: URL(fileURLWithPath: mapPath)) else {
-            throw GameError.fileNotFound("Map: no se puede abrir \(mapPath)")
+            throw GameError.fileNotFound("Map: cannot open \(mapPath)")
         }
         let base = (mapPath as NSString).deletingLastPathComponent
         let d = TilesetRefDelegate(base: base)
@@ -372,7 +372,7 @@ final class Map {
         let ok = parser.parse()
         withExtendedLifetime(d) {}
         guard ok else {
-            throw GameError.parsingFailed("Map: error al parsear tilesets de \(mapPath)")
+            throw GameError.parsingFailed("Map: failed to parse the tilesets of \(mapPath)")
         }
         // Load each TSX *after* the TMX parser has fully finished — avoids reentrant XMLParser.
         for entry in d.collected {
@@ -385,14 +385,14 @@ final class Map {
 
     private func readLayers(_ path: String) throws {
         guard let parser = XMLParser(contentsOf: URL(fileURLWithPath: path)) else {
-            throw GameError.fileNotFound("Map: no se puede abrir \(path)")
+            throw GameError.fileNotFound("Map: cannot open \(path)")
         }
         let d = LayerDelegate(map: self)
         parser.delegate = d
         let ok = parser.parse()
         withExtendedLifetime(d) {}
         if !ok {
-            throw GameError.parsingFailed("Map: error al parsear capas de \(path)")
+            throw GameError.parsingFailed("Map: failed to parse the layers of \(path)")
         }
     }
 
@@ -474,36 +474,32 @@ private final class MapInfoDelegate: NSObject, XMLParserDelegate {
     var height = 0
     var tileWidth = 0
     var tileHeight = 0
-    var tileCamaraI = 0
-    var tileCamaraJ = 0
-    private var enProperties = false
+    var cameraTileI = 0
+    var cameraTileJ = 0
+    private var inProperties = false
 
     func parser(_ parser: XMLParser, didStartElement name: String,
                 namespaceURI: String?, qualifiedName: String?,
                 attributes a: [String: String]) {
         if name == "map" {
-            orientacao = a["orientation"] ?? ""
+            orientation = a["orientation"] ?? ""
             width = Int(a["width"] ?? "0") ?? 0
             height = Int(a["height"] ?? "0") ?? 0
             tileWidth = Int(a["tilewidth"] ?? "0") ?? 0
             tileHeight = Int(a["tileheight"] ?? "0") ?? 0
         } else if name == "properties" {
-            enProperties = true
-        } else if enProperties && name == "property" {
+            inProperties = true
+        } else if inProperties && name == "property" {
             switch a["name"] ?? "" {
-            case "CamaraTileInicialI": tileCamaraI = Int(a["value"] ?? "0") ?? 0
-            case "CamaraTileInicialJ": tileCamaraJ = Int(a["value"] ?? "0") ?? 0
+            case "CamaraTileInicialI": cameraTileI = Int(a["value"] ?? "0") ?? 0
+            case "CamaraTileInicialJ": cameraTileJ = Int(a["value"] ?? "0") ?? 0
             default: break
             }
         }
     }
     func parser(_ parser: XMLParser, didEndElement name: String,
                 namespaceURI: String?, qualifiedName: String?) {
-        if name == "properties" { enProperties = false }
-    }
-    // Alias para evitar typo en Swift
-    private var orientacao: String {
-        get { orientation } set { orientation = newValue }
+        if name == "properties" { inProperties = false }
     }
 }
 

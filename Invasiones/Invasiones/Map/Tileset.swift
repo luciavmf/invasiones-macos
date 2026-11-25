@@ -39,14 +39,14 @@ final class Tileset {
     /// Loads the tileset from the given TSX path.
     func load(_ tilesetPath: String) throws {
         guard let parser = XMLParser(contentsOf: URL(fileURLWithPath: tilesetPath)) else {
-            throw GameError.fileNotFound("Tileset: no se puede abrir \(tilesetPath)")
+            throw GameError.fileNotFound("Tileset: cannot open \(tilesetPath)")
         }
         let delegate = TilesetXMLDelegate(tileset: self, basePath: tilesetPath)
         parser.delegate = delegate
         let ok = parser.parse()
         withExtendedLifetime(delegate) {}
         if !ok {
-            throw GameError.parsingFailed("Tileset: error al parsear \(tilesetPath)")
+            throw GameError.parsingFailed("Tileset: failed to parse \(tilesetPath)")
         }
     }
 

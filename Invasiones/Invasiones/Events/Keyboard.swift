@@ -29,7 +29,7 @@ final class Keyboard {
     static let shared = Keyboard()
 
     // MARK: - Declarations
-    /// Teclas actualmente presionadas (keyCode de NSEvent).
+    /// The keys currently pressed (NSEvent key codes).
     private(set) var pressedKeys: [Int] = []
 
     // MARK: - Initializer (privado — singleton)

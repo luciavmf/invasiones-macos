@@ -20,7 +20,7 @@ final class Surface {
     /// The full texture (sprite sheet or complete image).
     private(set) var texture: SKTexture?
 
-    /// The active sub-texture after SetearClip (nil = use full texture).
+    /// The active sub-texture after `setClip` (nil = use full texture).
     private(set) var currentTexture: SKTexture?
 
     /// Alpha applied to the node when drawing (0.0–1.0).

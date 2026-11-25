@@ -22,7 +22,7 @@ enum GameText {
     static func loadStrings() throws {
         let filename = Language.current.filename
         guard let path = Utils.getPath(filename) else {
-            throw GameError.fileNotFound("No se encuentra el archivo \(filename).")
+            throw GameError.fileNotFound("File \(filename) not found.")
         }
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         let parsed = try parse(data, filename: filename)
