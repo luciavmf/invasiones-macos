@@ -28,7 +28,7 @@ GameScene (SpriteKit, 20 FPS)
 | `StateMachine/`, `States/` | Top-level screens and the machine that switches between them |
 | `Level/` | `Episode`, `Battlefield`, `Level`, `AI`, `Command`, `Objective`, `MapObject`, `Obstacle`, `ObjectTable` |
 | `Level/Players/` | `Player` and its subclasses `ArgentineTeam`, `EnemyTeam`; `PlayerInput`, `PlayerIntent` |
-| `Level/Units/` | `Unit`, `UnitStats`, `Group` |
+| `Level/Units/` | `Unit`, `UnitStats`, `UnitView`, `Group` |
 | `Map/` | `Map`, `Tileset`, `Tile`, `Camera`, `TilesetID`, line of sight, `PathFinder/` |
 | `Rendering/`, `Sprites/` | `Video`, `Surface`, `GameFont`, `Anchor`, `Sprite`, `Animation`, `AnimObject` |
 | `GUI/` | `Button`, `Menu`, `ConfirmationMenu`, `Hud`, `Tips`, `Frame` |
@@ -69,7 +69,7 @@ loading → showIntro → playing ⇄ showObjectives → won / lost
 - `ArgentineTeam` is the player's side. `handle(_:)` carries out `PlayerIntent`s: selecting units (a drag selects at most `Player.maxSelectedUnits`, 6, and forms a group), deselecting, and move, attack and heal orders. See [Input](#input) and [`specs/selection-and-orders.md`](specs/selection-and-orders.md).
 - `EnemyTeam` places the British units, and `AI` gives their groups orders from the level file. Units without a group patrol around their starting point.
 - `Group` moves several units together behind a commander.
-- `Unit` (a `MapObject`) has its type's `UnitStats` (read from `unidades/*.csv`) and a state machine: `idle`, `moving`, `pursuingUnit`, `attacking`, `dying`, `dead`, `patrolling`, `healing`. It also draws itself, its health bar and its selection, and tests whether the mouse is over it.
+- `Unit` (a `MapObject`) has its type's `UnitStats` (read from `unidades/*.csv`) and a state machine: `idle`, `moving`, `pursuingUnit`, `attacking`, `dying`, `dead`, `patrolling`, `healing`. Its `UnitView` draws it: each frame the view picks the sprite's animation from the unit's state and direction, draws the health bar of a selected unit, and does the hit-tests that use the sprite's size. Movement rules are in [`specs/movement.md`](specs/movement.md), combat in [`specs/combat.md`](specs/combat.md).
 
 ## Map and pathfinding
 
@@ -116,4 +116,4 @@ Several parts of the game are reached through globals rather than passed in:
 
 ## Tests
 
-`InvasionesTests` (Swift Testing) runs inside the app. It covers the pathfinder, line of sight, map objects and units on a hand-made `Battlefield` (`TestGrid` is a `BattleMap`), selection and orders (`PlayerInput` with `FakePointer` and `FakeInputMap`, `ArgentineTeam.handle(_:)`), combat, dying, healing and patrolling (`UnitCombatTests`), `UnitStats` parsing, infirmary lookup on the first level's map, `StateMachine`, `GameText`, `Command`, `Objective`, `Camera` and that the resource enums match `res.json`.
+`InvasionesTests` (Swift Testing) runs inside the app. It covers the pathfinder, line of sight, map objects and units on a hand-made `Battlefield` (`TestGrid` is a `BattleMap`), selection and orders (`PlayerInput` with `FakePointer` and `FakeInputMap`, `ArgentineTeam.handle(_:)`), combat, dying, healing and patrolling (`UnitCombatTests`), `UnitStats` parsing, unit animations and hit-tests (`UnitView` with `FakeSprite`), infirmary lookup on the first level's map, `StateMachine`, `GameText`, `Command`, `Objective`, `Camera` and that the resource enums match `res.json`.

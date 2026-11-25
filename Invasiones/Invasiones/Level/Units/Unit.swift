@@ -11,7 +11,7 @@ import Foundation
 
 /// Represents a single unit (soldier) in the game.
 /// Manages its own state machine (idle, moving, patrolling, attacking, pursuing, healing, dying),
-/// pathfinding, formation offsets, collision evasion, and sprite animation.
+/// pathfinding, formation offsets and collision evasion. `UnitView` draws it.
 final class Unit: MapObject {
 
     // MARK: - Constants
@@ -26,10 +26,6 @@ final class Unit: MapObject {
         static let patrolRandomMax = 16
         /// Minimum tile distance to the objective for a MOVE order to be considered fulfilled.
         static let minTilesToCompleteMove = 3
-        /// Width of the selection/health bar drawn above the unit when selected.
-        static let selectionBarWidth = 20
-        /// Vertical offset of the selection bar relative to the unit's screen y coordinate.
-        static let selectionBarY = -3
         /// Number of ticks the unit's corpse remains visible on screen before disappearing.
         static let deathFrameCount = 150
     }
@@ -72,7 +68,8 @@ final class Unit: MapObject {
     /// Whether the unit is currently selected by the player.
     var isSelected: Bool = false
     private var mode: Int = 0
-    private var sprite: Sprite?
+    /// Draws the unit: its sprite, animation and health bar.
+    let view: UnitView
     private var count: Int = 0
     private var targetPos: (x: Int, y: Int)?
     /// The avatar image shown in the HUD when this unit is selected.
@@ -142,9 +139,9 @@ final class Unit: MapObject {
         health = stats.resistancePoints
         currentSpeed = (stats.speed, stats.speed)
         avatar = stats.avatar.flatMap { ResourceManager.shared.getImage($0) }
-        if let id = stats.sprite, let s = ResourceManager.shared.sprites[id] {
-            sprite = Sprite(copia: s)
-        }
+        view = UnitView(sprite: stats.sprite
+            .flatMap { ResourceManager.shared.sprites[$0] }
+            .map { Sprite(copia: $0) })
         super.init(battlefield: battlefield)
     }
 
@@ -169,7 +166,7 @@ final class Unit: MapObject {
 
         switch stateValue {
         case .idle:
-            updateIdleAnimation()
+            break
         case .moving:
             movedOnMap = updateMovingState()
         case .patrolling:
@@ -190,7 +187,7 @@ final class Unit: MapObject {
         checkOrderCompleted()
 
         super.update()
-        dibujarSpriteActual()
+        view.update(state: stateValue, direction: direction)
         return movedOnMap
     }
 
@@ -201,23 +198,8 @@ final class Unit: MapObject {
     }
 
     override func draw(_ video: Video) {
-        // Selection (health bar) is drawn here
-        if isSelected {
-            let healthFraction = Double(health) / Double(max(resistancePoints, 1))
-            let barWidth = Int(Double(Constants.selectionBarWidth) * healthFraction)
-            let spriteHeight = sprite?.frameHeight ?? 0
-            let barY = y - spriteHeight + Constants.selectionBarY
-            video.color = GameColor.green
-            video.fillRect(x - Constants.selectionBarWidth / 2,
-                               barY,
-                               barWidth, 3)
-            video.color = GameColor.red
-            video.fillRect(x - Constants.selectionBarWidth / 2 + barWidth,
-                               barY,
-                               Constants.selectionBarWidth - barWidth, 3)
-        }
-        sprite?.draw(video: video, x: x - (sprite?.frameWidth ?? 0) / 2,
-                     y: y - (sprite?.frameHeight ?? 0))
+        let healthLeft = Double(health) / Double(max(resistancePoints, 1))
+        view.draw(video, x: x, y: y, health: isSelected ? healthLeft : nil)
     }
 
     // MARK: - Public orders
@@ -462,10 +444,7 @@ final class Unit: MapObject {
 
     /// Returns `true` if the screen point (mx, my) is inside this unit's sprite bounding box.
     func isUnder(x mx: Int, y my: Int) -> Bool {
-        let fw = sprite?.frameWidth ?? (frameWidth > 0 ? frameWidth : 20)
-        let fh = sprite?.frameHeight  ?? (frameHeight  > 0 ? frameHeight  : 30)
-        let hw = fw / 2
-        return mx >= x - hw && mx <= x + hw && my >= y - fh && my <= y
+        view.contains(px: mx, py: my, x: x, y: y)
     }
 
     /// Orders the unit to move toward the infirmary at (x, y) and then heal.
@@ -505,16 +484,7 @@ final class Unit: MapObject {
     ///   - rectY: Top edge of the rectangle, in screen coordinates.
     /// - Returns: `true` if the unit was selected.
     func selectIfInRect(x rectX: Int, y rectY: Int, w: Int, h: Int) -> Bool {
-        let fw = sprite?.frameWidth ?? (frameWidth > 0 ? frameWidth : 20)
-        let fh = sprite?.frameHeight  ?? (frameHeight  > 0 ? frameHeight  : 30)
-        // The unit's x is the sprite's horizontal center, y its bottom.
-        // Sprite bounds: left = x-fw/2, right = x+fw/2, top = y-fh, bottom = y.
-        // Matches the original C# check (translated from top-left convention to center/bottom).
-        // The rectangle parameters have their own names so they can't shadow the unit's x/y.
-        let inRange = rectX <= x - fw / 2
-                  && rectY <= y - fh / 2
-                  && rectX + w > x + fw / 2
-                  && rectY + h > y
+        let inRange = view.isCovered(byRectX: rectX, y: rectY, w: w, h: h, x: x, y: y)
         if inRange { isSelected = true }
         return inRange
     }
@@ -541,38 +511,6 @@ final class Unit: MapObject {
             aimAtUnit(attacker)
             setState(.attacking)
         }
-    }
-
-    private func updateIdleAnimation() {
-        sprite?.update()
-        let anim = firstAnimation() + direction
-        sprite?.setAnimation(anim: anim)
-        sprite?.play()
-    }
-
-    private func dibujarSpriteActual() {
-        sprite?.update()
-    }
-
-    /// Index of the first animation of each pack in a soldier sprite. Each pack has
-    /// one animation per direction (8), in the order of `res.json`'s animpaks.
-    private enum AnimationPack: Int {
-        case idle = 0
-        case walking = 8
-        case dying = 16
-        case attacking = 24
-    }
-
-    /// The animation index for the current state, before adding the direction.
-    private func firstAnimation() -> Int {
-        let pack: AnimationPack
-        switch stateValue {
-        case .idle, .healing: pack = .idle
-        case .moving, .pursuingUnit, .patrolling: pack = .walking
-        case .dying, .dead: pack = .dying
-        case .attacking: pack = .attacking
-        }
-        return pack.rawValue
     }
 
     // MARK: - Movement
@@ -610,11 +548,6 @@ final class Unit: MapObject {
         }
 
         if let dir = getDirection(targetX: nextStep.x, targetY: nextStep.y) { direction = dir }
-
-        // Update walking animation
-        let anim = firstAnimation() + direction
-        sprite?.setAnimation(anim: anim)
-        sprite?.play()
 
         let arrived = moveToNextStep()
 
@@ -781,9 +714,6 @@ final class Unit: MapObject {
             moved = moverse()
         }
 
-        let anim = firstAnimation() + direction
-        sprite?.setAnimation(anim: anim)
-        sprite?.play()
         return moved
     }
 
@@ -799,10 +729,6 @@ final class Unit: MapObject {
             setState(.idle)
             return
         }
-
-        let anim = firstAnimation() + direction
-        sprite?.setAnimation(anim: anim)
-        sprite?.play()
 
         // If the enemy moved, aim again, or chase it if it's out of range.
         if targetPos.map({ $0 != enemy.physicalTilePos }) ?? true {
@@ -857,20 +783,11 @@ final class Unit: MapObject {
         enemy = nil
     }
 
-    /// Plays the death animation once, then the unit is dead after `deathFrameCount` frames.
+    /// The unit is dead after `deathFrameCount` frames (its view plays the death animation once).
     private func updateDyingState() {
         if count == 0 {
-            let anim = firstAnimation() + direction
-            sprite?.setAnimation(anim: anim)
             // The original plays the Patricio's death sound for every unit, British ones included.
             sound.play(id: .patricioDeath, loop: 0)
-            sprite?.loop = false
-            sprite?.play()
-        }
-
-        if sprite?.isAnimationDone() == true {
-            sprite?.setFrame(sprite!.frameCount - 1)
-            sprite?.stop()
         }
 
         if count >= Constants.deathFrameCount {

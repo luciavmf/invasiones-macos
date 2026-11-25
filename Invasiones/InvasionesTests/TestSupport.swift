@@ -91,6 +91,35 @@ final class FakeInputMap: InputMap {
     }
 }
 
+/// A sprite that records what the unit view asks of it.
+final class FakeSprite: UnitSprite {
+    var frameWidth = 24
+    var frameHeight = 40
+    var frameCount = 6
+    var loop = true
+    /// The animation shown, `nil` until one is set.
+    private(set) var animation: Int?
+    private(set) var isPlaying = false
+    private(set) var frame = 0
+    /// How many times the animation was advanced.
+    private(set) var advances = 0
+    /// Set by the test to say the current (non-looping) animation has finished.
+    var animationDone = false
+
+    func update() { advances += 1 }
+    @discardableResult
+    func setAnimation(anim: Int) -> Bool {
+        guard anim != animation else { return false }
+        animation = anim
+        return true
+    }
+    func play() { isPlaying = true }
+    func stop() { isPlaying = false }
+    func isAnimationDone() -> Bool { animationDone }
+    func setFrame(_ frame: Int) { self.frame = frame }
+    func draw(video: Video, x: Int, y: Int) {}
+}
+
 /// A clock the test advances by hand.
 final class FakeClock {
     var current = Date(timeIntervalSinceReferenceDate: 0)
