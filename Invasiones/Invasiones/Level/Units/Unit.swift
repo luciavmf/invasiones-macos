@@ -141,7 +141,7 @@ final class Unit: MapObject {
         avatar = stats.avatar.flatMap { ResourceManager.shared.getImage($0) }
         view = UnitView(sprite: stats.sprite
             .flatMap { ResourceManager.shared.sprites[$0] }
-            .map { Sprite(copia: $0) })
+            .map { Sprite(copying: $0) })
         super.init(battlefield: battlefield)
     }
 

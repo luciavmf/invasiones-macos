@@ -34,12 +34,12 @@ final class ArgentineTeam: Player {
         faction = .argentine
 
         let anims = ResourceManager.shared.animations
-        if let animAros = anims[.rings] {
-            ring = AnimObject(Animation(copia: animAros), 0, 0, battlefield: battlefield)
+        if let rings = anims[.rings] {
+            ring = AnimObject(Animation(copying: rings), 0, 0, battlefield: battlefield)
         }
 
-        if let animFlecha = anims[.guideArrow] {
-            orientationArrow = Animation(copia: animFlecha)
+        if let guideArrow = anims[.guideArrow] {
+            orientationArrow = Animation(copying: guideArrow)
             try? orientationArrow?.load()
         }
     }
@@ -55,7 +55,7 @@ final class ArgentineTeam: Player {
     }
 
     override func loadUnits(_ levelIndex: Int) throws {
-        arrowObj = MapObject(sup: ResourceManager.shared.getImage(.arrow),
+        arrowObj = MapObject(surface: ResourceManager.shared.getImage(.arrow),
                                i: 0, j: 0, battlefield: battlefield)
         count = 99999
 
@@ -179,7 +179,7 @@ final class ArgentineTeam: Player {
     // MARK: - Orientation arrow
 
     private func updateOrientationArrow() {
-        guard let ord = command, let flecha = orientationArrow else { return }
+        guard let ord = command, let arrow = orientationArrow else { return }
 
         // Screen position of the target tile
         commandTargetPos.x = (((ord.point.x - ord.point.y) * map.tileWidth / 2) >> 1)
@@ -214,8 +214,8 @@ final class ArgentineTeam: Player {
         else                                                                 { dir = .southEast }
 
         let offset = -20
-        let fw = flecha.frameWidth
-        let fh = flecha.frameHeight
+        let fw = arrow.frameWidth
+        let fh = arrow.frameHeight
 
         if commandTargetPos.x > camera.startX &&
            commandTargetPos.x < camera.width - fw + offset {
@@ -235,7 +235,7 @@ final class ArgentineTeam: Player {
             arrowPos.y = camera.height - fh + offset
         }
 
-        flecha.setAnimation(anim: dir.rawValue)
+        arrow.setAnimation(anim: dir.rawValue)
     }
 
     private func isObjectiveVisible() -> Bool {

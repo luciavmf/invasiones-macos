@@ -48,14 +48,14 @@ class MapObject {
 
     /// Creates a map object at tile position (i, j) using the given surface.
     /// - Parameters:
-    ///   - sup: The image (or sprite sheet) for this object.
+    ///   - surface: The image (or sprite sheet) for this object.
     ///   - i: Tile column (i coordinate).
     ///   - j: Tile row (j coordinate).
     ///   - battlefield: The map and camera the object is placed on.
-    init(sup: Surface?, i: Int, j: Int, battlefield: Battlefield) {
+    init(surface: Surface?, i: Int, j: Int, battlefield: Battlefield) {
         self.battlefield = battlefield
-        self.image = sup
-        if let img = sup {
+        self.image = surface
+        if let img = surface {
             frameHeight = img.height
             frameWidth = img.width
         }

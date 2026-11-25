@@ -82,7 +82,7 @@ class Player {
 
         if let ord = command {
             if ord.id == .takeObject, let img = ord.image {
-                objectToTake = MapObject(sup: img, i: ord.point.x, j: ord.point.y, battlefield: battlefield)
+                objectToTake = MapObject(surface: img, i: ord.point.x, j: ord.point.y, battlefield: battlefield)
             }
             ring?.setPosition(i: ord.point.x, j: ord.point.y)
         }
@@ -106,14 +106,14 @@ class Player {
                     fireEffects!.append(anim)
                     map.invalidateTile(x: ord.point.x, y: ord.point.y)
 
-                    let anim2 = AnimObject(Animation(copia: anim.animation),
+                    let anim2 = AnimObject(Animation(copying: anim.animation),
                                           ord.animation!.physicalTilePos.x - 5,
                                           ord.animation!.physicalTilePos.y - 5,
                                           battlefield: battlefield)
                     fireEffects!.append(anim2)
                     map.invalidateTile(x: anim.physicalTilePos.x - 5, y: anim.physicalTilePos.y - 5)
 
-                    let anim3 = AnimObject(Animation(copia: anim.animation),
+                    let anim3 = AnimObject(Animation(copying: anim.animation),
                                           ord.animation!.physicalTilePos.x - 5,
                                           ord.animation!.physicalTilePos.y,
                                           battlefield: battlefield)

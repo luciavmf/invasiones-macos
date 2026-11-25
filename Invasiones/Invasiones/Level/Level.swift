@@ -77,7 +77,7 @@ final class Level {
         parser.parse()
         withExtendedLifetime(d) {}
 
-        for (i, battle) in d.batallas.enumerated() {
+        for (i, battle) in d.battles.enumerated() {
             if i < battles.count {
                 let b = Battle()
                 b.objectives = battle.objectives.reversed()  // reversal puts first-in at last (pop = LIFO)
@@ -121,7 +121,7 @@ final class Level {
 private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
 
     struct BattleData { var objectives: [Objective] = [] }
-    var batallas: [BattleData] = []
+    var battles: [BattleData] = []
 
     private let battlefield: Battlefield
 
@@ -141,7 +141,7 @@ private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
         switch name {
         case "batalla":
             inBattle = true
-            batallas.append(BattleData())
+            battles.append(BattleData())
         case "objetivo":
             currentObj = Objective()
             currentCommands = []
@@ -170,7 +170,7 @@ private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
                 }
                 if let animID,
                    let anim = ResourceManager.shared.animations[animID] {
-                    let animObj = AnimObject(Animation(copia: anim), iVal, jVal, battlefield: battlefield)
+                    let animObj = AnimObject(Animation(copying: anim), iVal, jVal, battlefield: battlefield)
                     ord = Command(type, iVal, jVal, animObj)
                 } else {
                     ord = Command(type, iVal, jVal)
@@ -189,7 +189,7 @@ private final class LevelXMLDelegate: NSObject, XMLParserDelegate {
                 namespaceURI: String?, qualifiedName: String?) {
         if name == "objetivo", var obj = currentObj {
             obj.commands = currentCommands.reversed()
-            batallas[batallas.count - 1].objectives.append(obj)
+            battles[battles.count - 1].objectives.append(obj)
             currentObj = nil
             inObjective = false
         } else if name == "batalla" {

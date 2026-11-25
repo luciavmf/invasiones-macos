@@ -53,7 +53,7 @@ final class AI {
         parser.parse()
         withExtendedLifetime(d) {}
 
-        for (i, commands) in d.batallas.enumerated() {
+        for (i, commands) in d.battles.enumerated() {
             if i < battles.count {
                 battles[i].commands = commands.reversed()
                 battleCount += 1
@@ -88,7 +88,7 @@ final class AI {
 // MARK: - XML parser
 
 private final class AIXMLDelegate: NSObject, XMLParserDelegate {
-    var batallas: [[Command]] = []
+    var battles: [[Command]] = []
     private var current: [Command] = []
     private var inBattle = false
 
@@ -116,7 +116,7 @@ private final class AIXMLDelegate: NSObject, XMLParserDelegate {
     func parser(_ parser: XMLParser, didEndElement name: String,
                 namespaceURI: String?, qualifiedName: String?) {
         if name == "battle" {
-            batallas.append(current.reversed())
+            battles.append(current.reversed())
             current = []
             inBattle = false
         }

@@ -102,7 +102,7 @@ final class ResourceManager {
 
     func getCopyOfImage(_ name: String) -> Surface? {
         guard let orig = getImage(name) else { return nil }
-        return Surface(copia: orig)
+        return Surface(copying: orig)
     }
 
     // MARK: - Fonts

@@ -21,8 +21,8 @@ final class Sprite {
     init() {}
 
     /// Copy initializer: clones all animations from the original sprite.
-    init(copia: Sprite) {
-        animations = copia.animations.map { $0.map { Animation(copia: $0) } }
+    init(copying other: Sprite) {
+        animations = other.animations.map { $0.map { Animation(copying: $0) } }
         currentAnim = animations.compactMap { $0 }.first
     }
 

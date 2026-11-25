@@ -50,8 +50,8 @@ final class Surface {
     }
 
     /// Copy constructor — shares the same texture (textures are immutable in SpriteKit).
-    init(copia: Surface) {
-        self.texture = copia.texture
+    init(copying other: Surface) {
+        self.texture = other.texture
     }
 
     /// Blank surface constructor (used as a render target — not directly supported).
