@@ -68,4 +68,25 @@ struct UnitTests {
         #expect(!selected)
         #expect(!unit.isSelected)
     }
+
+    // MARK: - Move objectives
+
+    /// The original counts a move objective as met when the unit is fewer than 3 tiles
+    /// away on each axis.
+    @Test(arguments: [
+        ((0, 0), true), ((2, 2), true), ((-2, 2), true),
+        ((3, 0), false), ((0, -3), false), ((2, 3), false),
+    ])
+    func moveObjectiveIsMetWithinTwoTilesOnEachAxis(offset: (Int, Int), met: Bool) {
+        let unit = makeUnit(at: (10, 10))
+        unit.objectiveCommand = Command(.move, 10 + offset.0, 10 + offset.1)
+
+        #expect(unit.completedMoveObjective() == met)
+    }
+
+    @Test func withoutAnObjectiveNoMoveObjectiveIsMet() {
+        let unit = makeUnit(at: (10, 10))
+
+        #expect(!unit.completedMoveObjective())
+    }
 }

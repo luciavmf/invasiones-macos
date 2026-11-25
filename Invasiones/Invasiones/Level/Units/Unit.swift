@@ -24,7 +24,7 @@ final class Unit: MapObject {
         static let patrolRandomMin = 8
         /// Maximum number of tiles away a patrol destination can be from the base position.
         static let patrolRandomMax = 16
-        /// Minimum tile distance to the objective for a MOVE order to be considered fulfilled.
+        /// A unit meets a move objective when it is closer than this many tiles to it on each axis.
         static let minTilesToCompleteMove = 3
         /// Number of ticks the unit's corpse remains visible on screen before disappearing.
         static let deathFrameCount = 150
@@ -306,11 +306,12 @@ final class Unit: MapObject {
         return sqrt(di * di + dj * dj)
     }
 
-    /// Returns `true` if the unit is close enough to its objective tile to count the MOVE order as fulfilled.
+    /// Returns `true` if the unit is close enough to its objective tile to count the MOVE order as fulfilled:
+    /// closer than `minTilesToCompleteMove` tiles on each axis, as in the original.
     func completedMoveObjective() -> Bool {
         guard let ord = objectiveCommand else { return false }
-        let dist = calculateDistance(toI: ord.point.x, toJ: ord.point.y)
-        return dist <= Double(Constants.minTilesToCompleteMove)
+        return abs(ord.point.x - physicalTilePos.x) < Constants.minTilesToCompleteMove
+            && abs(ord.point.y - physicalTilePos.y) < Constants.minTilesToCompleteMove
     }
 
     // MARK: - Group / formation
