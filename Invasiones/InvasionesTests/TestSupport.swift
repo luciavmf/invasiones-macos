@@ -41,9 +41,8 @@ final class FakeSound: SoundPlayer {
     private(set) var stopped: [SoundID] = []
 
     @discardableResult
-    func play(id: SoundID, loop: Int) -> Bool {
+    func play(id: SoundID, loop: Int) {
         played.append(id)
-        return true
     }
 
     func stop(_ id: SoundID) {

@@ -73,8 +73,7 @@ final class Episode {
 
     // MARK: - Update
 
-    @discardableResult
-    func update() -> Bool {
+    func update() {
         switch flow.state {
         case .loading:
             updateLoadingState()
@@ -94,7 +93,6 @@ final class Episode {
         case .end:
             break
         }
-        return false
     }
 
     // MARK: - Draw
@@ -159,8 +157,11 @@ final class Episode {
         }
     }
 
-    private func loadPaintObjects() -> Bool {
-        guard let map = map, let battlefield = battlefield else { return false }
+    /// Places the map's obstacles in the object table.
+    private func placeObstacles() throws {
+        guard let map = map, let battlefield = battlefield else {
+            throw GameError.invalidResource("Episode: the obstacles were loaded before the map.")
+        }
 
         objectsToDraw.table = Array(repeating: Array(repeating: nil, count: map.physicalMapWidth),
                                        count: map.physicalMapHeight)
@@ -182,9 +183,10 @@ final class Episode {
                 }
             }
         }
-        return true
     }
 
+    /// Runs the loading step `flow.count` (one per frame, see docs/specs/battle-flow.md).
+    /// - Returns: whether loading is finished.
     private func loadLevel(_ levelIndex: Int) throws -> Bool {
         if flow.count == 0 {
             self.levelIndex = levelIndex
@@ -219,7 +221,7 @@ final class Episode {
             resources.loadUnitTypes()
 
         } else if flow.count == 4 {
-            if !loadPaintObjects() { return false }
+            try placeObstacles()
 
         } else if flow.count == 5 {
             guard let map = map, let camera = camera, let hud = hud else {
