@@ -122,10 +122,9 @@ final class Map {
     // MARK: - Drawing
 
     /// Draws layer `layer` onto the given Video using the current camera.
-    @discardableResult
-    func drawLayer(video: Video, layer: Int) -> Bool {
-        guard layer < maxLayers, layer >= 0 else { return false }
-        guard mapLoaded else { return false }
+    func drawLayer(video: Video, layer: Int) {
+        guard layer < maxLayers, layer >= 0 else { return }
+        guard mapLoaded else { return }
 
         let oldClip = video.getClip()
         video.setClip(x: camera.startX, y: camera.startY, w: camera.width, h: camera.height)
@@ -171,7 +170,6 @@ final class Map {
         }
 
         video.setClip(x: oldClip.x, y: oldClip.y, w: oldClip.w, h: oldClip.h)
-        return true
     }
 
     // MARK: - Small tiles (fog of war)

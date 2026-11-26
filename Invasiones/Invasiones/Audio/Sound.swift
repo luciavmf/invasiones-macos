@@ -22,8 +22,7 @@ enum SoundID: Int, CaseIterable {
 
 /// Plays and stops sound effects. `Sound` provides it in the game; tests use a fake that records calls.
 protocol SoundPlayer: AnyObject {
-    @discardableResult
-    func play(id: SoundID, loop: Int) -> Bool
+    func play(id: SoundID, loop: Int)
     func stop(_ id: SoundID)
 }
 
@@ -68,17 +67,15 @@ final class Sound: SoundPlayer {
 
     /// Plays a sound effect unless it is already playing.
     /// - Parameter loop: Extra repetitions; `-1` loops forever.
-    @discardableResult
-    func play(id: SoundID, loop: Int) -> Bool {
+    func play(id: SoundID, loop: Int) {
         guard let player = players[id] else {
             Log.shared.warn("Sound: cannot play \(id): not loaded.")
-            return false
+            return
         }
-        if player.isPlaying { return false }
+        if player.isPlaying { return }
         player.volume = isMuted ? 0 : 1
         player.numberOfLoops = loop < -1 ? 0 : loop
         player.play()
-        return true
     }
 
     /// Stops every sound effect.

@@ -131,9 +131,8 @@ final class Menu {
         }
     }
 
-    @discardableResult
-    func addItem(index: Int, label: StringID, flag: Int) -> Bool {
-        guard index <= Constants.maxItemCount - 1 else { return false }
+    func addItem(index: Int, label: StringID, flag: Int) {
+        guard index <= Constants.maxItemCount - 1 else { return }
 
         if itemCount == index {
             itemCount += 1
@@ -152,7 +151,5 @@ final class Menu {
 
         frame.height = (buttonHeight + lineSpacing) * itemCount - lineSpacing
         frame.width  = image?.width ?? buttonWidth
-
-        return true
     }
 }

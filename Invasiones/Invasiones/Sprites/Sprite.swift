@@ -67,18 +67,16 @@ final class Sprite {
         return true
     }
 
-    @discardableResult
-    func addAnimation(i: Int, anim: Animation) -> Bool {
+    func addAnimation(i: Int, anim: Animation) {
         guard !animations.isEmpty else {
             Log.shared.error("Sprite: cannot add animation — slot count not set.")
-            return false
+            return
         }
         guard i < animations.count else {
             Log.shared.debug("Sprite: animation index out of range: \(i)")
-            return false
+            return
         }
         animations[i] = anim
-        return true
     }
 
     /// Pre-allocates N animation slots (equivalent to `new Animation[N]` in C#).

@@ -147,10 +147,9 @@ The codebase has been progressively Swiftified from the C# port style. Completed
 15. `Anchor` OptionSet instead of `Int` anchor flags; `GameColor` struct instead of `Int` colours
 16. Optionals instead of `-1` sentinels; enums compared directly instead of through `.rawValue`
 17. `Res` integer constants → typed resource IDs (`StringID`, `SoundID`, `ImageID`, …)
-
-In progress / not yet done:
-- `throws` instead of `Bool` returns
-- `struct` for other value types
+18. Errors are thrown instead of returned as `Bool`. The `Bool`s left mean something else, like whether an animation changed or whether loading has finished. Results nobody read (`Sound.play`, `Map.drawLayer`, `Menu.addItem`…) were removed.
+19. Value types are structs (`Tile`, `Command`, `Objective`, `UnitStats`, `Button`, `Frame`, `Battlefield`…). The remaining classes have identity or are shared on purpose: `Camera` is scrolled by the map and read by everything, and `ObjectTable` is shared by `Episode` and both teams.
+20. The last Spanish names (`dibujarObjetos`, `tabla`, `copia:`, `moverse`…), comments and error messages are in English. Spanish stays only in the data files' keys and names, and in references to the original C# files.
 
 ## Conventions
 
