@@ -520,17 +520,21 @@ final class Unit: MapObject {
     // MARK: - Movement
 
     private func updateMovingState() -> Bool {
-        return moverse()
+        return followPath()
     }
 
     private func updatePatrollingState() -> Bool {
         if pathToFollow == nil {
             pathToFollow = findRandomPatrolPath(i: physicalTilePos.x, j: physicalTilePos.y)
         }
-        return moverse()
+        return followPath()
     }
 
-    private func moverse() -> Bool {
+    /// Walks one frame along the path: takes the next tile when the last one was reached,
+    /// re-plans after a collision, and steps toward the next tile's centre. When the path
+    /// ends, the unit switches to its next state.
+    /// - Returns: whether the unit reached a new tile (or re-planned its step) this frame.
+    private func followPath() -> Bool {
         switch substate {
         case .incrementStep:
             guard let path = pathToFollow, !path.isEmpty else {
@@ -715,7 +719,7 @@ final class Unit: MapObject {
             aimAtUnit(enemy)
             setState(.attacking)
         } else {
-            moved = moverse()
+            moved = followPath()
         }
 
         return moved
