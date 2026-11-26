@@ -120,10 +120,13 @@ jobs:
       - name: Create DMG
         run: |
           set -euo pipefail
-          hdiutil create -volname "Invasiones" \
-            -srcfolder "$RUNNER_TEMP/export/Invasiones.app" \
-            -ov -format UDZO \
-            "$RUNNER_TEMP/Invasiones.dmg"
+          # diskutil puts the source folder's contents at the top of the image, so stage
+          # a folder holding just the app. (hdiutil create is deprecated on macOS 27.)
+          STAGE="$RUNNER_TEMP/dmg"
+          mkdir -p "$STAGE"
+          cp -R "$RUNNER_TEMP/export/Invasiones.app" "$STAGE/"
+          diskutil image create from --volumeName "Invasiones" --format UDZO \
+            "$STAGE" "$RUNNER_TEMP/Invasiones.dmg"
 
       - name: Notarize DMG
         env:
