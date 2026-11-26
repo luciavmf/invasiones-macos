@@ -775,17 +775,17 @@ final class Unit: MapObject {
         direction = mapping[index]
     }
 
-    /// Applies `danio` points of damage to this unit, triggering death if health reaches zero.
-    func takeDamage(_ danio: Int) {
-        health -= danio
+    /// Applies `damage` points of damage to this unit, triggering death if health reaches zero.
+    func takeDamage(_ damage: Int) {
+        health -= damage
         if health <= 0 {
             health = 0
-            morir()
+            die()
         }
     }
 
     /// Transitions the unit into the dying state.
-    func morir() {
+    func die() {
         Log.shared.debug("Unit: died.")
         setState(.dying)
         enemy = nil
