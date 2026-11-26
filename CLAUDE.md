@@ -178,7 +178,9 @@ The codebase has been progressively Swiftified from the C# port style. Completed
 
 ## Web Port
 
-A complete TypeScript/PixiJS port lives at https://github.com/luciavmf/invasiones-web. It mirrors this codebase 1-to-1 with these differences:
+A complete TypeScript/PixiJS port lives at https://github.com/luciavmf/invasiones-web (clone it next to this repo, e.g. `../invasiones-web/`). Its gameplay matches this port and the C# original (invasiones-web#9). Its structure is being brought back to a 1-to-1 mirror of this codebase, one phase per PR, following invasiones-web#10. Names, typed resource IDs, `Battlefield` and `PlayerInput` are done. `UnitStats`/`UnitView`, `BattleFlow` and the battle screens, and the injected `ResourceManager` are still to come. Each phase ports the matching tests from `InvasionesTests` to Vitest (`npm test`). A change to the game's rules here should be made in the web port too, or noted on invasiones-web#10.
+
+Differences that stay:
 
 - Rendering: PixiJS v8 instead of SpriteKit. `Video` wraps a `PIXI.Container` canvas rebuilt each frame.
 - Coordinate origin: top-left (Y down), matching C#/SDL — no Y-flip needed unlike SpriteKit.
